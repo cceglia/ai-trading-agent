@@ -22,13 +22,17 @@ class SynthesizerAgent:
         client: OpenAI | None = None,
         model: str = "gpt-4o",
         api_key: str | None = None,
+        base_url: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
-        elif api_key is not None:
-            self.client = instructor.from_openai(OpenAI(api_key=api_key))
         else:
-            self.client = instructor.from_openai(OpenAI())
+            openai_kwargs: dict[str, Any] = {}
+            if api_key is not None:
+                openai_kwargs["api_key"] = api_key
+            if base_url is not None:
+                openai_kwargs["base_url"] = base_url
+            self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
 
     def synthesize(
@@ -66,13 +70,17 @@ class DeciderAgent:
         client: OpenAI | None = None,
         model: str = "gpt-4o",
         api_key: str | None = None,
+        base_url: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
-        elif api_key is not None:
-            self.client = instructor.from_openai(OpenAI(api_key=api_key))
         else:
-            self.client = instructor.from_openai(OpenAI())
+            openai_kwargs: dict[str, Any] = {}
+            if api_key is not None:
+                openai_kwargs["api_key"] = api_key
+            if base_url is not None:
+                openai_kwargs["base_url"] = base_url
+            self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
 
     def decide(
@@ -113,13 +121,17 @@ class ReviewerAgent:
         client: OpenAI | None = None,
         model: str = "gpt-4o",
         api_key: str | None = None,
+        base_url: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
-        elif api_key is not None:
-            self.client = instructor.from_openai(OpenAI(api_key=api_key))
         else:
-            self.client = instructor.from_openai(OpenAI())
+            openai_kwargs: dict[str, Any] = {}
+            if api_key is not None:
+                openai_kwargs["api_key"] = api_key
+            if base_url is not None:
+                openai_kwargs["base_url"] = base_url
+            self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
 
     def review(

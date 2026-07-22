@@ -451,10 +451,13 @@ def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
 
     with (
         patch("src.analysis.candle_cache.datetime") as mock_dt,
+        patch("src.orchestrator.graph.datetime") as mock_graph_dt,
         patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
     ):
         mock_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=UTC)
         mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+        mock_graph_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=UTC)
+        mock_graph_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
         # D1: should_run_analysis says True (stale) → must fetch fresh
         # H4: should_run_analysis says False (valid cache) → must use cache

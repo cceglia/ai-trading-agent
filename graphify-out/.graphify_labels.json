@@ -23,6 +23,11 @@
   "21": "tests/decision/__init__.py",
   "22": "tests/__init__.py",
   "23": "tests/orchestrator/__init__.py",
-  "24": "setup_logging",
-  "25": "main.py"
+  "24": "_make_mcp_tool_result",
+  "25": "test_mt5_data_provider.py",
+  "26": "Mt5DataProvider",
+  "27": "._retry_operation",
+  "28": "TestPersistentEventLoop",
+  "29": "._run_async",
+  "30": "TestConnectionLifecycle"
 }

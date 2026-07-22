@@ -1,9 +1,11 @@
 """MetaTrader 5 data provider via MCP server."""
 
+import asyncio
 import csv
 import io
 import logging
 import os
+import threading
 import time
 from typing import Any, cast
 
@@ -15,6 +17,11 @@ class Mt5DataProvider:
 
     Implements the DataSource protocol for fetching market data
     from MetaTrader 5 through an MCP (Model Context Protocol) server.
+
+    Uses a dedicated background event loop so the MCP SSE session persists
+    across tool calls. Each ``asyncio.run()`` creates and destroys an event
+    loop; the ``sse_client`` generator cannot clean up on a dead loop, which
+    causes ``RuntimeError: generator didn't stop after athrow()``.
     """
 
     def __init__(
@@ -34,19 +41,79 @@ class Mt5DataProvider:
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self._client: Any = None
+        self._sse_context: Any = None
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._loop_thread: threading.Thread | None = None
+        self._loop_started = threading.Event()
 
-    async def connect(self) -> None:
-        """Establish connection to MCP server."""
+    # ------------------------------------------------------------------
+    # Background event loop
+    # ------------------------------------------------------------------
+
+    def _ensure_loop(self) -> asyncio.AbstractEventLoop:
+        """Return the dedicated background event loop, starting it if needed."""
+        if self._loop is not None and self._loop.is_running():
+            return self._loop
+
+        self._loop = asyncio.new_event_loop()
+        self._loop_thread = threading.Thread(
+            target=self._run_loop, daemon=True, name="mt5-event-loop"
+        )
+        self._loop_thread.start()
+        self._loop_started.wait(timeout=5)
+        return self._loop
+
+    def _run_loop(self) -> None:
+        """Entry point for the background loop thread."""
+        assert self._loop is not None
+        asyncio.set_event_loop(self._loop)
+        self._loop_started.set()
+        self._loop.run_forever()
+
+    def _run_async(self, coro: Any) -> Any:
+        """Schedule a coroutine on the background loop and block until done."""
+        loop = self._ensure_loop()
+        future = asyncio.run_coroutine_threadsafe(coro, loop)
+        return future.result(timeout=60)
+
+    # ------------------------------------------------------------------
+    # Connection lifecycle
+    # ------------------------------------------------------------------
+
+    async def _connect_async(self) -> None:
+        """Establish connection to MCP server (runs on the background loop)."""
+        from mcp import ClientSession
+        from mcp.client.sse import sse_client
+
+        self._sse_context = sse_client(self.server_url or "http://localhost:8082")
+        self._transport = await self._sse_context.__aenter__()
+        self._client = ClientSession(self._transport[0], self._transport[1])
+        await self._client.__aenter__()
+        await self._client.initialize()
+        logger.info("Connected to MCP server at %s", self.server_url)
+
+    async def _disconnect_async(self) -> None:
+        """Disconnect from MCP server (runs on the background loop)."""
+        if self._client:
+            try:
+                await self._client.__aexit__(None, None, None)
+            except Exception as e:
+                logger.warning("Error disconnecting MCP client: %s", e)
+            finally:
+                self._client = None
+
+        if hasattr(self, "_sse_context") and self._sse_context is not None:
+            try:
+                await self._sse_context.__aexit__(None, None, None)
+            except Exception as e:
+                logger.warning("Error closing SSE context: %s", e)
+            finally:
+                self._sse_context = None
+
+    def connect(self) -> None:
+        """Establish connection to MCP server (sync wrapper)."""
         try:
-            from mcp import ClientSession
-            from mcp.client.sse import sse_client
-
-            self._sse_context = sse_client(self.server_url or "http://localhost:8082")
-            self._transport = await self._sse_context.__aenter__()
-            self._client = ClientSession(self._transport[0], self._transport[1])
-            await self._client.__aenter__()
-            await self._client.initialize()
-            logger.info("Connected to MCP server at %s", self.server_url)
+            self._run_async(self._connect_async())
         except ImportError:
             logger.warning("MCP library not installed, using direct HTTP fallback")
             self._client = None
@@ -54,17 +121,27 @@ class Mt5DataProvider:
             logger.error("Failed to connect to MCP server: %s", e)
             raise ConnectionError(f"Cannot connect to MCP server at {self.server_url}") from e
 
-    async def disconnect(self) -> None:
-        """Disconnect from MCP server."""
-        if self._client:
+    def disconnect(self) -> None:
+        """Disconnect from MCP server (sync wrapper)."""
+        if self._client or hasattr(self, "_sse_context"):
             try:
-                await self._client.__aexit__(None, None, None)
-                if hasattr(self, "_sse_context"):
-                    await self._sse_context.__aexit__(None, None, None)
+                self._run_async(self._disconnect_async())
             except Exception as e:
                 logger.warning("Error during disconnect: %s", e)
-            finally:
                 self._client = None
+
+        # Shut down the background loop thread
+        if self._loop is not None and self._loop.is_running():
+            self._loop.call_soon_threadsafe(self._loop.stop)
+            if self._loop_thread is not None:
+                self._loop_thread.join(timeout=5)
+            self._loop = None
+            self._loop_thread = None
+            self._loop_started.clear()
+
+    # ------------------------------------------------------------------
+    # Retry logic
+    # ------------------------------------------------------------------
 
     def _retry_operation(self, operation: str, func: Any, *args: Any, **kwargs: Any) -> Any:
         """Execute operation with retry logic and exponential backoff.
@@ -104,6 +181,10 @@ class Mt5DataProvider:
             f"Failed to {operation} after {self.max_retries} attempts: {last_error}"
         )
 
+    # ------------------------------------------------------------------
+    # Tool calls
+    # ------------------------------------------------------------------
+
     def _call_tool(self, tool_name: str, arguments: dict[str, Any] | None = None) -> Any:
         """Call an MCP tool synchronously.
 
@@ -114,26 +195,14 @@ class Mt5DataProvider:
         Returns:
             Tool result
         """
-        import asyncio
 
         async def _async_call() -> Any:
             if self._client is None:
-                await self.connect()
+                await self._connect_async()
             result = await self._client.call_tool(tool_name, arguments or {})
             return result
 
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                import concurrent.futures
-
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    future = pool.submit(asyncio.run, _async_call())
-                    return future.result(timeout=30)
-            else:
-                return loop.run_until_complete(_async_call())
-        except RuntimeError:
-            return asyncio.run(_async_call())
+        return self._run_async(_async_call())
 
     def get_candles(self, symbol: str, timeframe: str, count: int) -> str:
         """Fetch OHLC candles as CSV string.

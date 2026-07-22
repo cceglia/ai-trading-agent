@@ -17,6 +17,9 @@ def main() -> None:
     parser.add_argument("--log-level", default="INFO", help="Logging level")
     parser.add_argument("--server-url", help="MCP server URL")
     parser.add_argument("--model", default="gpt-4o", help="LLM model")
+    parser.add_argument(
+        "--base-url", help="OpenAI-compatible base URL (e.g., http://localhost:11434/v1)"
+    )
 
     args = parser.parse_args()
 
@@ -27,6 +30,8 @@ def main() -> None:
         settings.mcp_server_url = args.server_url
     if args.model:
         settings.openai_model = args.model
+    if args.base_url:
+        settings.openai_base_url = args.base_url
 
     logger.info("Starting Trading AI Agent for %s", args.symbol)
 
@@ -40,9 +45,26 @@ def main() -> None:
         data_provider = Mt5DataProvider(settings.mcp_server_url)
         structure_analyzer = MarketStructureEngine()
         calendar_provider = ForexFactoryCalendar()
-        synthesizer = SynthesizerAgent(model=settings.openai_model)
-        decider = DeciderAgent(model=settings.openai_model)
-        reviewer = ReviewerAgent(model=settings.openai_model)
+
+        # Convert empty strings to None (agents expect str | None)
+        api_key = settings.openai_api_key or None
+        base_url = settings.openai_base_url or None
+
+        synthesizer = SynthesizerAgent(
+            model=settings.openai_model,
+            api_key=api_key,
+            base_url=base_url,
+        )
+        decider = DeciderAgent(
+            model=settings.openai_model,
+            api_key=api_key,
+            base_url=base_url,
+        )
+        reviewer = ReviewerAgent(
+            model=settings.openai_model,
+            api_key=api_key,
+            base_url=base_url,
+        )
 
         graph = TradingGraph(
             data_provider=data_provider,

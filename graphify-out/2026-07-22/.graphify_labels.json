@@ -22,7 +22,5 @@
   "20": "tests/data/__init__.py",
   "21": "tests/decision/__init__.py",
   "22": "tests/__init__.py",
-  "23": "tests/orchestrator/__init__.py",
-  "24": "setup_logging",
-  "25": "main.py"
+  "23": "tests/orchestrator/__init__.py"
 }

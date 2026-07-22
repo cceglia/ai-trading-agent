@@ -21,8 +21,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "config_settings",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "settings.py"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "config_settings_settings",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "settings"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "basesettings",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "basesettings"
     },
     {
@@ -54,8 +54,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "config_settings_rationale_6",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "trading agent configuration."
     },
     {
@@ -65,8 +65,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "main",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "main.py"
     },
     {
@@ -76,8 +76,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "main_main",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "main()"
     },
     {
@@ -87,8 +87,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "main_rationale_1",
-      "community": 25,
-      "community_name": "main.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "trading ai agent - cli entry point."
     },
     {
@@ -167,8 +167,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "datetime",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "datetime"
     },
     {
@@ -233,8 +233,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_calendar_forexfactory",
-      "community": 9,
-      "community_name": "ForexFactoryCalendar",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "forexfactory.py"
     },
     {
@@ -497,8 +497,8 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_retry_operation",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "._retry_operation()"
     },
     {
@@ -508,8 +508,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_py_any",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "any"
     },
     {
@@ -519,8 +519,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_call_tool",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "._call_tool()"
     },
     {
@@ -530,8 +530,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_get_candles",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".get_candles()"
     },
     {
@@ -541,8 +541,8 @@
       "source_location": "L166",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_get_symbol_price",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".get_symbol_price()"
     },
     {
@@ -552,8 +552,8 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_get_positions",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".get_positions()"
     },
     {
@@ -563,8 +563,8 @@
       "source_location": "L219",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_mt5dataprovider_get_pending_orders",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".get_pending_orders()"
     },
     {
@@ -651,8 +651,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_70",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "execute operation with retry logic and exponential backoff.          args:"
     },
     {
@@ -662,8 +662,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_108",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "call an mcp tool synchronously.          args:             tool_name: name of th"
     },
     {
@@ -673,8 +673,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_139",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "fetch ohlc candles as csv string.          args:             symbol: trading sym"
     },
     {
@@ -684,8 +684,8 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_167",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "get latest price info for a symbol.          args:             symbol: trading s"
     },
     {
@@ -695,8 +695,8 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_191",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "get open positions.          args:             symbol: optional symbol filter. i"
     },
     {
@@ -706,8 +706,8 @@
       "source_location": "L220",
       "_origin": "ast",
       "id": "src_data_mt5_data_provider_rationale_220",
-      "community": 8,
-      "community_name": "._retry_operation",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "get pending orders.          args:             symbol: optional symbol filter. i"
     },
     {
@@ -739,8 +739,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_snapshot_builder",
-      "community": 4,
-      "community_name": "SnapshotBuilder",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "snapshot_builder.py"
     },
     {
@@ -816,8 +816,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_data_snapshot_builder_rationale_1",
-      "community": 4,
-      "community_name": "SnapshotBuilder",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "snapshot builder for converting mcp csv data to normalized engine snapshots."
     },
     {
@@ -915,8 +915,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "src_decision_agents_synthesizeragent_init",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".__init__()"
     },
     {
@@ -926,15 +926,15 @@
       "source_location": "",
       "_origin": "ast",
       "id": "openai",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "openai"
     },
     {
       "label": ".synthesize()",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L34",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "src_decision_agents_synthesizeragent_synthesize",
       "community": 0,
@@ -956,29 +956,29 @@
       "label": "DeciderAgent",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L61",
+      "source_location": "L65",
       "_origin": "ast",
       "id": "src_decision_agents_decideragent",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "decideragent"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L64",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "src_decision_agents_decideragent_init",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".__init__()"
     },
     {
       "label": ".decide()",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L78",
+      "source_location": "L86",
       "_origin": "ast",
       "id": "src_decision_agents_decideragent_decide",
       "community": 0,
@@ -989,29 +989,29 @@
       "label": "ReviewerAgent",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L108",
+      "source_location": "L116",
       "_origin": "ast",
       "id": "src_decision_agents_revieweragent",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "revieweragent"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L111",
+      "source_location": "L119",
       "_origin": "ast",
       "id": "src_decision_agents_revieweragent_init",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".__init__()"
     },
     {
       "label": ".review()",
       "file_type": "code",
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "_origin": "ast",
       "id": "src_decision_agents_revieweragent_review",
       "community": 0,
@@ -1033,22 +1033,22 @@
       "label": "Makes trading decisions based on market context.",
       "file_type": "rationale",
       "source_file": "src/decision/agents.py",
-      "source_location": "L62",
+      "source_location": "L66",
       "_origin": "ast",
-      "id": "src_decision_agents_rationale_62",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "id": "src_decision_agents_rationale_66",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "makes trading decisions based on market context."
     },
     {
       "label": "Reviews trading decisions and provides feedback.",
       "file_type": "rationale",
       "source_file": "src/decision/agents.py",
-      "source_location": "L109",
+      "source_location": "L117",
       "_origin": "ast",
-      "id": "src_decision_agents_rationale_109",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "id": "src_decision_agents_rationale_117",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "reviews trading decisions and provides feedback."
     },
     {
@@ -1443,8 +1443,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_logging_config",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "logging_config.py"
     },
     {
@@ -1454,8 +1454,8 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "src_logging_config_setup_logging",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "setup_logging()"
     },
     {
@@ -1465,8 +1465,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "src_logging_config_rationale_6",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "configure structured logging for the trading agent."
     },
     {
@@ -1487,8 +1487,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_orchestrator_graph",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "graph.py"
     },
     {
@@ -2510,8 +2510,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "test_agents_api_key.py"
     },
     {
@@ -2521,8 +2521,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "testagentapikey"
     },
     {
@@ -2532,8 +2532,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey_test_synthesizer_passes_api_key_to_client",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".test_synthesizer_passes_api_key_to_client()"
     },
     {
@@ -2543,8 +2543,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey_test_decider_passes_api_key_to_client",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".test_decider_passes_api_key_to_client()"
     },
     {
@@ -2554,8 +2554,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey_test_reviewer_passes_api_key_to_client",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".test_reviewer_passes_api_key_to_client()"
     },
     {
@@ -2565,20 +2565,97 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey_test_agents_default_to_none_api_key",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": ".test_agents_default_to_none_api_key()"
     },
     {
-      "label": "Tests for API key passthrough in agents.",
+      "label": "TestAgentBaseUrl",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "testagentbaseurl"
+    },
+    {
+      "label": ".test_synthesizer_passes_base_url_to_client()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_synthesizer_passes_base_url_to_client()"
+    },
+    {
+      "label": ".test_decider_passes_base_url_to_client()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L70",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_decider_passes_base_url_to_client()"
+    },
+    {
+      "label": ".test_reviewer_passes_base_url_to_client()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L81",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_reviewer_passes_base_url_to_client()"
+    },
+    {
+      "label": ".test_agents_default_to_none_base_url()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L92",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_agents_default_to_none_base_url()"
+    },
+    {
+      "label": ".test_base_url_ignored_when_client_provided()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L106",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_base_url_ignored_when_client_provided()"
+    },
+    {
+      "label": ".test_base_url_and_api_key_together()",
+      "file_type": "code",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L117",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": ".test_base_url_and_api_key_together()"
+    },
+    {
+      "label": "Tests for API key and base_url passthrough in agents.",
       "file_type": "rationale",
       "source_file": "tests/decision/test_agents_api_key.py",
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_1",
-      "community": 0,
-      "community_name": "MarketContextSummary",
-      "norm_label": "tests for api key passthrough in agents."
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "tests for api key and base_url passthrough in agents."
     },
     {
       "label": "SynthesizerAgent must pass api_key to OpenAI constructor.",
@@ -2587,8 +2664,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_8",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "synthesizeragent must pass api_key to openai constructor."
     },
     {
@@ -2598,8 +2675,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_21",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "decideragent must pass api_key to openai constructor."
     },
     {
@@ -2609,8 +2686,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_33",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "revieweragent must pass api_key to openai constructor."
     },
     {
@@ -2620,9 +2697,75 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_45",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 8,
+      "community_name": "._retry_operation",
       "norm_label": "when no api_key given, openai() uses its own default."
+    },
+    {
+      "label": "SynthesizerAgent must pass base_url to OpenAI constructor.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_60",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "synthesizeragent must pass base_url to openai constructor."
+    },
+    {
+      "label": "DeciderAgent must pass base_url to OpenAI constructor.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L71",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_71",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "decideragent must pass base_url to openai constructor."
+    },
+    {
+      "label": "ReviewerAgent must pass base_url to OpenAI constructor.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L82",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_82",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "revieweragent must pass base_url to openai constructor."
+    },
+    {
+      "label": "When no base_url given, OpenAI() uses its own default.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L93",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_93",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "when no base_url given, openai() uses its own default."
+    },
+    {
+      "label": "When a pre-built client is provided, base_url must be ignored.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L107",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_107",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "when a pre-built client is provided, base_url must be ignored."
+    },
+    {
+      "label": "SynthesizerAgent must pass both api_key and base_url when provided.",
+      "file_type": "rationale",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L118",
+      "_origin": "ast",
+      "id": "tests_decision_test_agents_api_key_rationale_118",
+      "community": 8,
+      "community_name": "._retry_operation",
+      "norm_label": "synthesizeragent must pass both api_key and base_url when provided."
     },
     {
       "label": "test_agents_prompts.py",
@@ -3302,8 +3445,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "test_graph.py"
     },
     {
@@ -3313,8 +3456,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_data_provider",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_data_provider()"
     },
     {
@@ -3324,8 +3467,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_structure_analyzer",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_structure_analyzer()"
     },
     {
@@ -3335,8 +3478,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_calendar_provider",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_calendar_provider()"
     },
     {
@@ -3346,8 +3489,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_synthesizer",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_synthesizer()"
     },
     {
@@ -3357,8 +3500,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_decider",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_decider()"
     },
     {
@@ -3368,8 +3511,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_mock_reviewer",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "mock_reviewer()"
     },
     {
@@ -3577,8 +3720,8 @@
       "source_location": "L366",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_test_analyze_structure_converts_csv_to_snapshots",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "test_analyze_structure_converts_csv_to_snapshots()"
     },
     {
@@ -3588,8 +3731,8 @@
       "source_location": "L435",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_test_analyze_structure_uses_should_run_analysis",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "test_analyze_structure_uses_should_run_analysis()"
     },
     {
@@ -3621,8 +3764,8 @@
       "source_location": "L367",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_rationale_367",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "_analyze_structure must use snapshotbuilder to convert csv to dicts."
     },
     {
@@ -3632,8 +3775,8 @@
       "source_location": "L436",
       "_origin": "ast",
       "id": "tests_orchestrator_test_graph_rationale_436",
-      "community": 0,
-      "community_name": "MarketContextSummary",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "should_run_analysis must gate whether cache is used."
     },
     {
@@ -3643,8 +3786,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_logging_config",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "test_logging_config.py"
     },
     {
@@ -3654,8 +3797,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_test_logging_config_testsetuplogging",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "testsetuplogging"
     },
     {
@@ -3665,8 +3808,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "tests_test_logging_config_testsetuplogging_test_sets_root_logger_level",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".test_sets_root_logger_level()"
     },
     {
@@ -3676,8 +3819,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "tests_test_logging_config_testsetuplogging_test_sets_info_level",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".test_sets_info_level()"
     },
     {
@@ -3687,8 +3830,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "tests_test_logging_config_testsetuplogging_test_sets_debug_level",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".test_sets_debug_level()"
     },
     {
@@ -3698,8 +3841,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "tests_test_logging_config_testsetuplogging_test_adds_handler",
-      "community": 24,
-      "community_name": "setup_logging",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": ".test_adds_handler()"
     },
     {
@@ -4294,7 +4437,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4317,7 +4460,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L35",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4329,7 +4472,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4341,7 +4484,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4353,7 +4496,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4365,7 +4508,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L37",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4401,7 +4544,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L38",
+      "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main",
@@ -4424,7 +4567,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L42",
+      "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4436,7 +4579,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L40",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4448,7 +4591,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L44",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4460,7 +4603,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L45",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4472,7 +4615,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L43",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4484,7 +4627,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -4496,7 +4639,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "main.py",
-      "source_location": "L47",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
       "source": "main_main",
@@ -6225,7 +6368,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L61",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents",
@@ -6236,7 +6379,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L108",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents",
@@ -6340,7 +6483,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L34",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_synthesizeragent",
@@ -6396,7 +6539,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L46",
+      "source_location": "L119",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey",
@@ -6425,6 +6568,65 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey_test_synthesizer_passes_api_key_to_client",
+      "target": "src_decision_agents_synthesizeragent"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L119",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "src_decision_agents_synthesizeragent",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L102",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
+      "target": "src_decision_agents_synthesizeragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L124",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
+      "target": "src_decision_agents_synthesizeragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L114",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
+      "target": "src_decision_agents_synthesizeragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
       "target": "src_decision_agents_synthesizeragent"
     },
     {
@@ -6479,7 +6681,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L64",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent_init",
@@ -6491,7 +6693,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L111",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent_init",
@@ -6503,7 +6705,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L34",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_synthesizeragent_synthesize",
@@ -6516,7 +6718,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 0.8,
       "source_file": "src/decision/agents.py",
-      "source_location": "L34",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_synthesizeragent_synthesize",
@@ -6527,7 +6729,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L78",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent_decide",
@@ -6539,7 +6741,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent_review",
@@ -6550,7 +6752,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L78",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent",
@@ -6561,7 +6763,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L64",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent",
@@ -6605,10 +6807,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L62",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "src_decision_agents_rationale_62",
+      "source": "src_decision_agents_rationale_66",
       "target": "src_decision_agents_decideragent",
       "confidence_score": 1.0
     },
@@ -6628,7 +6830,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L22",
+      "source_location": "L72",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey",
@@ -6645,6 +6847,29 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey_test_decider_passes_api_key_to_client",
+      "target": "src_decision_agents_decideragent"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L72",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "src_decision_agents_decideragent",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
       "target": "src_decision_agents_decideragent"
     },
     {
@@ -6688,7 +6913,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 0.8,
       "source_file": "src/decision/agents.py",
-      "source_location": "L78",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent_decide",
@@ -6699,7 +6924,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L78",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_decideragent_decide",
@@ -6710,10 +6935,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L109",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "src_decision_agents_rationale_109",
+      "source": "src_decision_agents_rationale_117",
       "target": "src_decision_agents_revieweragent",
       "confidence_score": 1.0
     },
@@ -6721,7 +6946,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L111",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent",
@@ -6732,7 +6957,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent",
@@ -6788,7 +7013,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L34",
+      "source_location": "L83",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey",
@@ -6805,6 +7030,29 @@
       "weight": 1.0,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey_test_reviewer_passes_api_key_to_client",
+      "target": "src_decision_agents_revieweragent"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L83",
+      "weight": 0.8,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "src_decision_agents_revieweragent",
+      "confidence_score": 0.5
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L88",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
       "target": "src_decision_agents_revieweragent"
     },
     {
@@ -6847,7 +7095,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent_review",
@@ -6859,7 +7107,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent_review",
@@ -6872,7 +7120,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 0.8,
       "source_file": "src/decision/agents.py",
-      "source_location": "L125",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast",
       "source": "src_decision_agents_revieweragent_review",
@@ -9466,6 +9714,18 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "src/orchestrator/graph.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "src_orchestrator_graph_tradinggraph_build_graph",
+      "target": "src_orchestrator_graph_py_any",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "references",
+      "context": "generic_arg",
+      "confidence": "EXTRACTED",
+      "source_file": "src/orchestrator/graph.py",
       "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast",
@@ -10294,6 +10554,17 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L58",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "tests/decision/test_agents_api_key.py",
@@ -10390,6 +10661,138 @@
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_rationale_45",
       "target": "tests_decision_test_agents_api_key_testagentapikey_test_agents_default_to_none_api_key",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L92",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L117",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_testagentbaseurl",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_60",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_71",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_82",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_93",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L107",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_107",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/decision/test_agents_api_key.py",
+      "source_location": "L118",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "tests_decision_test_agents_api_key_rationale_118",
+      "target": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
       "confidence_score": 1.0
     },
     {
@@ -11890,5 +12293,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "3091e4e5d8f7577261b24523bc3e56235423884d"
+  "built_at_commit": "155ecb57ef2cebbcb5f3aebbf17a9ff6590dcd73"
 }

@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     # LLM Configuration
     openai_api_key: str = Field(default="", description="OpenAI API key")
     openai_model: str = Field(default="gpt-4o", description="Model to use")
+    openai_base_url: str = Field(
+        default="", description="OpenAI-compatible base URL (empty = use default)"
+    )
 
     # MCP Configuration
     mcp_server_url: str = Field(default="http://localhost:8082", description="MCP server URL")
