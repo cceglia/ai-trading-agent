@@ -33,7 +33,9 @@ class Evaluator:
     }
 
     def _is_within_window(
-        self, event_time_str: str, window_hours: int,
+        self,
+        event_time_str: str,
+        window_hours: int,
         now: datetime | None = None,
     ) -> bool:
         """Check if an event falls within the time window from now.
@@ -57,7 +59,9 @@ class Evaluator:
             return False
 
     def evaluate_for_symbol(
-        self, events: list[dict[str, Any]], symbol: str,
+        self,
+        events: list[dict[str, Any]],
+        symbol: str,
         timeframe: str = "H4",
         now: datetime | None = None,
     ) -> dict[str, Any]:
@@ -81,7 +85,9 @@ class Evaluator:
 
         logger.debug(
             "Evaluating %s with %dh window, currencies: %s",
-            symbol, window_hours, currencies,
+            symbol,
+            window_hours,
+            currencies,
         )
 
         blocking: list[dict[str, Any]] = []

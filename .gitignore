@@ -75,7 +75,6 @@ Desktop.ini
 .opencode/
 
 # ── Graphify ─────────────────────────────────────────────────────────
-graphify-out/
 graphify-out/cache/
 
 # ── Project-specific ─────────────────────────────────────────────────

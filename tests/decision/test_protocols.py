@@ -1,5 +1,3 @@
-from typing import runtime_checkable
-
 from src.decision.protocols import CalendarProvider, DataSource, StructureAnalyzer
 
 

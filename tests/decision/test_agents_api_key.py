@@ -11,7 +11,7 @@ class TestAgentApiKey:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            agent = SynthesizerAgent(api_key="test-key-123")
+            SynthesizerAgent(api_key="test-key-123")
             # Verify OpenAI was called with api_key kwarg
             call_args = mock_from.call_args
             openai_client = call_args[0][0]
@@ -24,7 +24,7 @@ class TestAgentApiKey:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            agent = DeciderAgent(api_key="test-key-456")
+            DeciderAgent(api_key="test-key-456")
             call_args = mock_from.call_args
             openai_client = call_args[0][0]
             assert openai_client.api_key == "test-key-456"
@@ -36,7 +36,7 @@ class TestAgentApiKey:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            agent = ReviewerAgent(api_key="test-key-789")
+            ReviewerAgent(api_key="test-key-789")
             call_args = mock_from.call_args
             openai_client = call_args[0][0]
             assert openai_client.api_key == "test-key-789"
@@ -45,9 +45,11 @@ class TestAgentApiKey:
         """When no api_key given, OpenAI() uses its own default."""
         from src.decision.agents import SynthesizerAgent
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from, \
-             patch("src.decision.agents.OpenAI") as mock_openai_cls:
+        with (
+            patch("src.decision.agents.instructor.from_openai") as mock_from,
+            patch("src.decision.agents.OpenAI") as mock_openai_cls,
+        ):
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            agent = SynthesizerAgent()  # No api_key
+            SynthesizerAgent()  # No api_key
             mock_openai_cls.assert_called_once()

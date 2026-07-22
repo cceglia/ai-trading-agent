@@ -34,8 +34,11 @@ class SnapshotBuilder:
     """
 
     def build(
-        self, csv_data: str, symbol: str,
-        timeframe: str, provider: str = "MCP",
+        self,
+        csv_data: str,
+        symbol: str,
+        timeframe: str,
+        provider: str = "MCP",
     ) -> dict[str, Any]:
         """Convert CSV to normalized snapshot.
 
@@ -161,9 +164,16 @@ class SnapshotBuilder:
         Raises:
             ValueError: If snapshot fails validation.
         """
-        required_fields = {"source", "market", "requested_timeframe", "returned_timeframe",
-                           "retrieved_at_utc", "latest_closed_candle_time_utc",
-                           "candle_closure_verified", "bars"}
+        required_fields = {
+            "source",
+            "market",
+            "requested_timeframe",
+            "returned_timeframe",
+            "retrieved_at_utc",
+            "latest_closed_candle_time_utc",
+            "candle_closure_verified",
+            "bars",
+        }
         missing = required_fields - set(snapshot)
         if missing:
             raise ValueError(f"Snapshot missing required field(s): {sorted(missing)}")
@@ -201,7 +211,7 @@ class SnapshotBuilder:
                 raise ValueError(f"Bar {i} must be closed")
             for field in ("open", "high", "low", "close"):
                 val = bar.get(field)
-                if not isinstance(val, (int, float)):
+                if not isinstance(val, int | float):
                     raise ValueError(f"Bar {i} field {field} must be a number")
 
         for i in range(1, len(bars)):

@@ -97,7 +97,7 @@ class Mt5DataProvider:
                     e,
                 )
                 if attempt < self.max_retries - 1:
-                    delay = self.retry_delay * (2 ** attempt)
+                    delay = self.retry_delay * (2**attempt)
                     logger.debug("Retrying in %.1f seconds...", delay)
                     time.sleep(delay)
         raise ConnectionError(
@@ -230,9 +230,7 @@ class Mt5DataProvider:
 
         def _fetch() -> list[dict[str, Any]]:
             if symbol:
-                result = self._call_tool(
-                    "get_pending_orders_by_symbol", {"symbol": symbol}
-                )
+                result = self._call_tool("get_pending_orders_by_symbol", {"symbol": symbol})
             else:
                 result = self._call_tool("get_all_pending_orders")
 

@@ -1,5 +1,5 @@
-from pydantic_settings import BaseSettings
 from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -16,7 +16,9 @@ class Settings(BaseSettings):
     max_review_attempts: int = Field(default=2, description="Maximum review retry attempts")
 
     # Cost Configuration
-    cost_per_symbol_limit: float = Field(default=0.05, description="Maximum cost per symbol analysis in USD")
+    cost_per_symbol_limit: float = Field(
+        default=0.05, description="Maximum cost per symbol analysis in USD"
+    )
 
     # Calendar Configuration
     calendar_cache_hours: int = Field(default=4, description="Hours to cache calendar events")
@@ -28,7 +30,9 @@ class Settings(BaseSettings):
     d1_close_time: str = Field(default="17:00", description="D1 candle close time (HH:MM UTC)")
     h4_close_time: str = Field(default="00:00", description="H4 anchor time (HH:MM UTC)")
     h4_close_interval_hours: int = Field(default=4, description="H4 interval in hours")
-    analysis_cache_dir: str = Field(default="analysis", description="Base directory for analysis cache")
+    analysis_cache_dir: str = Field(
+        default="analysis", description="Base directory for analysis cache"
+    )
 
     model_config = {"env_prefix": "TRADING_", "env_file": ".env"}
 

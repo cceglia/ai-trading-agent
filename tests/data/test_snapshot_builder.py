@@ -110,19 +110,13 @@ class TestSnapshotBuilderValidation:
             builder.build(csv, "", "H4")
 
     def test_high_inconsistent_with_ohlc_skips_bar(self):
-        csv = (
-            "time,open,high,low,close\n"
-            "2024-01-01T00:00:00,1.0900,1.0850,1.0800,1.0875\n"
-        )
+        csv = "time,open,high,low,close\n2024-01-01T00:00:00,1.0900,1.0850,1.0800,1.0875\n"
         builder = SnapshotBuilder()
         with pytest.raises(ValueError, match="No valid bars found"):
             builder.build(csv, "EURUSD", "H4")
 
     def test_low_inconsistent_with_ohlc_skips_bar(self):
-        csv = (
-            "time,open,high,low,close\n"
-            "2024-01-01T00:00:00,1.0850,1.0900,1.0950,1.0875\n"
-        )
+        csv = "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0950,1.0875\n"
         builder = SnapshotBuilder()
         with pytest.raises(ValueError, match="No valid bars found"):
             builder.build(csv, "EURUSD", "H4")

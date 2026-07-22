@@ -71,7 +71,7 @@ class TradingGraph:
 
         self.graph = self._build_graph()
 
-    def _build_graph(self) -> CompiledStateGraph[AgentState]:
+    def _build_graph(self) -> CompiledStateGraph[AgentState, None, Any, Any]:
         """Build the LangGraph StateGraph."""
         graph = StateGraph(AgentState)
 

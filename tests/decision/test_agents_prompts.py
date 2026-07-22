@@ -1,7 +1,14 @@
 """Tests for prompt usage in agents."""
 
 from unittest.mock import MagicMock, patch
-from src.decision.models import MarketContextSummary, DecisionOutput, ReviewVerdict, BiasLevel, DecisionAction
+
+from src.decision.models import (
+    BiasLevel,
+    DecisionAction,
+    DecisionOutput,
+    MarketContextSummary,
+    ReviewVerdict,
+)
 
 
 class TestAgentPrompts:
@@ -13,8 +20,7 @@ class TestAgentPrompts:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
             mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH,
-                confidence=75.0, reasoning="test"
+                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
             )
             agent = SynthesizerAgent(api_key="test")
             agent.synthesize({}, [], "EURUSD")
@@ -36,13 +42,14 @@ class TestAgentPrompts:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
             mock_client.create.return_value = DecisionOutput(
-                symbol="EURUSD", action=DecisionAction.NO_TRADE,
-                reasoning="test", entry_authorized=False
+                symbol="EURUSD",
+                action=DecisionAction.NO_TRADE,
+                reasoning="test",
+                entry_authorized=False,
             )
             agent = DeciderAgent(api_key="test")
             context = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH,
-                confidence=75.0, reasoning="test"
+                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
             )
             agent.decide(context, [], [])
 
@@ -60,17 +67,16 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = ReviewVerdict(
-                approved=True, reasoning="test"
-            )
+            mock_client.create.return_value = ReviewVerdict(approved=True, reasoning="test")
             agent = ReviewerAgent(api_key="test")
             context = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH,
-                confidence=75.0, reasoning="test"
+                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
             )
             decision = DecisionOutput(
-                symbol="EURUSD", action=DecisionAction.NO_TRADE,
-                reasoning="test", entry_authorized=False
+                symbol="EURUSD",
+                action=DecisionAction.NO_TRADE,
+                reasoning="test",
+                entry_authorized=False,
             )
             agent.review(decision, context, [])
 

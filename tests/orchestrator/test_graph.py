@@ -1,5 +1,7 @@
-import pytest
+from datetime import UTC
 from unittest.mock import MagicMock
+
+import pytest
 
 from src.decision.models import (
     BiasLevel,
@@ -8,7 +10,7 @@ from src.decision.models import (
     MarketContextSummary,
     ReviewVerdict,
 )
-from src.orchestrator.graph import AgentState, TradingGraph, MAX_REVIEW_ATTEMPTS
+from src.orchestrator.graph import MAX_REVIEW_ATTEMPTS, AgentState, TradingGraph
 
 
 @pytest.fixture
@@ -17,7 +19,9 @@ def mock_data_provider():
     provider.get_positions.return_value = []
     provider.get_pending_orders.return_value = []
     provider.get_symbol_price.return_value = {"bid": 1.0875, "ask": 1.0877}
-    provider.get_candles.return_value = "time,open,high,low,close\n2024-01-01,1.0850,1.0900,1.0800,1.0875\n"
+    provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01,1.0850,1.0900,1.0800,1.0875\n"
+    )
     return provider
 
 
@@ -216,10 +220,9 @@ class TestMaxReviewAttempts:
 
 def test_analyze_structure_uses_cache(tmp_path, monkeypatch):
     """D1/H4 should use cache when available, H1 always fresh."""
-    from datetime import datetime, timezone
-    import json
     from unittest.mock import MagicMock, patch
-    from src.orchestrator.graph import TradingGraph, AgentState
+
+    from src.orchestrator.graph import AgentState, TradingGraph
 
     # Setup cache
     cache_dir = tmp_path / "analysis"
@@ -248,8 +251,10 @@ def test_analyze_structure_uses_cache(tmp_path, monkeypatch):
     cached_d1 = {"cached_d1": True}
     cached_h4 = {"cached_h4": True}
 
-    with patch("src.orchestrator.graph.should_run_analysis") as mock_should_run, \
-         patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache:
+    with (
+        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
+        patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache,
+    ):
         # D1/H4 say cache is valid (False = don't run), H1 always fresh (True = run)
         mock_should_run.side_effect = lambda tf, sym, now: tf == "H1"
         # Return cached data for D1/H4
@@ -274,6 +279,7 @@ def test_analyze_structure_uses_cache(tmp_path, monkeypatch):
         result = graph._analyze_structure(state)
 
         from unittest.mock import call as mock_call
+
         # Should NOT fetch D1/H4 candles (cached)
         assert mock_call("XAUUSD", "D1", 100) not in mock_data_provider.get_candles.call_args_list
         assert mock_call("XAUUSD", "H4", 100) not in mock_data_provider.get_candles.call_args_list
@@ -286,9 +292,9 @@ def test_analyze_structure_uses_cache(tmp_path, monkeypatch):
 
 def test_h1_always_fresh_even_when_d1_h4_cached(tmp_path, monkeypatch):
     """H1 must always fetch fresh data even when D1/H4 are cached."""
-    from datetime import datetime, timezone
     from unittest.mock import MagicMock, patch
-    from src.orchestrator.graph import TradingGraph, AgentState
+
+    from src.orchestrator.graph import AgentState, TradingGraph
 
     cache_dir = tmp_path / "analysis"
     cache_dir.mkdir()
@@ -321,8 +327,10 @@ def test_h1_always_fresh_even_when_d1_h4_cached(tmp_path, monkeypatch):
     cached_d1 = {"cached_d1": True}
     cached_h4 = {"cached_h4": True}
 
-    with patch("src.orchestrator.graph.should_run_analysis") as mock_should_run, \
-         patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache:
+    with (
+        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
+        patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache,
+    ):
         # D1/H4 say cache is valid (False = don't run), H1 always fresh (True = run)
         mock_should_run.side_effect = lambda tf, sym, now: tf == "H1"
         # Return cached data for D1/H4
@@ -357,9 +365,10 @@ def test_h1_always_fresh_even_when_d1_h4_cached(tmp_path, monkeypatch):
 
 def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
     """_analyze_structure must use SnapshotBuilder to convert CSV to dicts."""
-    from datetime import datetime, timezone
+    from datetime import datetime
     from unittest.mock import MagicMock, patch
-    from src.orchestrator.graph import TradingGraph, AgentState
+
+    from src.orchestrator.graph import AgentState, TradingGraph
 
     csv_data = (
         "time,open,high,low,close,tick_volume,spread,real_volume\n"
@@ -376,7 +385,7 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
 
     with patch("src.analysis.candle_cache.datetime") as mock_dt:
-        mock_dt.now.return_value = datetime(2026, 7, 21, 14, 0, tzinfo=timezone.utc)
+        mock_dt.now.return_value = datetime(2026, 7, 21, 14, 0, tzinfo=UTC)
         mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
         graph = TradingGraph(
@@ -389,23 +398,32 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
         )
 
         state = AgentState(
-            symbol="EURUSD", market_data={}, current_positions=[],
-            current_pending_orders=[], account_info=None,
-            structure_analysis=None, calendar_events=None,
-            market_context=None, decision=None, review=None,
-            review_feedback=None, review_attempts=0, errors=[],
+            symbol="EURUSD",
+            market_data={},
+            current_positions=[],
+            current_pending_orders=[],
+            account_info=None,
+            structure_analysis=None,
+            calendar_events=None,
+            market_context=None,
+            decision=None,
+            review=None,
+            review_feedback=None,
+            review_attempts=0,
+            errors=[],
             final_output=None,
         )
 
-        result = graph._analyze_structure(state)
+        graph._analyze_structure(state)
 
         # Verify structure_analyzer.analyze received dicts, not strings
         analyze_call = mock_structure_analyzer.analyze.call_args
         snapshots_arg = analyze_call[0][0]
 
         # H1 should be a dict (not a CSV string)
-        assert isinstance(snapshots_arg.get("H1"), dict), \
+        assert isinstance(snapshots_arg.get("H1"), dict), (
             f"Expected dict, got {type(snapshots_arg.get('H1'))}"
+        )
 
         # Verify the dict has the correct schema
         h1_snapshot = snapshots_arg["H1"]
@@ -416,9 +434,10 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
 
 def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
     """should_run_analysis must gate whether cache is used."""
-    from datetime import datetime, timezone
+    from datetime import datetime
     from unittest.mock import MagicMock, patch
-    from src.orchestrator.graph import TradingGraph, AgentState
+
+    from src.orchestrator.graph import AgentState, TradingGraph
 
     csv_data = "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
 
@@ -430,9 +449,11 @@ def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
 
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
 
-    with patch("src.analysis.candle_cache.datetime") as mock_dt, \
-         patch("src.orchestrator.graph.should_run_analysis") as mock_should_run:
-        mock_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=timezone.utc)
+    with (
+        patch("src.analysis.candle_cache.datetime") as mock_dt,
+        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
+    ):
+        mock_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=UTC)
         mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
 
         # D1: should_run_analysis says True (stale) → must fetch fresh
@@ -454,11 +475,19 @@ def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
         )
 
         state = AgentState(
-            symbol="EURUSD", market_data={}, current_positions=[],
-            current_pending_orders=[], account_info=None,
-            structure_analysis=None, calendar_events=None,
-            market_context=None, decision=None, review=None,
-            review_feedback=None, review_attempts=0, errors=[],
+            symbol="EURUSD",
+            market_data={},
+            current_positions=[],
+            current_pending_orders=[],
+            account_info=None,
+            structure_analysis=None,
+            calendar_events=None,
+            market_context=None,
+            decision=None,
+            review=None,
+            review_feedback=None,
+            review_attempts=0,
+            errors=[],
             final_output=None,
         )
 

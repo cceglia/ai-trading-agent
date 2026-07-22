@@ -65,7 +65,8 @@ class ReviewVerdict(BaseModel):
     reasoning: str = Field(description="Reasoning for the verdict")
     concerns: list[str] = Field(default_factory=list, description="List of concerns")
     suggested_improvements: str | None = Field(
-        default=None, description="Suggested improvements",
+        default=None,
+        description="Suggested improvements",
     )
     risk_management_ok: bool = Field(default=True, description="Risk management compliance")
     htf_alignment_ok: bool = Field(default=True, description="Higher-timeframe alignment")

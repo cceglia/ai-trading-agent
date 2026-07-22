@@ -64,9 +64,7 @@ class ForexFactoryCalendar:
             logger.error("requests/bs4 not installed; cannot scrape")
             return []
 
-        headers = {
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"
-        }
+        headers = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36"}
         response = requests.get(self.BASE_URL, headers=headers, timeout=15)
         response.raise_for_status()
 
@@ -111,6 +109,7 @@ class ForexFactoryCalendar:
         """Convert raw time text to ISO timestamp (best-effort)."""
         try:
             from dateutil import parser as dateparser
+
             return dateparser.parse(raw_time).isoformat()
         except Exception:
             return raw_time

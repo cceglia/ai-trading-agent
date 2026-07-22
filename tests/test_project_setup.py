@@ -1,7 +1,5 @@
 import os
 
-import pytest
-
 
 class TestProjectFiles:
     def test_pyproject_toml_exists(self):

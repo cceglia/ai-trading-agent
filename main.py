@@ -3,8 +3,9 @@
 import argparse
 import logging
 import sys
-from src.logging_config import setup_logging
+
 from config.settings import Settings
+from src.logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -30,10 +31,10 @@ def main() -> None:
     logger.info("Starting Trading AI Agent for %s", args.symbol)
 
     try:
-        from src.data.mt5_data_provider import Mt5DataProvider
         from src.analysis.structure_analyzer import MarketStructureEngine
         from src.calendar.forexfactory import ForexFactoryCalendar
-        from src.decision.agents import SynthesizerAgent, DeciderAgent, ReviewerAgent
+        from src.data.mt5_data_provider import Mt5DataProvider
+        from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
         from src.orchestrator.graph import TradingGraph
 
         data_provider = Mt5DataProvider(settings.mcp_server_url)

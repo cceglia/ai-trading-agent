@@ -1,5 +1,3 @@
-import pytest
-
 from src.calendar.evaluator import Evaluator
 
 
@@ -55,10 +53,14 @@ class TestEvaluatorBlocking:
 
         evaluator = Evaluator()
         now = datetime.now(UTC)
-        events = [{
-            "currency": "USD", "impact": "high", "title": "NFP",
-            "time": (now - timedelta(hours=2)).isoformat(),
-        }]
+        events = [
+            {
+                "currency": "USD",
+                "impact": "high",
+                "title": "NFP",
+                "time": (now - timedelta(hours=2)).isoformat(),
+            }
+        ]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is False
         assert len(result["blocking"]) == 1
@@ -70,10 +72,18 @@ class TestEvaluatorBlocking:
         evaluator = Evaluator()
         now = datetime.now(UTC)
         events = [
-            {"currency": "USD", "impact": "high", "title": "NFP",
-             "time": (now - timedelta(hours=2)).isoformat()},
-            {"currency": "EUR", "impact": "high", "title": "ECB Rate",
-             "time": (now - timedelta(hours=1)).isoformat()},
+            {
+                "currency": "USD",
+                "impact": "high",
+                "title": "NFP",
+                "time": (now - timedelta(hours=2)).isoformat(),
+            },
+            {
+                "currency": "EUR",
+                "impact": "high",
+                "title": "ECB Rate",
+                "time": (now - timedelta(hours=1)).isoformat(),
+            },
         ]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is False
@@ -86,10 +96,14 @@ class TestEvaluatorWarnings:
 
         evaluator = Evaluator()
         now = datetime.now(UTC)
-        events = [{
-            "currency": "USD", "impact": "medium", "title": "CPI",
-            "time": (now - timedelta(hours=2)).isoformat(),
-        }]
+        events = [
+            {
+                "currency": "USD",
+                "impact": "medium",
+                "title": "CPI",
+                "time": (now - timedelta(hours=2)).isoformat(),
+            }
+        ]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is True
         assert len(result["warning"]) == 1
@@ -101,12 +115,24 @@ class TestEvaluatorWarnings:
         evaluator = Evaluator()
         now = datetime.now(UTC)
         events = [
-            {"currency": "USD", "impact": "high", "title": "NFP",
-             "time": (now - timedelta(hours=2)).isoformat()},
-            {"currency": "USD", "impact": "medium", "title": "CPI",
-             "time": (now - timedelta(hours=1)).isoformat()},
-            {"currency": "USD", "impact": "low", "title": "Fed Speech",
-             "time": (now - timedelta(hours=3)).isoformat()},
+            {
+                "currency": "USD",
+                "impact": "high",
+                "title": "NFP",
+                "time": (now - timedelta(hours=2)).isoformat(),
+            },
+            {
+                "currency": "USD",
+                "impact": "medium",
+                "title": "CPI",
+                "time": (now - timedelta(hours=1)).isoformat(),
+            },
+            {
+                "currency": "USD",
+                "impact": "low",
+                "title": "Fed Speech",
+                "time": (now - timedelta(hours=3)).isoformat(),
+            },
         ]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is False
@@ -152,11 +178,14 @@ class TestEvaluatorTimeFiltering:
     def test_high_impact_outside_window_not_blocking(self):
         """High-impact event outside the window should NOT block."""
         from datetime import UTC, datetime, timedelta
+
         evaluator = Evaluator()
         now = datetime.now(UTC)
         old_event = {
-            "currency": "USD", "impact": "high", "title": "Old NFP",
-            "time": (now - timedelta(hours=100)).isoformat()
+            "currency": "USD",
+            "impact": "high",
+            "title": "Old NFP",
+            "time": (now - timedelta(hours=100)).isoformat(),
         }
         result = evaluator.evaluate_for_symbol([old_event], "EURUSD", "H4")
         assert result["safe"] is True
@@ -165,11 +194,14 @@ class TestEvaluatorTimeFiltering:
     def test_high_impact_within_window_blocks(self):
         """High-impact event within the window SHOULD block."""
         from datetime import UTC, datetime, timedelta
+
         evaluator = Evaluator()
         now = datetime.now(UTC)
         recent_event = {
-            "currency": "USD", "impact": "high", "title": "NFP",
-            "time": (now - timedelta(hours=2)).isoformat()
+            "currency": "USD",
+            "impact": "high",
+            "title": "NFP",
+            "time": (now - timedelta(hours=2)).isoformat(),
         }
         result = evaluator.evaluate_for_symbol([recent_event], "EURUSD", "H4")
         assert result["safe"] is False
@@ -178,10 +210,14 @@ class TestEvaluatorTimeFiltering:
     def test_event_with_missing_time_excluded(self):
         """Event with no time field should be excluded (fail-safe)."""
         evaluator = Evaluator()
-        events = [{
-            "currency": "USD", "impact": "high", "title": "NFP"
-            # No "time" field
-        }]
+        events = [
+            {
+                "currency": "USD",
+                "impact": "high",
+                "title": "NFP",
+                # No "time" field
+            }
+        ]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is True
         assert result["blocking"] == []
@@ -189,10 +225,7 @@ class TestEvaluatorTimeFiltering:
     def test_event_with_unparseable_time_excluded(self):
         """Event with unparseable time should be excluded."""
         evaluator = Evaluator()
-        events = [{
-            "currency": "USD", "impact": "high", "title": "NFP",
-            "time": "not-a-date"
-        }]
+        events = [{"currency": "USD", "impact": "high", "title": "NFP", "time": "not-a-date"}]
         result = evaluator.evaluate_for_symbol(events, "EURUSD", "H4")
         assert result["safe"] is True
         assert result["blocking"] == []
@@ -200,11 +233,14 @@ class TestEvaluatorTimeFiltering:
     def test_medium_impact_outside_window_not_warning(self):
         """Medium-impact event outside window should not be a warning."""
         from datetime import UTC, datetime, timedelta
+
         evaluator = Evaluator()
         now = datetime.now(UTC)
         old_event = {
-            "currency": "USD", "impact": "medium", "title": "CPI",
-            "time": (now - timedelta(hours=100)).isoformat()
+            "currency": "USD",
+            "impact": "medium",
+            "title": "CPI",
+            "time": (now - timedelta(hours=100)).isoformat(),
         }
         result = evaluator.evaluate_for_symbol([old_event], "EURUSD", "H4")
         assert result["safe"] is True
@@ -213,11 +249,14 @@ class TestEvaluatorTimeFiltering:
     def test_window_hours_d1_is_48(self):
         """D1 window should filter events within 48 hours."""
         from datetime import UTC, datetime, timedelta
+
         evaluator = Evaluator()
         now = datetime.now(UTC)
         event_50h_ago = {
-            "currency": "USD", "impact": "high", "title": "NFP",
-            "time": (now - timedelta(hours=50)).isoformat()
+            "currency": "USD",
+            "impact": "high",
+            "title": "NFP",
+            "time": (now - timedelta(hours=50)).isoformat(),
         }
         result = evaluator.evaluate_for_symbol([event_50h_ago], "EURUSD", "D1")
         assert result["safe"] is True  # Outside 48h window
