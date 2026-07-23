@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Protocol, runtime_checkable
 
 
@@ -48,6 +49,23 @@ class DataSource(Protocol):
 
         Returns:
             List of order dictionaries
+        """
+        ...
+
+    def get_broker_time(self) -> datetime:
+        """Get current broker/server time from the data provider.
+
+        Returns a naive datetime (no timezone) representing the broker's
+        local time, as reported by the trade server. This is used for
+        cache file naming that must align with candle close times.
+
+        Returns:
+            Naive datetime in broker-local time.
+
+        Raises:
+            ConnectionError: If the server cannot be reached.
+            TerminalApiError: If the server returns an error.
+            ValueError: If the response is malformed.
         """
         ...
 

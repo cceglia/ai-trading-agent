@@ -8,7 +8,25 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from config.settings import Settings
 from src.data.terminal_data_provider import TerminalDataProvider
+
+# ---------------------------------------------------------------------------
+# Settings descriptions
+# ---------------------------------------------------------------------------
+
+
+class TestSettingsDescriptions:
+    """Settings field descriptions should refer to broker time, not UTC."""
+
+    def test_settings_d1_close_time_description_says_broker_time(self):
+        desc = Settings.model_fields["d1_close_time"].description
+        assert "broker time" in desc.lower()
+
+    def test_settings_h4_close_time_description_says_broker_time(self):
+        desc = Settings.model_fields["h4_close_time"].description
+        assert "broker time" in desc.lower()
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -219,6 +237,71 @@ class TestGetCandlesCsv:
         lines = result.strip().split("\n")
         assert len(lines) == 1
         assert lines[0] == "time,open,high,low,close,tick_volume,spread,real_volume"
+
+
+# ---------------------------------------------------------------------------
+# Broker now param
+# ---------------------------------------------------------------------------
+
+
+class TestGetCandlesBrokerNow:
+    """get_candles must accept a broker_now parameter for broker-local time."""
+
+    def test_get_candles_uses_broker_time_param(self, provider):
+        """get_candles must use broker_now for lookback when provided."""
+        mock_result = _make_mcp_result(GOLDEN_XAUUSD_H1)
+        frozen = datetime(2026, 7, 23, 14, 0, 0)  # naive broker time
+
+        with patch.object(provider, "_call_tool", return_value=mock_result) as mock_call:
+            result = provider.get_candles("XAUUSD", "H1", 2, broker_now=frozen)
+
+        assert isinstance(result, str)
+        mock_call.assert_called_once_with(
+            "get_chart_history",
+            {
+                "symbol": "XAUUSD",
+                "period": "H1",
+                "datetime_from": "2026-07-23T11:00:00",
+                "datetime_to": "2026-07-23T14:00:00",
+                "limit": 2,
+            },
+        )
+
+    def test_get_candles_falls_back_to_utc_when_no_broker_now(self, provider):
+        """Without broker_now, get_candles uses datetime.now(UTC)."""
+        mock_result = _make_mcp_result(GOLDEN_XAUUSD_H1)
+        frozen = datetime(2026, 7, 23, 12, 0, 0, tzinfo=UTC)
+
+        with (
+            patch.object(provider, "_call_tool", return_value=mock_result) as mock_call,
+            patch("datetime.datetime", wraps=datetime) as mock_dt,
+        ):
+            mock_dt.now.return_value = frozen
+            result = provider.get_candles("XAUUSD", "H1", 2)
+
+        assert isinstance(result, str)
+        mock_call.assert_called_once()
+
+    def test_get_candles_explicit_none_falls_back_to_utc(self, provider):
+        """Explicit broker_now=None must use datetime.now(UTC)."""
+        mock_result = _make_mcp_result(GOLDEN_XAUUSD_H1)
+        frozen = datetime(2026, 7, 23, 12, 0, 0, tzinfo=UTC)
+
+        with (
+            patch.object(provider, "_call_tool", return_value=mock_result) as mock_call,
+            patch("datetime.datetime", wraps=datetime) as mock_dt,
+        ):
+            mock_dt.now.return_value = frozen
+            result = provider.get_candles("XAUUSD", "H1", 2, broker_now=None)
+
+        assert isinstance(result, str)
+        mock_call.assert_called_once()
+
+    def test_get_candles_rejects_aware_datetime(self, provider):
+        """get_candles must raise ValueError when broker_now has tzinfo."""
+        aware = datetime(2026, 7, 23, 14, 0, 0, tzinfo=UTC)
+        with pytest.raises(ValueError, match="naive datetime"):
+            provider.get_candles("XAUUSD", "H1", 2, broker_now=aware)
 
 
 # ---------------------------------------------------------------------------
@@ -494,3 +577,73 @@ class TestGetPendingOrders:
             result = provider.get_pending_orders()
 
         assert result == []
+
+
+# ---------------------------------------------------------------------------
+# Broker time
+# ---------------------------------------------------------------------------
+
+TIME_INFO_RESPONSE = json.dumps(
+    {
+        "utc_time": "2026-07-23T18:08:54Z",
+        "local_time": "2026-07-23T20:08:54Z",
+        "local_utc_offset_minutes": 120,
+        "daylight_saving_time": True,
+        "trade_server_last_known_time": "2026-07-23T21:08:54Z",
+    }
+)
+
+
+class TestGetBrokerTime:
+    """Verify get_broker_time returns naive datetime and sends correct request."""
+
+    def test_returns_naive_datetime(self, provider):
+        mock_result = _make_mcp_result(TIME_INFO_RESPONSE)
+
+        with patch.object(provider, "_call_tool", return_value=mock_result):
+            result = provider.get_broker_time()
+
+        assert isinstance(result, datetime)
+        assert result.tzinfo is None
+
+    def test_parses_correct_time(self, provider):
+        mock_result = _make_mcp_result(TIME_INFO_RESPONSE)
+
+        with patch.object(provider, "_call_tool", return_value=mock_result):
+            result = provider.get_broker_time()
+
+        assert result == datetime(2026, 7, 23, 21, 8, 54)
+
+    def test_calls_time_information_with_no_args(self, provider):
+        mock_result = _make_mcp_result(TIME_INFO_RESPONSE)
+
+        with patch.object(provider, "_call_tool", return_value=mock_result) as mock_call:
+            provider.get_broker_time()
+
+        mock_call.assert_called_once_with("get_time_information", {})
+
+    def test_raises_value_error_on_missing_field(self, provider):
+        mock_result = _make_mcp_result(json.dumps({"utc_time": "2026-07-23T18:08:54Z"}))
+
+        with patch.object(provider, "_call_tool", return_value=mock_result):
+            with pytest.raises(ValueError, match="trade_server_last_known_time"):
+                provider.get_broker_time()
+
+    def test_raises_value_error_on_malformed_json(self, provider):
+        mock_result = _make_mcp_result("{{{bad json")
+
+        with patch.object(provider, "_call_tool", return_value=mock_result):
+            with pytest.raises(ValueError, match="Failed to parse"):
+                provider.get_broker_time()
+
+    def test_raises_terminal_api_error_on_mcp_error(self, provider):
+        mock_result = _make_mcp_result("server error", is_error=True)
+
+        with patch.object(provider, "_call_tool", return_value=mock_result):
+            with pytest.raises(RuntimeError, match="returned error"):
+                provider.get_broker_time()
+
+    def test_raises_connection_error_on_timeout(self, provider):
+        with patch.object(provider, "_call_tool", side_effect=ConnectionError("timed out")):
+            with pytest.raises(ConnectionError):
+                provider.get_broker_time()

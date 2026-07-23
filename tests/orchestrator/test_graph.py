@@ -1,4 +1,3 @@
-from datetime import UTC
 from unittest.mock import MagicMock
 
 import pytest
@@ -227,6 +226,7 @@ class TestMaxReviewAttempts:
 
 def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     """_analyze_structure must fetch all three timeframes fresh (no partial cache)."""
+    from datetime import datetime
     from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
@@ -237,6 +237,11 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
 
     mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
     # Simulate engine returning multi-timeframe output shape
     mock_structure_analyzer = MagicMock()
     mock_structure_analyzer.analyze.return_value = {
@@ -280,9 +285,18 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     assert mock_data_provider.get_candles.call_count == 3
     from unittest.mock import call as mock_call
 
-    assert mock_call("XAUUSD", "D1", 500) in mock_data_provider.get_candles.call_args_list
-    assert mock_call("XAUUSD", "H4", 750) in mock_data_provider.get_candles.call_args_list
-    assert mock_call("XAUUSD", "H1", 1000) in mock_data_provider.get_candles.call_args_list
+    assert (
+        mock_call("XAUUSD", "D1", 500, broker_now=broker_time)
+        in mock_data_provider.get_candles.call_args_list
+    )
+    assert (
+        mock_call("XAUUSD", "H4", 750, broker_now=broker_time)
+        in mock_data_provider.get_candles.call_args_list
+    )
+    assert (
+        mock_call("XAUUSD", "H1", 1000, broker_now=broker_time)
+        in mock_data_provider.get_candles.call_args_list
+    )
 
     # Engine receives all 3 snapshots
     engine_snapshots = mock_structure_analyzer.analyze.call_args[0][0]
@@ -296,6 +310,7 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
 
 def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
     """H1 must always be fetched (no caching for H1)."""
+    from datetime import datetime
     from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
@@ -304,10 +319,12 @@ def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
     cache_dir.mkdir()
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
 
+    broker_time = datetime(2026, 7, 21, 14, 0)
     mock_data_provider = MagicMock()
     mock_data_provider.get_candles.return_value = (
         "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
     )
+    mock_data_provider.get_broker_time.return_value = broker_time
     mock_structure_analyzer = MagicMock()
     mock_structure_analyzer.analyze.return_value = {
         "timeframes": {
@@ -352,14 +369,14 @@ def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
 
     # H1 is always fetched fresh
     assert mock_data_provider.get_candles.call_count == 3
-    mock_data_provider.get_candles.assert_any_call("XAUUSD", "H1", 1000)
+    mock_data_provider.get_candles.assert_any_call("XAUUSD", "H1", 1000, broker_now=broker_time)
     assert result["structure_analysis"].get("H1", {}).get("fresh") is True
 
 
 def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
     """_analyze_structure must use SnapshotBuilder to convert CSV to dicts."""
     from datetime import datetime
-    from unittest.mock import MagicMock, patch
+    from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
 
@@ -371,71 +388,71 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
 
     mock_data_provider = MagicMock()
     mock_data_provider.get_candles.return_value = csv_data
+    mock_data_provider.get_broker_time.return_value = datetime(2026, 7, 21, 14, 0)
 
     mock_structure_analyzer = MagicMock()
     mock_structure_analyzer.analyze.return_value = {"D1": {"analyzed": True}}
 
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
 
-    with patch("src.analysis.candle_cache.datetime") as mock_dt:
-        mock_dt.now.return_value = datetime(2026, 7, 21, 14, 0, tzinfo=UTC)
-        mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
 
-        graph = TradingGraph(
-            data_provider=mock_data_provider,
-            structure_analyzer=mock_structure_analyzer,
-            calendar_provider=MagicMock(),
-            synthesizer=MagicMock(),
-            decider=MagicMock(),
-            reviewer=MagicMock(),
-        )
+    state = AgentState(
+        symbol="EURUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
 
-        state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
-            calendar_events=None,
-            market_context=None,
-            decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
-            errors=[],
-            fatal_error=None,
-            final_output=None,
-        )
+    graph._analyze_structure(state)
 
-        graph._analyze_structure(state)
+    # Verify structure_analyzer.analyze received dicts, not strings
+    analyze_call = mock_structure_analyzer.analyze.call_args
+    snapshots_arg = analyze_call[0][0]
 
-        # Verify structure_analyzer.analyze received dicts, not strings
-        analyze_call = mock_structure_analyzer.analyze.call_args
-        snapshots_arg = analyze_call[0][0]
+    # H1 should be a dict (not a CSV string)
+    assert isinstance(snapshots_arg.get("H1"), dict), (
+        f"Expected dict, got {type(snapshots_arg.get('H1'))}"
+    )
 
-        # H1 should be a dict (not a CSV string)
-        assert isinstance(snapshots_arg.get("H1"), dict), (
-            f"Expected dict, got {type(snapshots_arg.get('H1'))}"
-        )
-
-        # Verify the dict has the correct schema
-        h1_snapshot = snapshots_arg["H1"]
-        assert "bars" in h1_snapshot
-        assert "market" in h1_snapshot
-        assert h1_snapshot["market"]["symbol"] == "EURUSD"
+    # Verify the dict has the correct schema
+    h1_snapshot = snapshots_arg["H1"]
+    assert "bars" in h1_snapshot
+    assert "market" in h1_snapshot
+    assert h1_snapshot["market"]["symbol"] == "EURUSD"
 
 
 def test_analyze_structure_uses_preferred_bars(tmp_path, monkeypatch):
     """_analyze_structure must request preferred_bars for each timeframe."""
+    from datetime import datetime
     from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
 
     csv_data = "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
 
+    broker_time = datetime(2026, 7, 21, 14, 0)
     mock_data_provider = MagicMock()
     mock_data_provider.get_candles.return_value = csv_data
+    mock_data_provider.get_broker_time.return_value = broker_time
 
     mock_structure_analyzer = MagicMock()
     mock_structure_analyzer.analyze.return_value = {
@@ -480,10 +497,307 @@ def test_analyze_structure_uses_preferred_bars(tmp_path, monkeypatch):
 
     # All 3 timeframes must be fetched with preferred bar counts
     assert mock_data_provider.get_candles.call_count == 3
-    mock_data_provider.get_candles.assert_any_call("EURUSD", "D1", 500)
-    mock_data_provider.get_candles.assert_any_call("EURUSD", "H4", 750)
-    mock_data_provider.get_candles.assert_any_call("EURUSD", "H1", 1000)
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "D1", 500, broker_now=broker_time)
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "H4", 750, broker_now=broker_time)
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "H1", 1000, broker_now=broker_time)
 
     # All timeframes present in result
     for tf in ("D1", "H4", "H1"):
         assert tf in result["structure_analysis"]
+
+
+def test_analyze_structure_uses_broker_time_not_utc(tmp_path, monkeypatch):
+    """_analyze_structure must call get_broker_time() instead of datetime.now(UTC)."""
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # Must call get_broker_time() instead of datetime.now(UTC)
+    assert mock_data_provider.get_broker_time.call_count >= 1
+
+
+def test_analyze_structure_saves_h1_cache(tmp_path, monkeypatch):
+    """H1 analysis must now be saved to cache like D1/H4."""
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    broker_time = datetime(2026, 7, 21, 14, 30)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # H1 cache file must exist
+    h1_cache = cache_dir / "2026" / "07" / "21" / "XAUUSD" / "h1-15-analysis.json"
+    assert h1_cache.exists(), f"H1 cache file not found at {h1_cache}"
+    # D1 cache file must exist (regression)
+    # D1 period starts on the previous day when broker time (14:30) is before
+    # the D1 close (17:00), so cache date is 2026-07-20.
+    d1_cache = cache_dir / "2026" / "07" / "20" / "XAUUSD" / "d1-analysis.json"
+    assert d1_cache.exists()
+
+
+def test_analyze_structure_handles_broker_time_failure(tmp_path, monkeypatch):
+    """If get_broker_time() fails, _analyze_structure should set fatal_error."""
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_broker_time.side_effect = ConnectionError("Server unreachable")
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=MagicMock(),
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    result = graph._analyze_structure(state)
+    assert "fatal_error" in result
+
+
+def test_analyze_structure_passes_broker_time_to_get_candles(tmp_path, monkeypatch):
+    """get_candles must be called with broker_time param."""
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"}
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # Verify get_candles was called with broker_now=broker_time for EVERY call
+    assert mock_data_provider.get_candles.call_count == 3
+    for call_args in mock_data_provider.get_candles.call_args_list:
+        kwargs = call_args.kwargs
+        assert "broker_now" in kwargs, f"broker_now missing in call {call_args}"
+        assert kwargs["broker_now"] == broker_time
+
+
+def test_analyze_structure_passes_broker_time_to_snapshot_builder(tmp_path, monkeypatch):
+    """snapshot_builder.build must be called with broker_time."""
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"}
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    # Replace snapshot_builder with a spy
+    mock_builder = MagicMock()
+    mock_builder.build.return_value = {"bars": [], "market": {"symbol": "XAUUSD"}}
+    graph._snapshot_builder = mock_builder
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # Verify build was called with broker_now=broker_time for EVERY call
+    assert mock_builder.build.call_count == 3
+    for call_args in mock_builder.build.call_args_list:
+        kwargs = call_args.kwargs
+        assert "broker_now" in kwargs, (
+            f"broker_now missing in snapshot_builder.build call {call_args}"
+        )
+        assert kwargs["broker_now"] == broker_time

@@ -7,6 +7,7 @@ import json
 import logging
 import threading
 from collections.abc import Callable
+from datetime import datetime
 from typing import Any, TypeVar, cast
 
 logger = logging.getLogger(__name__)
@@ -329,13 +330,22 @@ class TerminalDataProvider:
     # Public API (DataSource protocol)
     # ------------------------------------------------------------------
 
-    def get_candles(self, symbol: str, timeframe: str, count: int) -> str:
+    def get_candles(
+        self,
+        symbol: str,
+        timeframe: str,
+        count: int,
+        broker_now: datetime | None = None,
+    ) -> str:
         """Fetch OHLC candles from terminal MCP server.
 
         Args:
             symbol: Trading symbol (e.g., "XAUUSD").
             timeframe: Timeframe string (e.g., "H1", "D1", "H4").
             count: Number of candles to fetch.
+            broker_now: Naive datetime in broker-local time to use as
+                the reference point for lookback calculations. When
+                omitted (None), UTC now is used.
 
         Returns:
             CSV string with columns:
@@ -344,11 +354,17 @@ class TerminalDataProvider:
         Raises:
             ConnectionError: Server unreachable or max retries exceeded.
             TerminalApiError: Server-side error (auth, HTTP error).
-            ValueError: Malformed response or missing required fields.
+            ValueError: Malformed response or missing required fields,
+                or broker_now is timezone-aware (must be naive).
         """
         from datetime import UTC, datetime, timedelta
 
-        now = datetime.now(UTC)
+        if broker_now is not None and broker_now.tzinfo is not None:
+            raise ValueError(
+                f"broker_now must be a naive datetime, got timezone-aware: {broker_now.tzinfo}"
+            )
+
+        now = broker_now if broker_now is not None else datetime.now(UTC)
         period_hours = {
             "M1": 1 / 60,
             "M5": 5 / 60,
@@ -411,6 +427,41 @@ class TerminalDataProvider:
             "get_pending_orders",
             lambda r: self._extract_orders(r, symbol),
         )
+
+    def get_broker_time(self) -> datetime:
+        """Fetch current broker server time from terminal MCP server.
+
+        Returns:
+            Naive datetime in broker-local time.
+
+        Raises:
+            ConnectionError: Server unreachable or max retries exceeded.
+            TerminalApiError: Server-side error (auth, HTTP error).
+            ValueError: Malformed response or missing required fields.
+        """
+        return self._call_with_retry(
+            "get_time_information",
+            {},
+            "get_broker_time",
+            self._extract_broker_time,
+        )
+
+    def _extract_broker_time(self, result: Any) -> datetime:
+        """Extract broker time from get_time_information response.
+
+        Expects JSON with a 'trade_server_last_known_time' field
+        containing an ISO string like '2026-07-23T21:08:54Z'.
+        """
+        from datetime import datetime
+
+        try:
+            data = json.loads(self._extract_text(result))
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Failed to parse inner JSON from MCP response: {e}") from e
+        time_str = data.get("trade_server_last_known_time")
+        if not time_str:
+            raise ValueError("MCP response missing 'trade_server_last_known_time' field")
+        return datetime.fromisoformat(time_str.rstrip("Z"))
 
     def __repr__(self) -> str:
         url = self.server_url

@@ -74,7 +74,7 @@ class TestDecisionOutput:
                 reasoning="test",
                 entry_authorized=True,
             )
-            assert decision.entry_authorized is True
+            assert decision.entry_authorized is False
 
     def test_optional_fields_default_none(self):
         decision = DecisionOutput(

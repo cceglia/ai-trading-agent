@@ -7,6 +7,7 @@
   "5": "Evaluator",
   "6": "Trading AI Agent",
   "7": "TestSynthesizerPrompt",
+  "8": "SynthesizerAgent",
   "9": "ForexFactoryCalendar",
   "10": "TestProjectFiles",
   "11": "Agent Instructions",
@@ -23,5 +24,15 @@
   "22": "tests/__init__.py",
   "23": "tests/orchestrator/__init__.py",
   "24": "_make_mcp_tool_result",
-  "29": "._run_async"
+  "25": "TerminalApiError",
+  "26": "test_terminal_data_provider.py",
+  "27": "TestGetCandlesBrokerNow",
+  "28": "TestGetPositions",
+  "29": "._run_async",
+  "30": "TestGetPendingOrders",
+  "31": "TestGetSymbolPrice",
+  "32": "SynthesizerAgent",
+  "33": "MarketContextSummary",
+  "34": "setup_logging",
+  "35": "TestAgentPrompts"
 }

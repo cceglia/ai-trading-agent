@@ -15,12 +15,12 @@ _ENGINE_ALLOWED_TOP_LEVEL = {
     "timeframe",
     "requested_timeframe",
     "returned_timeframe",
-    "retrieved_at_utc",
-    "latest_closed_candle_time_utc",
+    "retrieved_at",
+    "latest_closed_candle_time",
     "candle_closure_verified",
     "bars",
 }
-_ENGINE_ALLOWED_BAR = {"open_time_utc", "open", "high", "low", "close", "closed"}
+_ENGINE_ALLOWED_BAR = {"open_time", "open", "high", "low", "close", "closed"}
 
 
 class SnapshotBuilder:
@@ -30,7 +30,7 @@ class SnapshotBuilder:
     snapshot format expected by the market structure engine.
 
     The MCP CSV columns are: time, open, high, low, close, tick_volume, spread, real_volume.
-    The engine expects bars with: open_time_utc, open, high, low, close, closed.
+    The engine expects bars with: open_time, open, high, low, close, closed.
     """
 
     def build(
@@ -39,6 +39,7 @@ class SnapshotBuilder:
         symbol: str,
         timeframe: str,
         provider: str = "MCP",
+        broker_now: datetime | None = None,
     ) -> dict[str, Any]:
         """Convert CSV to normalized snapshot.
 
@@ -47,6 +48,7 @@ class SnapshotBuilder:
             symbol: Trading symbol (e.g., "EURUSD").
             timeframe: Timeframe (e.g., "D1", "H4", "H1").
             provider: Data provider name (default: "MCP").
+            broker_now: Broker local time as a naive datetime. If None, UTC is used.
 
         Returns:
             Normalized snapshot dict matching the engine schema.
@@ -57,7 +59,7 @@ class SnapshotBuilder:
         logger.debug("Building snapshot for %s %s", symbol, timeframe)
 
         bars = self._parse_csv(csv_data)
-        snapshot = self._build_snapshot(bars, symbol, timeframe, provider)
+        snapshot = self._build_snapshot(bars, symbol, timeframe, provider, broker_now)
         self._validate_snapshot(snapshot)
 
         logger.info("Built snapshot with %d bars for %s %s", len(bars), symbol, timeframe)
@@ -70,7 +72,7 @@ class SnapshotBuilder:
             csv_data: Raw CSV string with OHLC columns.
 
         Returns:
-            List of bar dicts with open_time_utc, open, high, low, close, closed.
+            List of bar dicts with open_time, open, high, low, close, closed.
 
         Raises:
             ValueError: If CSV is empty or contains no valid bars.
@@ -104,7 +106,7 @@ class SnapshotBuilder:
                     continue
 
                 bar = {
-                    "open_time_utc": time_str,
+                    "open_time": time_str,
                     "open": open_val,
                     "high": high_val,
                     "low": low_val,
@@ -127,6 +129,7 @@ class SnapshotBuilder:
         symbol: str,
         timeframe: str,
         provider: str,
+        broker_now: datetime | None,
     ) -> dict[str, Any]:
         """Build normalized snapshot from parsed bars.
 
@@ -135,12 +138,13 @@ class SnapshotBuilder:
             symbol: Trading symbol.
             timeframe: Timeframe string.
             provider: Data provider name.
+            broker_now: Broker local time. If None, UTC is used.
 
         Returns:
             Normalized snapshot dict matching the engine schema.
         """
-        now_utc = datetime.now(UTC).isoformat()
-        last_bar_time = bars[-1]["open_time_utc"] if bars else now_utc
+        now = (broker_now or datetime.now(UTC)).isoformat()
+        last_bar_time = bars[-1]["open_time"] if bars else now
 
         return {
             "source": {
@@ -152,8 +156,8 @@ class SnapshotBuilder:
             },
             "requested_timeframe": timeframe.upper(),
             "returned_timeframe": timeframe.upper(),
-            "retrieved_at_utc": now_utc,
-            "latest_closed_candle_time_utc": last_bar_time,
+            "retrieved_at": now,
+            "latest_closed_candle_time": last_bar_time,
             "candle_closure_verified": True,
             "bars": bars,
         }
@@ -172,8 +176,8 @@ class SnapshotBuilder:
             "market",
             "requested_timeframe",
             "returned_timeframe",
-            "retrieved_at_utc",
-            "latest_closed_candle_time_utc",
+            "retrieved_at",
+            "latest_closed_candle_time",
             "candle_closure_verified",
             "bars",
         }
@@ -207,7 +211,7 @@ class SnapshotBuilder:
         for i, bar in enumerate(bars):
             if not isinstance(bar, dict):
                 raise ValueError(f"Bar {i} must be an object")
-            for field in ("open_time_utc", "open", "high", "low", "close", "closed"):
+            for field in ("open_time", "open", "high", "low", "close", "closed"):
                 if field not in bar:
                     raise ValueError(f"Bar {i} missing required field: {field}")
             if bar.get("closed") is not True:
@@ -218,8 +222,8 @@ class SnapshotBuilder:
                     raise ValueError(f"Bar {i} field {field} must be a number")
 
         for i in range(1, len(bars)):
-            prev_time = bars[i - 1].get("open_time_utc", "")
-            curr_time = bars[i].get("open_time_utc", "")
+            prev_time = bars[i - 1].get("open_time", "")
+            curr_time = bars[i].get("open_time", "")
             if prev_time >= curr_time:
                 raise ValueError(
                     f"Bars must be strictly ordered oldest to newest (bar {i - 1} >= bar {i})"

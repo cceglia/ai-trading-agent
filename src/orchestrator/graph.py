@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -272,33 +271,39 @@ class TradingGraph:
             return {}
 
         symbol = state["symbol"]
-        now_utc = datetime.now(UTC)
+
+        try:
+            broker_now = self.data_provider.get_broker_time()
+        except Exception as e:
+            msg = f"Structure analysis failed: cannot get broker time: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
         supported_tfs = ("D1", "H4", "H1")
 
         try:
-            # H1 is never cached, so we only attempt full cache for D1+H4.
-            # If H1 cache existed, we still need fresh H1, so full cache is invalid.
-            # Therefore we always run fresh for at least H1, meaning we almost
-            # always bypass the full-cache shortcut. The per-timeframe cache
-            # files are still written for legacy Users who may inspect them,
-            # but the decision engine always gets fresh data for all 3 TFs.
-            #
-            # (If the engine ever supports partial re-analysis this can be
-            # revisited, but for now the constraint is hard.)
+            # H1 is now cached alongside D1 and H4. The per-timeframe cache
+            # files are written for all three timeframes. The decision engine
+            # always gets fresh data for all 3 TFs.
 
             # --- Fetch all three timeframes fresh ---
             snapshots: dict[str, Any] = {}
             for timeframe in supported_tfs:
                 bar_count = get_profile(timeframe).preferred_bars
-                csv_data = self.data_provider.get_candles(symbol, timeframe, bar_count)
+                csv_data = self.data_provider.get_candles(
+                    symbol,
+                    timeframe,
+                    bar_count,
+                    broker_now=broker_now,
+                )
                 try:
                     snapshots[timeframe] = self._snapshot_builder.build(
                         csv_data,
                         symbol,
                         timeframe,
+                        broker_now=broker_now,
                     )
-                except (ValueError, Exception) as e:
+                except Exception as e:
                     logger.warning(
                         "Snapshot build failed for %s %s: %s",
                         symbol,
@@ -322,10 +327,10 @@ class TradingGraph:
                 result["_full_multi_timeframe"] = analysis_result
 
             # --- Write per-timeframe cache files (non-critical) ---
-            for timeframe in ("D1", "H4"):
+            for timeframe in ("D1", "H4", "H1"):
                 if timeframe in snapshots and timeframe in result:
                     try:
-                        save_analysis(timeframe, symbol, now_utc, result[timeframe])
+                        save_analysis(timeframe, symbol, broker_now, result[timeframe])
                     except Exception:
                         logger.warning(
                             "Failed to cache %s analysis for %s",

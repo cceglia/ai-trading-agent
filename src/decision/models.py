@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import logging
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+logger = logging.getLogger(__name__)
 
 
 class BiasLevel(StrEnum):
@@ -54,6 +57,13 @@ class DecisionOutput(BaseModel):
     reasoning: str = Field(description="Reasoning for the decision")
     risk_reward_ratio: float | None = Field(default=None, description="Risk/reward ratio")
     entry_authorized: bool = Field(default=False, description="Always false - advisory only")
+
+    @field_validator("entry_authorized", mode="after")
+    @classmethod
+    def _enforce_entry_authorized(cls, v: bool) -> bool:
+        if v is not False:
+            logger.warning("entry_authorized forced to False — advisory only")
+        return False
 
     model_config = {"use_enum_values": True}
 

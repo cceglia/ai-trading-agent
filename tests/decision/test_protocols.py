@@ -14,6 +14,9 @@ class TestProtocolDefinitions:
     def test_data_source_has_get_pending_orders(self):
         assert hasattr(DataSource, "get_pending_orders")
 
+    def test_data_source_has_get_broker_time(self):
+        assert hasattr(DataSource, "get_broker_time")
+
     def test_calendar_provider_has_fetch_events(self):
         assert hasattr(CalendarProvider, "fetch_events")
 
@@ -46,6 +49,11 @@ class TestProtocolConformance:
 
             def get_pending_orders(self, symbol=None):
                 return []
+
+            def get_broker_time(self):
+                from datetime import datetime
+
+                return datetime(2026, 7, 23, 21, 8, 54)
 
         assert isinstance(MockDataSource(), DataSource)
 
