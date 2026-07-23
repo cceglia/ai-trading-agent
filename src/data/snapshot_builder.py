@@ -87,6 +87,9 @@ class SnapshotBuilder:
                 if not time_str:
                     logger.warning("Skipping row %d: missing time", row_num + 1)
                     continue
+                # Normalize terminal date format (YYYY.MM.DD HH:MM:SS) to ISO-8601
+                if "." in time_str and " " in time_str:
+                    time_str = time_str.replace(".", "-").replace(" ", "T")
 
                 open_val = float(row.get("open", 0))
                 high_val = float(row.get("high", 0))

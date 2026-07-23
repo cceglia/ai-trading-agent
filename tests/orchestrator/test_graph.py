@@ -124,6 +124,7 @@ class TestTradingGraphNodes:
             review_feedback=None,
             review_attempts=0,
             errors=[],
+            fatal_error=None,
             final_output=None,
         )
         result = trading_graph._fetch_data(state)
@@ -148,11 +149,11 @@ class TestTradingGraphNodes:
             review_feedback=None,
             review_attempts=0,
             errors=[],
+            fatal_error=None,
             final_output=None,
         )
         result = trading_graph._fetch_data(state)
-        assert len(result["errors"]) == 1
-        assert "Data fetch failed" in result["errors"][0]
+        assert result["fatal_error"] == "Data fetch failed: Connection lost"
 
     def test_evaluate_calendar_fetches_events(self, trading_graph, mock_calendar_provider):
         state = AgentState(
@@ -169,6 +170,7 @@ class TestTradingGraphNodes:
             review_feedback=None,
             review_attempts=0,
             errors=[],
+            fatal_error=None,
             final_output=None,
         )
         result = trading_graph._evaluate_calendar(state)
@@ -181,6 +183,7 @@ class TestReviewRouting:
         state = {
             "review": ReviewVerdict(approved=True, reasoning="OK"),
             "review_attempts": 1,
+            "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "end"
 
@@ -188,6 +191,7 @@ class TestReviewRouting:
         state = {
             "review": ReviewVerdict(approved=False, reasoning="Bad"),
             "review_attempts": 1,
+            "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "retry"
 
@@ -195,6 +199,7 @@ class TestReviewRouting:
         state = {
             "review": ReviewVerdict(approved=False, reasoning="Bad"),
             "review_attempts": MAX_REVIEW_ATTEMPTS,
+            "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "end"
 
@@ -202,6 +207,7 @@ class TestReviewRouting:
         state = {
             "review": None,
             "review_attempts": 0,
+            "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "retry"
 
@@ -209,6 +215,7 @@ class TestReviewRouting:
         state = {
             "review": None,
             "review_attempts": MAX_REVIEW_ATTEMPTS,
+            "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "end"
 
@@ -218,149 +225,135 @@ class TestMaxReviewAttempts:
         assert MAX_REVIEW_ATTEMPTS == 2
 
 
-def test_analyze_structure_uses_cache(tmp_path, monkeypatch):
-    """D1/H4 should use cache when available, H1 always fresh."""
-    from unittest.mock import MagicMock, patch
+def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
+    """_analyze_structure must fetch all three timeframes fresh (no partial cache)."""
+    from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
 
-    # Setup cache
+    # Setup cache dir so cache mechanics are available
     cache_dir = tmp_path / "analysis"
     cache_dir.mkdir()
-
-    # Use monkeypatch.setenv for Pydantic BaseSettings
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
 
-    # Mock dependencies
     mock_data_provider = MagicMock()
+    # Simulate engine returning multi-timeframe output shape
     mock_structure_analyzer = MagicMock()
-    mock_calendar_provider = MagicMock()
-    mock_synthesizer = MagicMock()
-    mock_decider = MagicMock()
-    mock_reviewer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
 
     graph = TradingGraph(
         data_provider=mock_data_provider,
         structure_analyzer=mock_structure_analyzer,
-        calendar_provider=mock_calendar_provider,
-        synthesizer=mock_synthesizer,
-        decider=mock_decider,
-        reviewer=mock_reviewer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
     )
 
-    cached_d1 = {"cached_d1": True}
-    cached_h4 = {"cached_h4": True}
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+    result = graph._analyze_structure(state)
 
-    with (
-        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
-        patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache,
-    ):
-        # D1/H4 say cache is valid (False = don't run), H1 always fresh (True = run)
-        mock_should_run.side_effect = lambda tf, sym, now: tf == "H1"
-        # Return cached data for D1/H4
-        mock_load_cache.side_effect = lambda tf, sym, now: cached_d1 if tf == "D1" else cached_h4
+    # All 3 timeframes must be fetched
+    assert mock_data_provider.get_candles.call_count == 3
+    from unittest.mock import call as mock_call
 
-        state = AgentState(
-            symbol="XAUUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
-            calendar_events=None,
-            market_context=None,
-            decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
-            errors=[],
-            final_output=None,
-        )
-        result = graph._analyze_structure(state)
+    assert mock_call("XAUUSD", "D1", 500) in mock_data_provider.get_candles.call_args_list
+    assert mock_call("XAUUSD", "H4", 750) in mock_data_provider.get_candles.call_args_list
+    assert mock_call("XAUUSD", "H1", 1000) in mock_data_provider.get_candles.call_args_list
 
-        from unittest.mock import call as mock_call
+    # Engine receives all 3 snapshots
+    engine_snapshots = mock_structure_analyzer.analyze.call_args[0][0]
+    for tf in ("D1", "H4", "H1"):
+        assert tf in engine_snapshots
 
-        # Should NOT fetch D1/H4 candles (cached)
-        assert mock_call("XAUUSD", "D1", 100) not in mock_data_provider.get_candles.call_args_list
-        assert mock_call("XAUUSD", "H4", 100) not in mock_data_provider.get_candles.call_args_list
-        # Should fetch H1 (always fresh)
-        mock_data_provider.get_candles.assert_called_with("XAUUSD", "H1", 100)
-        # Verify cached results flow through to output
-        assert result["structure_analysis"]["D1"] == cached_d1
-        assert result["structure_analysis"]["H4"] == cached_h4
+    # Per-timeframe keys present in result
+    for tf in ("D1", "H4", "H1"):
+        assert tf in result["structure_analysis"]
 
 
-def test_h1_always_fresh_even_when_d1_h4_cached(tmp_path, monkeypatch):
-    """H1 must always fetch fresh data even when D1/H4 are cached."""
-    from unittest.mock import MagicMock, patch
+def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
+    """H1 must always be fetched (no caching for H1)."""
+    from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
 
     cache_dir = tmp_path / "analysis"
     cache_dir.mkdir()
-
-    # Use monkeypatch.setenv for Pydantic BaseSettings
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
 
-    # Mock dependencies
     mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
     mock_structure_analyzer = MagicMock()
-    mock_calendar_provider = MagicMock()
-    mock_synthesizer = MagicMock()
-    mock_decider = MagicMock()
-    mock_reviewer = MagicMock()
-
-    # Mock H1 fresh data - use valid CSV and proper key format
-    csv_data = "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
-    mock_data_provider.get_candles.return_value = csv_data
-    mock_structure_analyzer.analyze.return_value = {"H1": {"fresh_h1": True}}
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {
+                "market_structure": {"primary_structure": "BULLISH"},
+                "timeframe": "H1",
+                "fresh": True,
+            },
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
 
     graph = TradingGraph(
         data_provider=mock_data_provider,
         structure_analyzer=mock_structure_analyzer,
-        calendar_provider=mock_calendar_provider,
-        synthesizer=mock_synthesizer,
-        decider=mock_decider,
-        reviewer=mock_reviewer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
     )
 
-    cached_d1 = {"cached_d1": True}
-    cached_h4 = {"cached_h4": True}
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+    result = graph._analyze_structure(state)
 
-    with (
-        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
-        patch("src.orchestrator.graph.load_cached_analysis") as mock_load_cache,
-    ):
-        # D1/H4 say cache is valid (False = don't run), H1 always fresh (True = run)
-        mock_should_run.side_effect = lambda tf, sym, now: tf == "H1"
-        # Return cached data for D1/H4
-        mock_load_cache.side_effect = lambda tf, sym, now: cached_d1 if tf == "D1" else cached_h4
-
-        state = AgentState(
-            symbol="XAUUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
-            calendar_events=None,
-            market_context=None,
-            decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
-            errors=[],
-            final_output=None,
-        )
-        result = graph._analyze_structure(state)
-
-        # H1 must always be fetched fresh
-        mock_data_provider.get_candles.assert_called_with("XAUUSD", "H1", 100)
-        # D1/H4 should use cached data
-        assert result["structure_analysis"]["D1"] == cached_d1
-        assert result["structure_analysis"]["H4"] == cached_h4
-        # H1 should have fresh analysis result
-        assert result["structure_analysis"]["H1"] == {"fresh_h1": True}
+    # H1 is always fetched fresh
+    assert mock_data_provider.get_candles.call_count == 3
+    mock_data_provider.get_candles.assert_any_call("XAUUSD", "H1", 1000)
+    assert result["structure_analysis"].get("H1", {}).get("fresh") is True
 
 
 def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
@@ -411,6 +404,7 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
             review_feedback=None,
             review_attempts=0,
             errors=[],
+            fatal_error=None,
             final_output=None,
         )
 
@@ -432,10 +426,9 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
         assert h1_snapshot["market"]["symbol"] == "EURUSD"
 
 
-def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
-    """should_run_analysis must gate whether cache is used."""
-    from datetime import datetime
-    from unittest.mock import MagicMock, patch
+def test_analyze_structure_uses_preferred_bars(tmp_path, monkeypatch):
+    """_analyze_structure must request preferred_bars for each timeframe."""
+    from unittest.mock import MagicMock
 
     from src.orchestrator.graph import AgentState, TradingGraph
 
@@ -445,62 +438,52 @@ def test_analyze_structure_uses_should_run_analysis(tmp_path, monkeypatch):
     mock_data_provider.get_candles.return_value = csv_data
 
     mock_structure_analyzer = MagicMock()
-    mock_structure_analyzer.analyze.return_value = {"H1": {"fresh": True}}
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
 
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
 
-    with (
-        patch("src.analysis.candle_cache.datetime") as mock_dt,
-        patch("src.orchestrator.graph.datetime") as mock_graph_dt,
-        patch("src.orchestrator.graph.should_run_analysis") as mock_should_run,
-    ):
-        mock_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=UTC)
-        mock_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
-        mock_graph_dt.now.return_value = datetime(2026, 7, 21, 18, 0, tzinfo=UTC)
-        mock_graph_dt.side_effect = lambda *args, **kwargs: datetime(*args, **kwargs)
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
 
-        # D1: should_run_analysis says True (stale) → must fetch fresh
-        # H4: should_run_analysis says False (valid cache) → must use cache
-        mock_should_run.side_effect = lambda tf, sym, now: tf == "D1"
+    state = AgentState(
+        symbol="EURUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
 
-        # Create cache for H4
-        cache_dir = tmp_path / "analysis" / "2026" / "07" / "21" / "EURUSD"
-        cache_dir.mkdir(parents=True)
-        (cache_dir / "h4-analysis.json").write_text('{"cached_h4": true}')
+    result = graph._analyze_structure(state)
 
-        graph = TradingGraph(
-            data_provider=mock_data_provider,
-            structure_analyzer=mock_structure_analyzer,
-            calendar_provider=MagicMock(),
-            synthesizer=MagicMock(),
-            decider=MagicMock(),
-            reviewer=MagicMock(),
-        )
+    # All 3 timeframes must be fetched with preferred bar counts
+    assert mock_data_provider.get_candles.call_count == 3
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "D1", 500)
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "H4", 750)
+    mock_data_provider.get_candles.assert_any_call("EURUSD", "H1", 1000)
 
-        state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
-            calendar_events=None,
-            market_context=None,
-            decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
-            errors=[],
-            final_output=None,
-        )
-
-        result = graph._analyze_structure(state)
-
-        # should_run_analysis must have been called for D1 and H4
-        assert mock_should_run.call_count >= 2
-
-        # D1 should have fresh data (should_run returned True)
-        assert "D1" in result["structure_analysis"]
-
-        # H4 should use cache (should_run returned False)
-        assert result["structure_analysis"]["H4"] == {"cached_h4": True}
+    # All timeframes present in result
+    for tf in ("D1", "H4", "H1"):
+        assert tf in result["structure_analysis"]

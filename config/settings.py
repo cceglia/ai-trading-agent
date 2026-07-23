@@ -12,8 +12,13 @@ class Settings(BaseSettings):
         default="", description="OpenAI-compatible base URL (empty = use default)"
     )
 
-    # MCP Configuration
-    mcp_server_url: str = Field(default="http://localhost:8082", description="MCP server URL")
+    # Terminal MCP Configuration
+    terminal_server_url: str = Field(
+        default="http://127.0.0.1:22346/mcp", description="Terminal MCP server URL for candle data"
+    )
+    terminal_api_key: str = Field(
+        default="", description="Bearer token for terminal MCP server authentication"
+    )
 
     # Review Configuration
     max_review_attempts: int = Field(default=2, description="Maximum review retry attempts")

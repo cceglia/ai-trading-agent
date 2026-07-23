@@ -8,16 +8,149 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from src.analysis.candle_cache import (
-    load_cached_analysis,
     save_analysis,
-    should_run_analysis,
 )
+from src.analysis.market_structure_engine.config import get_profile
 from src.data.snapshot_builder import SnapshotBuilder
 from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 
 logger = logging.getLogger(__name__)
 
 MAX_REVIEW_ATTEMPTS = 2
+
+# Keys within a per-timeframe engine output that contain massive lists
+# unsuitable for LLM prompts. These are stripped during summarization.
+_LARGE_STRUCTURE_KEYS = frozenset(
+    {
+        "swings",
+        "calculation_metadata",
+        "engine",
+    }
+)
+
+
+def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
+    """Extract compact analytical fields from a single timeframe engine output.
+
+    The full engine output contains massive lists (swings, events, levels,
+    liquidity pools) that can exceed LLM context windows when serialized.
+    This function keeps only the compact summary fields the LLM needs.
+    """
+    summary: dict[str, Any] = {}
+
+    # Source audit (small — bar count, closure status)
+    if "source_audit" in tf_data:
+        summary["source_audit"] = tf_data["source_audit"]
+
+    # Technical context (latest indicator values only — small)
+    if "technical_context" in tf_data:
+        summary["technical_context"] = tf_data["technical_context"]
+
+    # Candles (latest candle analysis — small)
+    if "candles" in tf_data:
+        summary["candles"] = tf_data["candles"]
+
+    # Market structure (classification strings — small)
+    if "market_structure" in tf_data:
+        summary["market_structure"] = tf_data["market_structure"]
+
+    # Scoring (bias, confidence — small)
+    if "scoring" in tf_data:
+        summary["scoring"] = tf_data["scoring"]
+
+    # Events — keep only latest_material_event and latest_primary_event,
+    # drop the full event lists (primary_events, internal_events, failed_breakouts)
+    events = tf_data.get("events", {})
+    if isinstance(events, dict):
+        compact_events: dict[str, Any] = {}
+        for key in ("latest_material_event", "latest_primary_event", "failed_bos_count"):
+            if key in events:
+                compact_events[key] = events[key]
+        if compact_events:
+            summary["events"] = compact_events
+
+    # Levels — keep only nearest support/resistance summary fields,
+    # drop the full supports/resistances lists
+    levels = tf_data.get("levels", {})
+    if isinstance(levels, dict):
+        compact_levels: dict[str, Any] = {}
+        for key in (
+            "nearest_support",
+            "nearest_resistance",
+            "nearest_support_distance_atr",
+            "nearest_resistance_distance_atr",
+        ):
+            if key in levels:
+                compact_levels[key] = levels[key]
+        if compact_levels:
+            summary["levels"] = compact_levels
+
+    # Liquidity — keep only summary fields, drop pools/events lists
+    liquidity = tf_data.get("liquidity", {})
+    if isinstance(liquidity, dict):
+        compact_liquidity: dict[str, Any] = {}
+        for key in ("nearest_buy_side", "nearest_sell_side", "dominant_draw", "latest_event"):
+            if key in liquidity:
+                compact_liquidity[key] = liquidity[key]
+        if compact_liquidity:
+            summary["liquidity"] = compact_liquidity
+
+    # Analysis context (the structured decision-oriented summary)
+    if "analysis_context" in tf_data:
+        summary["analysis_context"] = tf_data["analysis_context"]
+
+    # Timeframe metadata
+    if "timeframe" in tf_data:
+        summary["timeframe"] = tf_data["timeframe"]
+    if "timeframe_role" in tf_data:
+        summary["timeframe_role"] = tf_data["timeframe_role"]
+
+    return summary
+
+
+def _summarize_structure_analysis(
+    structure_analysis: dict[str, Any],
+) -> dict[str, Any]:
+    """Build a compact version of structure analysis suitable for LLM prompts.
+
+    The full engine output for D1+H4+H1 exceeds ~537K characters. This
+    function extracts only the compact analytical fields and drops the
+    massive raw data lists (swings, full event/level/liquidity lists).
+    """
+    summary: dict[str, Any] = {}
+
+    # Confluence verdict (top-level, always small)
+    if "confluence" in structure_analysis:
+        summary["confluence"] = structure_analysis["confluence"]
+    elif "timeframes" in structure_analysis:
+        # Extract confluence from the first timeframe's decision context
+        for tf_name in ("D1", "H4", "H1"):
+            tf_data = structure_analysis.get(tf_name, {})
+            if "confluence" in tf_data:
+                summary["confluence"] = tf_data["confluence"]
+
+    # Summarize each timeframe
+    timeframes: dict[str, Any] = {}
+    for tf_name in ("D1", "H4", "H1"):
+        # Prefer the engine's multi-timeframe output structure
+        tf_data = structure_analysis.get("timeframes", {}).get(tf_name) or structure_analysis.get(
+            tf_name
+        )
+        if isinstance(tf_data, dict) and tf_data.get("market_structure"):
+            timeframes[tf_name] = _summarize_timeframe(tf_data)
+
+    if timeframes:
+        summary["timeframes"] = timeframes
+    else:
+        # Fallback: include the raw dict but strip known-large keys
+        raw = dict(structure_analysis)
+        for key in list(raw):
+            if isinstance(raw.get(key), dict):
+                for large_key in _LARGE_STRUCTURE_KEYS:
+                    raw[key].pop(large_key, None)
+        summary["_fallback"] = raw
+
+    return summary
 
 
 class AgentState(TypedDict):
@@ -36,6 +169,7 @@ class AgentState(TypedDict):
     review_feedback: str | None
     review_attempts: int
     errors: list[str]
+    fatal_error: str | None
     final_output: dict[str, Any] | None
 
 
@@ -105,6 +239,9 @@ class TradingGraph:
         """Fetch market data from MT5."""
         logger.info("Fetching data for %s", state["symbol"])
 
+        if state.get("fatal_error"):
+            return {}
+
         symbol = state["symbol"]
 
         try:
@@ -118,107 +255,149 @@ class TradingGraph:
                 "account_info": account_info,
             }
         except Exception as e:
-            logger.error("Failed to fetch data: %s", e)
-            return {
-                "errors": state.get("errors", []) + [f"Data fetch failed: {e}"],
-            }
+            msg = f"Data fetch failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
     def _analyze_structure(self, state: AgentState) -> dict[str, Any]:
-        """Analyze market structure with candle-aligned caching."""
+        """Analyze market structure with candle-aligned caching.
+
+        The multi-timeframe engine requires all three snapshots (D1, H4, H1)
+        to run. Therefore we either return a complete cached result, or we
+        fetch all three timeframes fresh — partial caching is not possible.
+        """
         logger.info("Analyzing structure for %s", state["symbol"])
+
+        if state.get("fatal_error"):
+            return {}
+
         symbol = state["symbol"]
         now_utc = datetime.now(UTC)
 
+        supported_tfs = ("D1", "H4", "H1")
+
         try:
-            snapshots = {}
-            cached_results = {}
+            # H1 is never cached, so we only attempt full cache for D1+H4.
+            # If H1 cache existed, we still need fresh H1, so full cache is invalid.
+            # Therefore we always run fresh for at least H1, meaning we almost
+            # always bypass the full-cache shortcut. The per-timeframe cache
+            # files are still written for legacy Users who may inspect them,
+            # but the decision engine always gets fresh data for all 3 TFs.
+            #
+            # (If the engine ever supports partial re-analysis this can be
+            # revisited, but for now the constraint is hard.)
 
-            for timeframe in ["D1", "H4", "H1"]:
-                if timeframe == "H1":
-                    # H1 always runs fresh
-                    pass
-                elif not should_run_analysis(timeframe, symbol, now_utc):
-                    # Cache is valid for this candle period
-                    cached = load_cached_analysis(timeframe, symbol, now_utc)
-                    if cached is not None:
-                        cached_results[timeframe] = cached
-                        continue
-
-                csv_data = self.data_provider.get_candles(symbol, timeframe, 100)
+            # --- Fetch all three timeframes fresh ---
+            snapshots: dict[str, Any] = {}
+            for timeframe in supported_tfs:
+                bar_count = get_profile(timeframe).preferred_bars
+                csv_data = self.data_provider.get_candles(symbol, timeframe, bar_count)
                 try:
-                    snapshots[timeframe] = self._snapshot_builder.build(csv_data, symbol, timeframe)
+                    snapshots[timeframe] = self._snapshot_builder.build(
+                        csv_data,
+                        symbol,
+                        timeframe,
+                    )
                 except (ValueError, Exception) as e:
-                    logger.warning("Snapshot build failed for %s %s: %s", symbol, timeframe, e)
+                    logger.warning(
+                        "Snapshot build failed for %s %s: %s",
+                        symbol,
+                        timeframe,
+                        e,
+                    )
                     snapshots[timeframe] = csv_data
 
-            if snapshots:
-                fresh_result = self.structure_analyzer.analyze(snapshots)
-            else:
-                fresh_result = {}
+            # --- Run the multi-timeframe engine ---
+            analysis_result = self.structure_analyzer.analyze(snapshots)
 
+            # --- Build the legacy per-timeframe result dict ---
             result: dict[str, Any] = {}
-            for timeframe in ["D1", "H4", "H1"]:
-                if timeframe in cached_results:
-                    result[timeframe] = cached_results[timeframe]
-            if fresh_result and isinstance(fresh_result, dict):
-                for tf, val in fresh_result.items():
-                    result[tf] = val
-            for timeframe in ["D1", "H4", "H1"]:
-                if timeframe not in result and timeframe in snapshots:
-                    result[timeframe] = snapshots[timeframe]
+            if isinstance(analysis_result, dict):
+                for tf in supported_tfs:
+                    if tf in analysis_result.get("timeframes", {}):
+                        result[tf] = analysis_result["timeframes"][tf]
 
+            # Also stash the full multi-timeframe result
+            if isinstance(analysis_result, dict):
+                result["_full_multi_timeframe"] = analysis_result
+
+            # --- Write per-timeframe cache files (non-critical) ---
             for timeframe in ("D1", "H4"):
                 if timeframe in snapshots and timeframe in result:
-                    save_analysis(timeframe, symbol, now_utc, result[timeframe])
+                    try:
+                        save_analysis(timeframe, symbol, now_utc, result[timeframe])
+                    except Exception:
+                        logger.warning(
+                            "Failed to cache %s analysis for %s",
+                            timeframe,
+                            symbol,
+                        )
 
             return {"structure_analysis": result}
         except Exception as e:
-            logger.error("Structure analysis failed: %s", e)
-            return {
-                "errors": state.get("errors", []) + [f"Structure analysis failed: {e}"],
-            }
+            msg = f"Structure analysis failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
     def _evaluate_calendar(self, state: AgentState) -> dict[str, Any]:
         """Evaluate calendar events."""
         logger.info("Evaluating calendar for %s", state["symbol"])
 
+        if state.get("fatal_error"):
+            return {}
+
         try:
             events = self.calendar_provider.fetch_events()
             return {"calendar_events": events}
         except Exception as e:
-            logger.error("Calendar evaluation failed: %s", e)
-            return {
-                "errors": state.get("errors", []) + [f"Calendar evaluation failed: {e}"],
-                "calendar_events": [],
-            }
+            msg = f"Calendar evaluation failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg, "calendar_events": []}
 
     def _synthesize_context(self, state: AgentState) -> dict[str, Any]:
         """Synthesize market context."""
         logger.info("Synthesizing context for %s", state["symbol"])
 
+        if state.get("fatal_error"):
+            return {}
+
         try:
+            raw_structure: dict[str, Any] = state.get("structure_analysis") or {}
+            compact_structure = _summarize_structure_analysis(raw_structure)
+
+            # Log size reduction for observability
+            raw_size = len(str(raw_structure))
+            compact_size = len(str(compact_structure))
+            reduction = (1 - compact_size / raw_size) * 100 if raw_size else 0
+            logger.info(
+                "Structure analysis compacted: %d chars -> %d chars (%.0f%% reduction)",
+                raw_size,
+                compact_size,
+                reduction,
+            )
+
             context = self.synthesizer.synthesize(
-                structure_analysis=state.get("structure_analysis", {}),
+                structure_analysis=compact_structure,
                 calendar_events=state.get("calendar_events", []),
                 symbol=state["symbol"],
             )
             return {"market_context": context}
         except Exception as e:
-            logger.error("Context synthesis failed: %s", e)
-            return {
-                "errors": state.get("errors", []) + [f"Context synthesis failed: {e}"],
-            }
+            msg = f"Context synthesis failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
     def _decide(self, state: AgentState) -> dict[str, Any]:
         """Make trading decision."""
         logger.info("Making decision for %s", state["symbol"])
 
+        if state.get("fatal_error"):
+            return {}
+
         try:
             context = state.get("market_context")
             if not context:
-                return {
-                    "errors": state.get("errors", []) + ["No market context available"],
-                }
+                return {"fatal_error": "No market context available — cannot decide"}
 
             feedback = state.get("review_feedback")
             attempts = state.get("review_attempts", 0) + 1
@@ -231,14 +410,16 @@ class TradingGraph:
             )
             return {"decision": decision, "review_attempts": attempts}
         except Exception as e:
-            logger.error("Decision failed: %s", e)
-            return {
-                "errors": state.get("errors", []) + [f"Decision failed: {e}"],
-            }
+            msg = f"Decision failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
     def _review(self, state: AgentState) -> dict[str, Any]:
         """Review the decision."""
         logger.info("Reviewing decision for %s", state["symbol"])
+
+        if state.get("fatal_error"):
+            return {}
 
         try:
             decision = state.get("decision")
@@ -246,13 +427,7 @@ class TradingGraph:
             calendar_events = state.get("calendar_events", [])
 
             if not decision or not context:
-                return {
-                    "review": ReviewVerdict(
-                        approved=False,
-                        reasoning="Missing decision or context for review",
-                        concerns=["Incomplete data for review"],
-                    ),
-                }
+                return {"fatal_error": "Missing decision or context for review — cannot review"}
 
             verdict = self.reviewer.review(
                 decision=decision,
@@ -267,17 +442,14 @@ class TradingGraph:
 
             return {"review": verdict, "review_feedback": feedback}
         except Exception as e:
-            logger.error("Review failed: %s", e)
-            return {
-                "review": ReviewVerdict(
-                    approved=False,
-                    reasoning=f"Review failed: {e}",
-                    concerns=[str(e)],
-                ),
-            }
+            msg = f"Review failed: {e}"
+            logger.error(msg)
+            return {"fatal_error": msg}
 
     def _review_to_decide(self, state: AgentState) -> str:
         """Conditional edge from review to decide or end."""
+        if state.get("fatal_error"):
+            return "end"
         review = state.get("review")
         attempts = state.get("review_attempts", 0)
 
@@ -313,6 +485,7 @@ class TradingGraph:
             review_feedback=None,
             review_attempts=0,
             errors=[],
+            fatal_error=None,
             final_output=None,
         )
 
