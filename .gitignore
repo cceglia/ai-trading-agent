@@ -78,6 +78,6 @@ Desktop.ini
 graphify-out/cache/
 
 # ── Project-specific ─────────────────────────────────────────────────
-analysis/
+/analysis/
 logs/
 *.log

@@ -308,8 +308,8 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
         assert tf in result["structure_analysis"]
 
 
-def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
-    """H1 must always be fetched (no caching for H1)."""
+def test_analyze_structure_fetches_all_when_no_cache(tmp_path, monkeypatch):
+    """When no cache files exist, all 3 TFs must be fetched fresh."""
     from datetime import datetime
     from unittest.mock import MagicMock
 
@@ -367,7 +367,7 @@ def test_analyze_structure_h1_always_fetched_fresh(tmp_path, monkeypatch):
     )
     result = graph._analyze_structure(state)
 
-    # H1 is always fetched fresh
+    # No cache exists → all 3 TFs fetched fresh
     assert mock_data_provider.get_candles.call_count == 3
     mock_data_provider.get_candles.assert_any_call("XAUUSD", "H1", 1000, broker_now=broker_time)
     assert result["structure_analysis"].get("H1", {}).get("fresh") is True
@@ -565,6 +565,457 @@ def test_analyze_structure_uses_broker_time_not_utc(tmp_path, monkeypatch):
     assert mock_data_provider.get_broker_time.call_count >= 1
 
 
+# =============================================================================
+# RED Tests for cache-hit (all 3 TFs + MTF cached → 0 MCP calls)
+# =============================================================================
+
+
+def test_analyze_structure_full_cache_hit(tmp_path, monkeypatch):
+    """When all 3 TFs + MTF are cached, must NOT call get_candles."""
+    import json
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    # Broker time = after D1 close → cache files are valid
+    broker_time = datetime(2026, 7, 21, 18, 0)
+
+    # Create per-TF cache files
+    tf_dir = cache_dir / "2026" / "07" / "21" / "XAUUSD"
+    tf_dir.mkdir(parents=True)
+    for tf, fname in [
+        ("D1", "d1-analysis.json"),
+        ("H4", "h4-20-analysis.json"),
+        ("H1", "h1-19-analysis.json"),
+    ]:
+        (tf_dir / fname).write_text(
+            json.dumps(
+                {
+                    "market_structure": {"primary_structure": "BULLISH"},
+                    "timeframe": tf,
+                }
+            )
+        )
+
+    # Create MTF cache with real confluence
+    mtf_result = {
+        "timeframes": {},
+        "confluence": {"status": "NO_VALID_CANDIDATE", "reason": "No candidate found"},
+    }
+    (tf_dir / "mtf-analysis.json").write_text(json.dumps(mtf_result))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=MagicMock(),
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    result = graph._analyze_structure(state)
+
+    # No MCP calls
+    assert mock_data_provider.get_candles.call_count == 0
+    # Engine not called
+    graph.structure_analyzer.analyze.assert_not_called()
+    # Confluence from MTF cache
+    assert result["structure_analysis"]["confluence"]["status"] == "NO_VALID_CANDIDATE"
+    # Per-TF data from cache
+    assert result["structure_analysis"]["D1"]["market_structure"]["primary_structure"] == "BULLISH"
+
+
+def test_analyze_structure_cache_hit_confluence_correct(tmp_path, monkeypatch):
+    """Cache-hit confluence must be the real engine confluence, not D1 analysis_context."""
+    import json
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    broker_time = datetime(2026, 7, 21, 18, 0)
+    tf_dir = cache_dir / "2026" / "07" / "21" / "XAUUSD"
+    tf_dir.mkdir(parents=True)
+    for tf, fname in [
+        ("D1", "d1-analysis.json"),
+        ("H4", "h4-20-analysis.json"),
+        ("H1", "h1-19-analysis.json"),
+    ]:
+        (tf_dir / fname).write_text(
+            json.dumps(
+                {
+                    "market_structure": {"primary_structure": "BULLISH"},
+                    "timeframe": tf,
+                    "analysis_context": {"technical_bias": "BULLISH", "structure_bias": "BULLISH"},
+                }
+            )
+        )
+
+    mtf_result = {
+        "timeframes": {},
+        "confluence": {
+            "status": "NO_VALID_CANDIDATE",
+            "reason": "Trend and structure agree, no entry",
+            "entry_authorized": False,
+        },
+    }
+    (tf_dir / "mtf-analysis.json").write_text(json.dumps(mtf_result))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=MagicMock(),
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    result = graph._analyze_structure(state)
+
+    # Confluence must match MTF cache, NOT D1.analysis_context
+    assert result["structure_analysis"]["confluence"]["status"] == "NO_VALID_CANDIDATE"
+    assert "entry_authorized" in result["structure_analysis"]["confluence"]
+    assert result["structure_analysis"]["confluence"]["entry_authorized"] is False
+    # D1 analysis_context must NOT be confused with confluence
+    assert result["structure_analysis"]["confluence"].get("technical_bias") is None
+
+
+def test_analyze_structure_cache_hit_mtf_missing(tmp_path, monkeypatch):
+    """When per-TF files exist but MTF is missing, must fall back to fresh fetch."""
+    import json
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    broker_time = datetime(2026, 7, 21, 18, 0)
+
+    # Create per-TF files but NO mtf-analysis.json
+    tf_dir = cache_dir / "2026" / "07" / "21" / "XAUUSD"
+    tf_dir.mkdir(parents=True)
+    for tf, fname in [
+        ("D1", "d1-analysis.json"),
+        ("H4", "h4-20-analysis.json"),
+        ("H1", "h1-19-analysis.json"),
+    ]:
+        (tf_dir / fname).write_text(
+            json.dumps({"market_structure": {"primary_structure": "BULLISH"}})
+        )
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # Must fall back to fresh fetch
+    assert mock_data_provider.get_candles.call_count == 3
+    # MTF cache file should now be created from fresh fetch
+    assert (tf_dir / "mtf-analysis.json").exists()
+
+
+def test_analyze_structure_partial_cache_miss(tmp_path, monkeypatch):
+    """When only 2 of 3 TFs are cached, must fetch all fresh."""
+    import json
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    broker_time = datetime(2026, 7, 21, 18, 0)
+
+    # Create only D1 and H4 cache files — no H1
+    tf_dir = cache_dir / "2026" / "07" / "21" / "XAUUSD"
+    tf_dir.mkdir(parents=True)
+    for fname in ["d1-analysis.json", "h4-20-analysis.json"]:
+        (tf_dir / fname).write_text(
+            json.dumps({"market_structure": {"primary_structure": "BULLISH"}})
+        )
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {
+                "market_structure": {"primary_structure": "BULLISH"},
+                "timeframe": "H1",
+                "fresh": True,
+            },
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    result = graph._analyze_structure(state)
+
+    # All 3 fresh
+    assert mock_data_provider.get_candles.call_count == 3
+    # Engine called
+    mock_structure_analyzer.analyze.assert_called_once()
+    # H1 has fresh data
+    assert result["structure_analysis"]["H1"].get("fresh") is True
+
+
+def test_analyze_structure_corrupt_cache_fallback(tmp_path, monkeypatch):
+    """Corrupt per-TF cache file must not crash — fall back to fresh fetch."""
+    import json
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    broker_time = datetime(2026, 7, 21, 18, 0)
+
+    tf_dir = cache_dir / "2026" / "07" / "21" / "XAUUSD"
+    tf_dir.mkdir(parents=True)
+    # D1 cache file is corrupt
+    (tf_dir / "d1-analysis.json").write_text("not valid json")
+    (tf_dir / "h4-20-analysis.json").write_text(json.dumps({"ok": True}))
+    (tf_dir / "h1-19-analysis.json").write_text(json.dumps({"ok": True}))
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    result = graph._analyze_structure(state)
+
+    # Falls back to fresh fetch without raising
+    assert mock_data_provider.get_candles.call_count == 3
+    assert "fatal_error" not in result
+
+
+def test_analyze_structure_fresh_saves_mtf_cache(tmp_path, monkeypatch):
+    """Fresh-fetch path must also save the MTF cache file."""
+    from datetime import datetime
+    from unittest.mock import MagicMock
+
+    from src.orchestrator.graph import AgentState, TradingGraph
+
+    cache_dir = tmp_path / "analysis"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+
+    mock_data_provider = MagicMock()
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer = MagicMock()
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=MagicMock(),
+        synthesizer=MagicMock(),
+        decider=MagicMock(),
+        reviewer=MagicMock(),
+    )
+
+    state = AgentState(
+        symbol="XAUUSD",
+        market_data={},
+        current_positions=[],
+        current_pending_orders=[],
+        account_info=None,
+        structure_analysis=None,
+        calendar_events=None,
+        market_context=None,
+        decision=None,
+        review=None,
+        review_feedback=None,
+        review_attempts=0,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+    )
+
+    graph._analyze_structure(state)
+
+    # MTF cache file must exist
+    # D1 period: 14:00 >= 00:00 → period starts today (2026-07-21)
+    mtf_cache = cache_dir / "2026" / "07" / "21" / "XAUUSD" / "mtf-analysis.json"
+    assert mtf_cache.exists(), f"MTF cache not found at {mtf_cache}"
+
+
 def test_analyze_structure_saves_h1_cache(tmp_path, monkeypatch):
     """H1 analysis must now be saved to cache like D1/H4."""
     from datetime import datetime
@@ -625,9 +1076,8 @@ def test_analyze_structure_saves_h1_cache(tmp_path, monkeypatch):
     h1_cache = cache_dir / "2026" / "07" / "21" / "XAUUSD" / "h1-15-analysis.json"
     assert h1_cache.exists(), f"H1 cache file not found at {h1_cache}"
     # D1 cache file must exist (regression)
-    # D1 period starts on the previous day when broker time (14:30) is before
-    # the D1 close (17:00), so cache date is 2026-07-20.
-    d1_cache = cache_dir / "2026" / "07" / "20" / "XAUUSD" / "d1-analysis.json"
+    # With d1_close_time=00:00, period at 14:30 starts today (2026-07-21).
+    d1_cache = cache_dir / "2026" / "07" / "21" / "XAUUSD" / "d1-analysis.json"
     assert d1_cache.exists()
 
 

@@ -7,7 +7,9 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from src.analysis.candle_cache import (
+    load_cached_analysis,
     save_analysis,
+    should_run_analysis,
 )
 from src.analysis.market_structure_engine.config import get_profile
 from src.data.snapshot_builder import SnapshotBuilder
@@ -342,14 +344,44 @@ class TradingGraph:
         supported_tfs = ("D1", "H4", "H1")
 
         try:
-            # H1 is now cached alongside D1 and H4. The per-timeframe cache
-            # files are written for all three timeframes. The decision engine
-            # always gets fresh data for all 3 TFs.
+            # --- Try loading from cache first ---
+            # All three timeframes must be cached to use the cache, because
+            # the multi-timeframe engine needs all three snapshots and we
+            # avoid partial re-runs. If any one timeframe is missing we
+            # re-fetch everything.
+            cached: dict[str, Any] = {}
+            all_cached = True
+            for timeframe in supported_tfs:
+                if should_run_analysis(timeframe, symbol, broker_now):
+                    # should_run_analysis returns True when cache is MISSING
+                    all_cached = False
+                    break
+                cached_tf = load_cached_analysis(timeframe, symbol, broker_now)
+                if cached_tf is None:
+                    all_cached = False
+                    break
+                logger.info("Loaded %s analysis from cache for %s", timeframe, symbol)
+                cached[timeframe] = cached_tf
 
-            # --- Fetch all three timeframes fresh ---
+            if all_cached:
+                logger.info("Using cached analysis for %s (D1/H4/H1 all present)", symbol)
+                mtf_result = load_cached_analysis("MTF", symbol, broker_now)
+                if mtf_result is None:
+                    logger.info("MTF cache missing for %s — falling back to fresh fetch", symbol)
+                    all_cached = False  # fall through to fresh-fetch path
+                else:
+                    logger.info("Loaded MTF analysis from cache for %s", symbol)
+                    result = cached
+                    result["_full_multi_timeframe"] = mtf_result
+                    result["confluence"] = mtf_result.get("confluence", {})
+                    return {"structure_analysis": result}
+
+            # --- Cache miss: fetch all three timeframes fresh ---
+            logger.info("Cache miss for %s — fetching fresh data", symbol)
             snapshots: dict[str, Any] = {}
             for timeframe in supported_tfs:
                 bar_count = get_profile(timeframe).preferred_bars
+                logger.info("Fetching %s candles for %s from broker", timeframe, symbol)
                 csv_data = self.data_provider.get_candles(
                     symbol,
                     timeframe,
@@ -373,18 +405,20 @@ class TradingGraph:
                     snapshots[timeframe] = csv_data
 
             # --- Run the multi-timeframe engine ---
+            logger.info("Running structure analysis for %s (D1/H4/H1)", symbol)
             analysis_result = self.structure_analyzer.analyze(snapshots)
 
             # --- Build the legacy per-timeframe result dict ---
-            result: dict[str, Any] = {}
+            result = {}
             if isinstance(analysis_result, dict):
                 for tf in supported_tfs:
                     if tf in analysis_result.get("timeframes", {}):
                         result[tf] = analysis_result["timeframes"][tf]
 
-            # Also stash the full multi-timeframe result
+            # Stash the full multi-timeframe result + top-level confluence
             if isinstance(analysis_result, dict):
                 result["_full_multi_timeframe"] = analysis_result
+                result["confluence"] = analysis_result.get("confluence", {})
 
             # --- Write per-timeframe cache files (non-critical) ---
             for timeframe in ("D1", "H4", "H1"):
@@ -397,6 +431,13 @@ class TradingGraph:
                             timeframe,
                             symbol,
                         )
+
+            # --- Save full MTF result for correct confluence on cache-hit ---
+            if isinstance(analysis_result, dict):
+                try:
+                    save_analysis("MTF", symbol, broker_now, analysis_result)
+                except Exception:
+                    logger.warning("Failed to cache MTF analysis for %s", symbol)
 
             return {"structure_analysis": result}
         except Exception as e:
