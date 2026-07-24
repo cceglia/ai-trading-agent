@@ -52,6 +52,28 @@ class TestMarketContextSummary:
         assert ctx.structural_events == []
         assert ctx.calendar_context == ""
 
+    def test_market_context_summary_current_price_defaults_none(self):
+        ctx = MarketContextSummary(
+            symbol="EURUSD",
+            bias=BiasLevel.NEUTRAL,
+            confidence=50,
+            reasoning="x",
+        )
+        assert ctx.current_price is None
+        assert ctx.current_price_time is None
+
+    def test_market_context_summary_accepts_current_price(self):
+        ctx = MarketContextSummary(
+            symbol="EURUSD",
+            bias=BiasLevel.NEUTRAL,
+            confidence=50,
+            reasoning="x",
+            current_price=1.0875,
+            current_price_time="2024-01-03T00:00:00",
+        )
+        assert ctx.current_price == 1.0875
+        assert ctx.current_price_time == "2024-01-03T00:00:00"
+
 
 class TestDecisionOutput:
     def test_creation(self, sample_decision):

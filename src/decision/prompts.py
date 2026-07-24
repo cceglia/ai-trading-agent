@@ -76,6 +76,13 @@ primary structure, supportive momentum and follow-through
 - Provide confidence score 0-100
 - Explain reasoning referencing specific structural evidence
 - List key levels and structural events
+
+## Current Price Anchor
+- The user message provides a canonical current_price (with
+current_price_time) for the symbol under analysis.
+- current_price is the close of the most-recent closed bar across
+D1/H4/H1; treat it as the reference price for the analysis.
+- Relate all structure, levels, and bias to this current price.
 """
 
 DECIDER_SYSTEM_PROMPT = """You are a trade decision agent for an advisory-only trading system.
@@ -153,6 +160,14 @@ Your role is to analyze market context and decide on trading action.
 4. CHoCH is an early structural transition and not automatically a reversal
 5. Support and resistance must be based on meaningful Daily reactions
 6. Moving averages and ATR remain secondary evidence
+
+## Current Price Anchor
+- The user message provides a canonical current_price (with
+current_price_time) for the symbol under analysis.
+- entry_price and risk_reward_ratio must be anchored to this
+current price; never invent a separate entry price.
+- If current_price is None, return NO_TRADE (missing price
+reference) rather than guessing an entry.
 """
 
 REVIEWER_SYSTEM_PROMPT = """You are an independent trade reviewer

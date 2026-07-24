@@ -107,6 +107,66 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
     return summary
 
 
+def _select_canonical_current_price(
+    timeframes: dict[str, dict[str, Any]],
+) -> tuple[float | None, str | None]:
+    """Select the canonical current price across timeframes.
+
+    The canonical current price is the close of the most-recently closed
+    bar across the available timeframes. For each timeframe we read:
+
+    - ``source_audit.latest_closed_candle_time`` — the timestamp of the
+      latest closed bar (used to rank freshness).
+    - ``technical_context.close`` — that bar's close price (the value we
+      return).
+
+    Iteration order is ``("H1", "H4", "D1")`` and the comparison uses a
+    strict ``>`` on the timestamp, so the *first* timeframe encountered
+    with the current maximum timestamp keeps precedence. Because H1 is
+    iterated first, H1 wins ties, then H4, then D1 — i.e. the most
+    granular timeframe wins when timestamps are equal. Timeframes missing
+    either the timestamp or the close are skipped.
+
+    Args:
+        timeframes: Mapping of timeframe name to its (compact or full)
+            engine-output dict. Only the two keys above are read, so the
+            compact summary produced by ``_summarize_structure_analysis``
+            works identically to the raw engine output.
+
+    Returns:
+        ``(selected_close, selected_ts)`` or ``(None, None)`` when no
+        timeframe provides both a timestamp and a close.
+    """
+    selected_close: float | None = None
+    selected_ts: str | None = None
+
+    for tf_name in ("H1", "H4", "D1"):
+        tf = timeframes.get(tf_name)
+        if not isinstance(tf, dict):
+            continue
+        source_audit = tf.get("source_audit")
+        if not isinstance(source_audit, dict):
+            continue
+        ts = source_audit.get("latest_closed_candle_time")
+        technical_context = tf.get("technical_context")
+        if not isinstance(technical_context, dict):
+            continue
+        close = technical_context.get("close")
+
+        if ts is None or close is None:
+            continue
+
+        # Strict ``>`` keeps the first-seen max (H1 wins ties because it
+        # is iterated first).
+        if selected_ts is None or ts > selected_ts:
+            selected_ts = ts
+            selected_close = close
+
+    if selected_close is None or selected_ts is None:
+        return (None, None)
+    return (selected_close, selected_ts)
+
+
 def _summarize_structure_analysis(
     structure_analysis: dict[str, Any],
 ) -> dict[str, Any]:
@@ -381,11 +441,26 @@ class TradingGraph:
                 reduction,
             )
 
+            # Canonical current price: close of the most-recently closed
+            # bar across the available timeframes (H1 > H4 > D1 tie-break).
+            current_price, current_price_time = _select_canonical_current_price(
+                compact_structure.get("timeframes", {}) or {}
+            )
+
             context = self.synthesizer.synthesize(
                 structure_analysis=compact_structure,
                 calendar_events=state.get("calendar_events", []),
                 symbol=state["symbol"],
+                current_price=current_price,
+                current_price_time=current_price_time,
             )
+
+            # If the LLM-returned summary omits the canonical price, stamp
+            # it post-hoc so downstream nodes always have a price anchor.
+            if context.current_price is None and current_price is not None:
+                context.current_price = current_price
+                context.current_price_time = current_price_time
+
             return {"market_context": context}
         except Exception as e:
             msg = f"Context synthesis failed: {e}"
@@ -412,6 +487,7 @@ class TradingGraph:
                 positions=state.get("current_positions", []),
                 pending_orders=state.get("current_pending_orders", []),
                 feedback=feedback if attempts > 1 else None,
+                current_price=context.current_price,
             )
             return {"decision": decision, "review_attempts": attempts}
         except Exception as e:

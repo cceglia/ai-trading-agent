@@ -33,6 +33,11 @@ class MarketContextSummary(BaseModel):
         description="Recent BOS/CHoCH events",
     )
     calendar_context: str = Field(default="", description="Calendar event context")
+    current_price: float | None = Field(default=None, description="Canonical current price")
+    current_price_time: str | None = Field(
+        default=None,
+        description="ISO timestamp of the canonical current price",
+    )
 
     model_config = {"use_enum_values": True}
 

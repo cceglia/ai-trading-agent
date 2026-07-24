@@ -25,6 +25,11 @@ class TestSynthesizerPrompt:
         assert not re.search(r"[A-Z]:\\", SYNTHESIZER_SYSTEM_PROMPT)
         assert not re.search(r"/home/", SYNTHESIZER_SYSTEM_PROMPT)
 
+    def test_mentions_current_price(self):
+        # Anchors the synthesizer's reasoning to the live/current price
+        # rather than only historical OHLC structure.
+        assert "current price" in SYNTHESIZER_SYSTEM_PROMPT.lower()
+
 
 class TestDeciderPrompt:
     def test_contains_bias_rules(self):
@@ -41,6 +46,17 @@ class TestDeciderPrompt:
     def test_no_file_path_references(self):
         assert not re.search(r"[A-Z]:\\", DECIDER_SYSTEM_PROMPT)
         assert not re.search(r"/home/", DECIDER_SYSTEM_PROMPT)
+
+    def test_anchors_entry_price_to_current_price(self):
+        # The decider must anchor the proposed entry_price to the
+        # current price of the anchoring timeframe, not a stale level.
+        assert "current price" in DECIDER_SYSTEM_PROMPT.lower()
+        assert "entry_price" in DECIDER_SYSTEM_PROMPT.lower()
+
+    def test_no_trade_when_price_missing(self):
+        # When the current price is unavailable the decider must fall
+        # back to no_trade rather than guessing an entry.
+        assert "no_trade" in DECIDER_SYSTEM_PROMPT.lower()
 
 
 class TestReviewerPrompt:

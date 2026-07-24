@@ -1,16 +1,16 @@
 # Graph Report - Agent  (2026-07-23)
 
 ## Corpus Check
-- 40 files · ~15,829 words
+- 40 files · ~16,524 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 534 nodes · 952 edges · 36 communities (31 shown, 5 thin omitted)
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 140 edges (avg confidence: 0.54)
+- 553 nodes · 990 edges · 37 communities (31 shown, 6 thin omitted)
+- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 144 edges (avg confidence: 0.55)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0e1d2418`
+- Built from commit: `b16d6b1e`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -39,19 +39,20 @@
 - SynthesizerAgent
 - MarketContextSummary
 - setup_logging
-- TestAgentPrompts
+- DecisionOutput
+- TestGetCandlesCsv
 
 ## God Nodes (most connected - your core abstractions)
-1. `TerminalDataProvider` - 36 edges
-2. `SnapshotBuilder` - 35 edges
-3. `MarketContextSummary` - 33 edges
-4. `AgentState` - 33 edges
-5. `TradingGraph` - 33 edges
-6. `DecisionOutput` - 32 edges
+1. `MarketContextSummary` - 42 edges
+2. `TerminalDataProvider` - 36 edges
+3. `SnapshotBuilder` - 35 edges
+4. `DecisionOutput` - 35 edges
+5. `AgentState` - 33 edges
+6. `TradingGraph` - 33 edges
 7. `_make_mcp_result()` - 32 edges
 8. `Evaluator` - 31 edges
 9. `ReviewVerdict` - 31 edges
-10. `Settings` - 21 edges
+10. `SynthesizerAgent` - 25 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `TestErrorHandling` --uses--> `Settings`  [INFERRED]
@@ -68,15 +69,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (36 total, 5 thin omitted)
+## Communities (37 total, 6 thin omitted)
 
 ### Community 0 - "MarketContextSummary"
-Cohesion: 0.14
-Nodes (13): BiasLevel, DecisionAction, DecisionOutput, Structural bias levels., Decision output from decider agent., StrEnum, sample_decision(), sample_market_context() (+5 more)
+Cohesion: 0.12
+Nodes (15): BaseModel, BiasLevel, DecisionAction, Structural bias levels., Review verdict from reviewer agent., ReviewVerdict, StrEnum, sample_decision() (+7 more)
 
 ### Community 1 - "Mt5DataProvider"
-Cohesion: 0.19
-Nodes (10): BaseSettings, Trading agent configuration., Settings, MonkeyPatch, Settings().terminal_server_url returns the default MCP URL., Settings().terminal_api_key returns empty string by default., TRADING_TERMINAL_API_KEY env var overrides the default., TRADING_TERMINAL_SERVER_URL env var overrides the default. (+2 more)
+Cohesion: 0.12
+Nodes (15): BaseSettings, Trading agent configuration., Settings, main(), Trading AI Agent - CLI Entry Point., MonkeyPatch, Configure structured logging for the trading agent., setup_logging() (+7 more)
 
 ### Community 2 - "DataSource"
 Cohesion: 0.09
@@ -99,12 +100,12 @@ Cohesion: 0.07
 Nodes (28): Analysis Layer (`src/analysis/`), Architecture, Calendar Layer (`src/calendar/`), CLI Commands, Code Quality, Components, Configuration, Configuration (`config/`) (+20 more)
 
 ### Community 7 - "TestSynthesizerPrompt"
-Cohesion: 0.11
+Cohesion: 0.09
 Nodes (4): LLM prompts with embedded rules.json content., TestDeciderPrompt, TestReviewerPrompt, TestSynthesizerPrompt
 
 ### Community 8 - "SynthesizerAgent"
-Cohesion: 0.22
-Nodes (5): BaseModel, Review verdict from reviewer agent., ReviewVerdict, TestReviewVerdict, TestReviewRouting
+Cohesion: 0.13
+Nodes (8): User prompt must render current_price and current_price_time values., When no price is supplied, the current-price line must state None., SynthesizerAgent must use SYNTHESIZER_SYSTEM_PROMPT from prompts.py., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs., DeciderAgent user prompt must render the current_price anchor value., Regression guard: positional decide(context, [], []) must not raise., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs., TestAgentPrompts
 
 ### Community 9 - "ForexFactoryCalendar"
 Cohesion: 0.16
@@ -115,8 +116,8 @@ Cohesion: 0.25
 Nodes (7): Agent Instructions, Architecture, Critical Invariants, graphify, Quick Commands, Testing, Toolchain
 
 ### Community 24 - "_make_mcp_tool_result"
-Cohesion: 0.17
-Nodes (6): _make_mcp_result(), Verify get_candles returns correctly formatted CSV., Create a mock object mimicking mcp.types.CallToolResult.      Matches the real s, Verify get_broker_time returns naive datetime and sends correct request., TestGetBrokerTime, TestGetCandlesCsv
+Cohesion: 0.27
+Nodes (4): _make_mcp_result(), Create a mock object mimicking mcp.types.CallToolResult.      Matches the real s, Verify get_broker_time returns naive datetime and sends correct request., TestGetBrokerTime
 
 ### Community 25 - "TerminalApiError"
 Cohesion: 0.24
@@ -135,40 +136,40 @@ Cohesion: 0.06
 Nodes (31): AbstractEventLoop, Any, datetime, Terminal MCP data provider via MCP Streamable HTTP protocol., Tear down MCP session., Call an MCP tool via the persistent session.          Returns:             CallT, Call an MCP tool with retry on transient failures.          Args:             to, Non-retryable server-side error from the terminal MCP server. (+23 more)
 
 ### Community 32 - "SynthesizerAgent"
-Cohesion: 0.09
-Nodes (22): main(), Trading AI Agent - CLI Entry Point., OpenAI, DeciderAgent, Reviews trading decisions and provides feedback., Synthesizes market context from structure analysis and calendar., Makes trading decisions based on market context., ReviewerAgent (+14 more)
+Cohesion: 0.12
+Nodes (15): Reviews trading decisions and provides feedback., Synthesizes market context from structure analysis and calendar., ReviewerAgent, SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., ReviewerAgent must pass api_key to OpenAI constructor. (+7 more)
 
 ### Community 33 - "MarketContextSummary"
-Cohesion: 0.24
-Nodes (4): Any, MarketContextSummary, Summary of market context from synthesizer agent., TestMarketContextSummary
+Cohesion: 0.15
+Nodes (7): OpenAI, DeciderAgent, Makes trading decisions based on market context., DeciderAgent must pass api_key to OpenAI constructor., DeciderAgent must pass base_url to OpenAI constructor., DeciderAgent.decide must accept a current_price keyword argument., DeciderAgent must use DECIDER_SYSTEM_PROMPT from prompts.py.
 
 ### Community 34 - "setup_logging"
-Cohesion: 0.36
-Nodes (3): Configure structured logging for the trading agent., setup_logging(), TestSetupLogging
+Cohesion: 0.22
+Nodes (4): Any, MarketContextSummary, Summary of market context from synthesizer agent., TestMarketContextSummary
 
-### Community 35 - "TestAgentPrompts"
-Cohesion: 0.29
-Nodes (4): SynthesizerAgent must use SYNTHESIZER_SYSTEM_PROMPT from prompts.py., DeciderAgent must use DECIDER_SYSTEM_PROMPT from prompts.py., ReviewerAgent must use REVIEWER_SYSTEM_PROMPT from prompts.py., TestAgentPrompts
+### Community 35 - "DecisionOutput"
+Cohesion: 0.24
+Nodes (4): DecisionOutput, Decision output from decider agent., ReviewerAgent must use REVIEWER_SYSTEM_PROMPT from prompts.py., TestDecisionOutput
 
 ## Knowledge Gaps
 - **27 isolated node(s):** `trading-ai-agent`, `graphify`, `Quick Commands`, `Critical Invariants`, `Architecture` (+22 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **5 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TradingGraph` connect `AgentState` to `SynthesizerAgent`, `MarketContextSummary`, `MarketContextSummary`, `SnapshotBuilder`, `SynthesizerAgent`?**
-  _High betweenness centrality (0.184) - this node is a cross-community bridge._
-- **Why does `TerminalDataProvider` connect `._run_async` to `SynthesizerAgent`, `_make_mcp_tool_result`, `TerminalApiError`, `test_terminal_data_provider.py`, `TestGetCandlesBrokerNow`, `TestGetPositions`, `TestGetPendingOrders`, `TestGetSymbolPrice`?**
-  _High betweenness centrality (0.178) - this node is a cross-community bridge._
-- **Why does `main()` connect `SynthesizerAgent` to `Mt5DataProvider`, `setup_logging`, `AgentState`, `ForexFactoryCalendar`, `._run_async`?**
-  _High betweenness centrality (0.137) - this node is a cross-community bridge._
+- **Why does `TerminalDataProvider` connect `._run_async` to `Mt5DataProvider`, `TestGetCandlesCsv`, `_make_mcp_tool_result`, `TerminalApiError`, `test_terminal_data_provider.py`, `TestGetCandlesBrokerNow`, `TestGetPositions`, `TestGetPendingOrders`, `TestGetSymbolPrice`?**
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+- **Why does `TradingGraph` connect `AgentState` to `MarketContextSummary`, `Mt5DataProvider`, `setup_logging`, `DecisionOutput`, `SnapshotBuilder`?**
+  _High betweenness centrality (0.176) - this node is a cross-community bridge._
+- **Why does `main()` connect `Mt5DataProvider` to `SynthesizerAgent`, `MarketContextSummary`, `AgentState`, `ForexFactoryCalendar`, `._run_async`?**
+  _High betweenness centrality (0.138) - this node is a cross-community bridge._
+- **Are the 15 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
+  _`MarketContextSummary` has 15 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 9 inferred relationships involving `TerminalDataProvider` (e.g. with `TestErrorHandling` and `TestGetBrokerTime`) actually correct?**
   _`TerminalDataProvider` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 5 inferred relationships involving `SnapshotBuilder` (e.g. with `AgentState` and `TradingGraph`) actually correct?**
   _`SnapshotBuilder` has 5 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 13 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
-  _`MarketContextSummary` has 13 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 8 inferred relationships involving `AgentState` (e.g. with `SnapshotBuilder` and `DecisionOutput`) actually correct?**
-  _`AgentState` has 8 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 15 inferred relationships involving `DecisionOutput` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
+  _`DecisionOutput` has 15 INFERRED edges - model-reasoned connections that need verification._

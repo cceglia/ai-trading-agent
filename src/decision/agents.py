@@ -40,6 +40,9 @@ class SynthesizerAgent:
         structure_analysis: dict[str, Any],
         calendar_events: list[dict[str, Any]],
         symbol: str,
+        *,
+        current_price: float | None = None,
+        current_price_time: str | None = None,
     ) -> MarketContextSummary:
         logger.info("Synthesizing context for %s", symbol)
 
@@ -53,6 +56,8 @@ class SynthesizerAgent:
                     "content": (
                         f"Analyze {symbol} with structure: {structure_analysis} "
                         f"and events: {calendar_events}"
+                        f" Current price (canonical most-recent closed bar across D1/H4/H1): "
+                        f"{current_price} as of {current_price_time}"
                     ),
                 },
             ],
@@ -89,10 +94,13 @@ class DeciderAgent:
         positions: list[dict[str, Any]],
         pending_orders: list[dict[str, Any]],
         feedback: str | None = None,
+        *,
+        current_price: float | None = None,
     ) -> DecisionOutput:
         logger.info("Making decision for %s", context.symbol)
 
         prompt = (
+            f"Anchor entry_price and risk_reward_ratio to current_price={current_price}. "
             f"Context: {context.model_dump_json()}\n"
             f"Positions: {positions}\n"
             f"Orders: {pending_orders}"

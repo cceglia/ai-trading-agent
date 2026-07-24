@@ -801,3 +801,120 @@ def test_analyze_structure_passes_broker_time_to_snapshot_builder(tmp_path, monk
             f"broker_now missing in snapshot_builder.build call {call_args}"
         )
         assert kwargs["broker_now"] == broker_time
+
+
+# ---------------------------------------------------------------------------
+# TASK-6: canonical current-price selection wiring in _synthesize_context
+# ---------------------------------------------------------------------------
+
+
+def _canonical_structure_analysis() -> dict:
+    """Build a structure_analysis fixture whose H1 timeframe has the
+    most-recent closed-candle timestamp and a close price of 1.12.
+
+    The shape mirrors what _analyze_structure stores in state: per-timeframe
+    engine output dicts (D1/H4/H1) each carrying ``source_audit`` and
+    ``technical_context``. ``market_structure`` is present so
+    ``_summarize_structure_analysis`` keeps them in the compact view.
+    """
+    return {
+        "D1": {
+            "market_structure": {"primary_structure": "BULLISH"},
+            "source_audit": {"latest_closed_candle_time": "2024-01-03T00:00:00"},
+            "technical_context": {"close": 1.10},
+        },
+        "H4": {
+            "market_structure": {"primary_structure": "BULLISH"},
+            "source_audit": {"latest_closed_candle_time": "2024-01-03T12:00:00"},
+            "technical_context": {"close": 1.11},
+        },
+        "H1": {
+            "market_structure": {"primary_structure": "BULLISH"},
+            "source_audit": {"latest_closed_candle_time": "2024-01-03T20:00:00"},
+            "technical_context": {"close": 1.12},
+        },
+    }
+
+
+class TestSynthesizeContextCanonicalPrice:
+    def test_synthesize_context_computes_and_forwards_current_price(
+        self, trading_graph, mock_synthesizer
+    ):
+        """_synthesize_context must compute the canonical current price from
+        the per-timeframe structure analysis and forward it (plus its
+        timestamp) to SynthesizerAgent.synthesize.
+
+        RED: today _synthesize_context does not pass current_price /
+        current_price_time, so the call kwargs assertion fails.
+        """
+        state = AgentState(
+            symbol="EURUSD",
+            market_data={},
+            current_positions=[],
+            current_pending_orders=[],
+            account_info=None,
+            structure_analysis=_canonical_structure_analysis(),
+            calendar_events=[],
+            market_context=None,
+            decision=None,
+            review=None,
+            review_feedback=None,
+            review_attempts=0,
+            errors=[],
+            fatal_error=None,
+            final_output=None,
+        )
+
+        result = trading_graph._synthesize_context(state)
+
+        mock_synthesizer.synthesize.assert_called_once()
+        _, kwargs = mock_synthesizer.synthesize.call_args
+        assert kwargs.get("current_price") == 1.12, (
+            f"expected canonical current_price=1.12 forwarded, got {kwargs.get('current_price')!r}"
+        )
+        assert kwargs.get("current_price_time") == "2024-01-03T20:00:00", (
+            "expected canonical current_price_time='2024-01-03T20:00:00' forwarded, "
+            f"got {kwargs.get('current_price_time')!r}"
+        )
+        # The orchestrator must also stamp the computed price onto the
+        # returned MarketContextSummary.
+        assert result["market_context"].current_price == 1.12
+
+    def test_synthesize_context_sets_price_on_summary_when_llm_omits(
+        self, trading_graph, mock_synthesizer
+    ):
+        """Even when the LLM-returned summary has current_price=None, the
+        orchestrator must set it post-hoc from the canonical computation.
+
+        RED: today _synthesize_context returns the LLM summary unchanged
+        (current_price stays None), so the assertion fails.
+        """
+        # The shared mock_synthesizer fixture already returns a summary with
+        # current_price=None (default). Make that explicit for clarity.
+        returned = mock_synthesizer.synthesize.return_value
+        assert returned.current_price is None
+
+        state = AgentState(
+            symbol="EURUSD",
+            market_data={},
+            current_positions=[],
+            current_pending_orders=[],
+            account_info=None,
+            structure_analysis=_canonical_structure_analysis(),
+            calendar_events=[],
+            market_context=None,
+            decision=None,
+            review=None,
+            review_feedback=None,
+            review_attempts=0,
+            errors=[],
+            fatal_error=None,
+            final_output=None,
+        )
+
+        result = trading_graph._synthesize_context(state)
+
+        # Post-hoc stamping: the summary returned to the graph must carry
+        # the canonical price even though the LLM omitted it.
+        assert result["market_context"].current_price == 1.12
+        assert result["market_context"].current_price_time == "2024-01-03T20:00:00"

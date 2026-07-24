@@ -34,5 +34,6 @@
   "32": "SynthesizerAgent",
   "33": "MarketContextSummary",
   "34": "setup_logging",
-  "35": "TestAgentPrompts"
+  "35": "DecisionOutput",
+  "36": "TestGetCandlesCsv"
 }
