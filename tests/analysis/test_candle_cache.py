@@ -523,3 +523,35 @@ def test_settings_has_analysis_cache_dir():
     s = Settings()
     assert hasattr(s, "analysis_cache_dir")
     assert s.analysis_cache_dir == "analysis"
+
+
+# =============================================================================
+# RED Tests for _get_settings singleton (Task-7a)
+# =============================================================================
+
+
+def test_get_settings_returns_same_instance():
+    """_get_settings must return the same Settings instance on every call."""
+    from src.analysis.candle_cache import _get_settings
+
+    s1 = _get_settings()
+    s2 = _get_settings()
+    assert s1 is s2
+
+
+def test_get_settings_respects_monkeypatch(monkeypatch):
+    """After clearing _settings sentinel, _get_settings must reflect env var changes."""
+    from src.analysis.candle_cache import _get_settings
+
+    # Get initial settings with known env value
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
+    s1 = _get_settings()
+    assert s1.d1_close_time == "17:00"
+
+    # Change env and reset the sentinel so next call creates a fresh instance
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "19:00")
+    monkeypatch.setattr("src.analysis.candle_cache._settings", None)
+
+    # Re-get settings — must pick up the new env var
+    s2 = _get_settings()
+    assert s2.d1_close_time == "19:00"

@@ -1,4 +1,4 @@
-"""Tests for engine field rename (no _utc suffix)."""
+"""Tests for engine field rename (no _utc suffix) and engine deepcopy behavior."""
 
 
 def test_validation_accepts_new_field_names():
@@ -137,3 +137,62 @@ def test_engine_export_includes_latest_close():
     assert "latest_close" in result["scoring"]
     assert result["scoring"]["latest_close"] == result["technical_context"]["close"]
     assert result["scoring"]["latest_close"] == 1.15
+
+
+def test_analyze_snapshot_does_not_deepcopy_input():
+    """analyze_snapshot must NOT deepcopy the input snapshot before passing to validate_snapshot.
+
+    validate_snapshot already creates its own internal copy, so the defensive
+    deepcopy in engine.py is redundant and should be removed.
+    """
+    from unittest.mock import patch
+
+    from src.analysis.market_structure_engine.engine import analyze_snapshot
+    from src.analysis.market_structure_engine.validation import validate_snapshot
+
+    snapshot = {
+        "source": {"type": "TRADINGVIEW_MCP"},
+        "market": {"symbol": "XAUUSD", "provider": "MCP"},
+        "requested_timeframe": "D1",
+        "returned_timeframe": "D1",
+        "retrieved_at": "2026-07-21T14:00:00",
+        "latest_closed_candle_time": "2024-01-03T00:00:00",
+        "candle_closure_verified": True,
+        "bars": [
+            {
+                "open_time": "2024-01-01T00:00:00",
+                "open": 1.0,
+                "high": 1.1,
+                "low": 0.9,
+                "close": 1.05,
+                "closed": True,
+            },
+            {
+                "open_time": "2024-01-02T00:00:00",
+                "open": 1.05,
+                "high": 1.15,
+                "low": 1.0,
+                "close": 1.1,
+                "closed": True,
+            },
+            {
+                "open_time": "2024-01-03T00:00:00",
+                "open": 1.1,
+                "high": 1.2,
+                "low": 1.05,
+                "close": 1.15,
+                "closed": True,
+            },
+        ],
+    }
+
+    with patch(
+        "src.analysis.market_structure_engine.engine.validate_snapshot",
+        wraps=validate_snapshot,
+    ) as mock_validate:
+        analyze_snapshot(snapshot, profile_overrides={"minimum_bars": 3})
+
+    args, _ = mock_validate.call_args
+    assert args[0] is snapshot, (
+        "validate_snapshot must receive the original snapshot, not a deepcopy"
+    )

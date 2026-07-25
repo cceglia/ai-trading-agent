@@ -647,3 +647,37 @@ class TestGetBrokerTime:
         with patch.object(provider, "_call_tool", side_effect=ConnectionError("timed out")):
             with pytest.raises(ConnectionError):
                 provider.get_broker_time()
+
+
+# ---------------------------------------------------------------------------
+# Structural checks — inline imports
+# ---------------------------------------------------------------------------
+
+
+def test_no_inline_imports():
+    """Verify terminal_data_provider.py has no imports inside function bodies.
+
+    All imports must be at module level. Inline imports inside method bodies
+    add unnecessary overhead and hurt readability.
+    """
+    import ast
+    from pathlib import Path
+
+    source = (
+        Path(__file__).resolve().parent.parent.parent / "src" / "data" / "terminal_data_provider.py"
+    )
+    tree = ast.parse(source.read_text(encoding="utf-8"))
+
+    violations: list[tuple[str, int, str]] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            for child in ast.walk(node):
+                if child is node:
+                    continue
+                if isinstance(child, ast.Import | ast.ImportFrom):
+                    violations.append((node.name, child.lineno, ast.dump(child)))
+
+    assert not violations, (
+        f"Found {len(violations)} inline import(s) in function bodies:\n"
+        + "\n".join(f"  {name}:{lineno} -> {dump}" for name, lineno, dump in violations)
+    )

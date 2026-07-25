@@ -2,13 +2,18 @@
 
 import asyncio
 import csv
+import datetime as dt_module
 import io
 import json
 import logging
 import threading
+import time
 from collections.abc import Callable
-from datetime import datetime
+from datetime import UTC, timedelta
 from typing import Any, TypeVar, cast
+
+from mcp import ClientSession
+from mcp.client.streamable_http import streamable_http_client
 
 logger = logging.getLogger(__name__)
 
@@ -90,9 +95,6 @@ class TerminalDataProvider:
 
     async def _connect_async(self) -> None:
         """Establish MCP session via Streamable HTTP."""
-        from mcp import ClientSession
-        from mcp.client.streamable_http import streamable_http_client
-
         headers: dict[str, str] = {}
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
@@ -199,8 +201,6 @@ class TerminalDataProvider:
             TerminalApiError: Non-retryable server error.
             ValueError: Malformed response.
         """
-        import time
-
         last_error: Exception | None = None
         for attempt in range(self.max_retries + 1):
             try:
@@ -335,7 +335,7 @@ class TerminalDataProvider:
         symbol: str,
         timeframe: str,
         count: int,
-        broker_now: datetime | None = None,
+        broker_now: dt_module.datetime | None = None,
     ) -> str:
         """Fetch OHLC candles from terminal MCP server.
 
@@ -357,14 +357,12 @@ class TerminalDataProvider:
             ValueError: Malformed response or missing required fields,
                 or broker_now is timezone-aware (must be naive).
         """
-        from datetime import UTC, datetime, timedelta
-
         if broker_now is not None and broker_now.tzinfo is not None:
             raise ValueError(
                 f"broker_now must be a naive datetime, got timezone-aware: {broker_now.tzinfo}"
             )
 
-        now = broker_now if broker_now is not None else datetime.now(UTC)
+        now = broker_now if broker_now is not None else dt_module.datetime.now(UTC)
         period_hours = {
             "M1": 1 / 60,
             "M5": 5 / 60,
@@ -428,7 +426,7 @@ class TerminalDataProvider:
             lambda r: self._extract_orders(r, symbol),
         )
 
-    def get_broker_time(self) -> datetime:
+    def get_broker_time(self) -> dt_module.datetime:
         """Fetch current broker server time from terminal MCP server.
 
         Returns:
@@ -446,14 +444,12 @@ class TerminalDataProvider:
             self._extract_broker_time,
         )
 
-    def _extract_broker_time(self, result: Any) -> datetime:
+    def _extract_broker_time(self, result: Any) -> dt_module.datetime:
         """Extract broker time from get_time_information response.
 
         Expects JSON with a 'trade_server_last_known_time' field
         containing an ISO string like '2026-07-23T21:08:54Z'.
         """
-        from datetime import datetime
-
         try:
             data = json.loads(self._extract_text(result))
         except json.JSONDecodeError as e:
@@ -461,7 +457,7 @@ class TerminalDataProvider:
         time_str = data.get("trade_server_last_known_time")
         if not time_str:
             raise ValueError("MCP response missing 'trade_server_last_known_time' field")
-        return datetime.fromisoformat(time_str.rstrip("Z"))
+        return dt_module.datetime.fromisoformat(time_str.rstrip("Z"))
 
     def __repr__(self) -> str:
         url = self.server_url

@@ -9,6 +9,22 @@ from src.decision.models import (
 )
 
 
+@pytest.fixture(autouse=True)
+def reset_candle_cache_settings():
+    """Reset the _settings sentinel in candle_cache before each test.
+
+    Tests use monkeypatch to set env vars (TRADING_D1_CLOSE_TIME, etc.)
+    and expect _get_settings() to pick up those changes. Without resetting
+    the module-level sentinel, the cached Settings instance from a prior
+    test would shadow monkeypatched env vars.
+    """
+    import src.analysis.candle_cache
+
+    src.analysis.candle_cache._settings = None
+    yield
+    src.analysis.candle_cache._settings = None
+
+
 @pytest.fixture
 def sample_market_context():
     return MarketContextSummary(

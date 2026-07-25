@@ -31,7 +31,7 @@
   "29": "._run_async",
   "30": "TestGetPendingOrders",
   "31": "TestGetSymbolPrice",
-  "32": "SynthesizerAgent",
+  "32": "setup_logging",
   "33": "MarketContextSummary",
   "34": "setup_logging",
   "35": "DecisionOutput",
@@ -44,6 +44,9 @@
   "42": "test_analyze_structure_handles_broker_time_failure",
   "43": "test_analyze_structure_fetches_all_when_no_cache",
   "44": "test_analyze_structure_fresh_saves_mtf_cache",
-  "45": "test_analyze_structure_cache_hit_confluence_correct",
-  "46": "test_analyze_structure_cache_hit_mtf_missing"
+  "45": "TestSettingsDescriptions",
+  "46": "test_analyze_structure_cache_hit_mtf_missing",
+  "47": "test_analyze_structure_passes_broker_time_to_snapshot_builder",
+  "48": "test_analyze_structure_fetches_all_timeframes",
+  "49": "test_analyze_structure_full_cache_hit"
 }

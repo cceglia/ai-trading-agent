@@ -53,7 +53,7 @@ def analyze_snapshot(
         timeframe or snapshot.get("requested_timeframe") or snapshot.get("timeframe") or ""
     ).upper()
     profile = get_profile(requested, profile_overrides)
-    normalized = validate_snapshot(deepcopy(snapshot), profile)
+    normalized = validate_snapshot(snapshot, profile)
     bars = normalized["bars"]
     indicators_full = calculate_indicators(bars, profile)
     swings = detect_swings(bars, indicators_full["series"]["atr_14"], profile)

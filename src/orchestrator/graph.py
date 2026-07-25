@@ -6,6 +6,7 @@ from typing import Any, TypedDict
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
+from config.settings import Settings
 from src.analysis.candle_cache import (
     load_cached_analysis,
     save_analysis,
@@ -16,8 +17,6 @@ from src.data.snapshot_builder import SnapshotBuilder
 from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 
 logger = logging.getLogger(__name__)
-
-MAX_REVIEW_ATTEMPTS = 2
 
 # Keys within a per-timeframe engine output that contain massive lists
 # unsuitable for LLM prompts. These are stripped during summarization.
@@ -217,21 +216,20 @@ def _summarize_structure_analysis(
 class AgentState(TypedDict):
     """State for the trading graph."""
 
-    symbol: str
-    market_data: dict[str, Any]
-    current_positions: list[dict[str, Any]]
-    current_pending_orders: list[dict[str, Any]]
-    account_info: dict[str, Any] | None
-    structure_analysis: dict[str, Any] | None
     calendar_events: list[dict[str, Any]] | None
-    market_context: MarketContextSummary | None
+    current_pending_orders: list[dict[str, Any]]
+    current_positions: list[dict[str, Any]]
     decision: DecisionOutput | None
-    review: ReviewVerdict | None
-    review_feedback: str | None
-    review_attempts: int
     errors: list[str]
     fatal_error: str | None
     final_output: dict[str, Any] | None
+    market_context: MarketContextSummary | None
+    review: ReviewVerdict | None
+    review_attempts: int
+    review_feedback: str | None
+    structure_analysis: dict[str, Any] | None
+    symbol: str
+    symbol_price: dict[str, Any] | None
 
 
 class TradingGraph:
@@ -245,6 +243,7 @@ class TradingGraph:
         synthesizer: Any,
         decider: Any,
         reviewer: Any,
+        max_review_attempts: int | None = None,
     ) -> None:
         """Initialize trading graph with dependencies.
 
@@ -255,6 +254,7 @@ class TradingGraph:
             synthesizer: SynthesizerAgent
             decider: DeciderAgent
             reviewer: ReviewerAgent
+            max_review_attempts: Maximum review retry attempts (default from Settings)
         """
         self.data_provider = data_provider
         self.structure_analyzer = structure_analyzer
@@ -262,6 +262,11 @@ class TradingGraph:
         self.synthesizer = synthesizer
         self.decider = decider
         self.reviewer = reviewer
+        self.max_review_attempts = (
+            max_review_attempts
+            if max_review_attempts is not None
+            else Settings().max_review_attempts
+        )
         self._snapshot_builder = SnapshotBuilder()
 
         self.graph = self._build_graph()
@@ -308,12 +313,12 @@ class TradingGraph:
         try:
             current_positions = self.data_provider.get_positions(symbol)
             current_pending_orders = self.data_provider.get_pending_orders(symbol)
-            account_info = self.data_provider.get_symbol_price(symbol)
+            symbol_price_data = self.data_provider.get_symbol_price(symbol)
 
             return {
                 "current_positions": current_positions,
                 "current_pending_orders": current_pending_orders,
-                "account_info": account_info,
+                "symbol_price": symbol_price_data,
             }
         except Exception as e:
             msg = f"Data fetch failed: {e}"
@@ -521,13 +526,13 @@ class TradingGraph:
                 return {"fatal_error": "No market context available — cannot decide"}
 
             feedback = state.get("review_feedback")
-            attempts = state.get("review_attempts", 0) + 1
+            attempts = state.get("review_attempts", 0)
 
             decision = self.decider.decide(
                 context=context,
                 positions=state.get("current_positions", []),
                 pending_orders=state.get("current_pending_orders", []),
-                feedback=feedback if attempts > 1 else None,
+                feedback=feedback if attempts > 0 else None,
                 current_price=context.current_price,
             )
             return {"decision": decision, "review_attempts": attempts}
@@ -562,7 +567,11 @@ class TradingGraph:
                 feedback = f"Concerns: {verdict.concerns}\n"
                 feedback += f"Suggestions: {verdict.suggested_improvements}"
 
-            return {"review": verdict, "review_feedback": feedback}
+            return {
+                "review": verdict,
+                "review_feedback": feedback,
+                "review_attempts": state.get("review_attempts", 0) + 1,
+            }
         except Exception as e:
             msg = f"Review failed: {e}"
             logger.error(msg)
@@ -577,7 +586,7 @@ class TradingGraph:
 
         if review and review.approved:
             return "end"
-        elif attempts < MAX_REVIEW_ATTEMPTS:
+        elif attempts <= self.max_review_attempts:
             return "retry"
         else:
             return "end"
@@ -594,21 +603,20 @@ class TradingGraph:
         logger.info("Starting analysis for %s", symbol)
 
         initial_state = AgentState(
-            symbol=symbol,
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
             calendar_events=None,
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=None,
+            symbol=symbol,
+            symbol_price=None,
         )
 
         result: dict[str, Any] = self.graph.invoke(initial_state)

@@ -175,19 +175,13 @@ def test_latest_closed_candle_time_matches_last_bar():
     assert snapshot["latest_closed_candle_time"] == last_time
 
 
-def test_engine_allowed_top_level_updated():
-    """Module-level _ENGINE_ALLOWED_TOP_LEVEL must not have _utc fields."""
-    from src.data.snapshot_builder import _ENGINE_ALLOWED_TOP_LEVEL
+def test_no_dead_constants():
+    """_ENGINE_ALLOWED_TOP_LEVEL and _ENGINE_ALLOWED_BAR must not exist (will be removed)."""
+    import pytest
 
-    assert "retrieved_at_utc" not in _ENGINE_ALLOWED_TOP_LEVEL
-    assert "retrieved_at" in _ENGINE_ALLOWED_TOP_LEVEL
-    assert "latest_closed_candle_time_utc" not in _ENGINE_ALLOWED_TOP_LEVEL
-    assert "latest_closed_candle_time" in _ENGINE_ALLOWED_TOP_LEVEL
+    import src.data.snapshot_builder as sb
 
-
-def test_engine_allowed_bar_updated():
-    """Module-level _ENGINE_ALLOWED_BAR must not have _utc fields."""
-    from src.data.snapshot_builder import _ENGINE_ALLOWED_BAR
-
-    assert "open_time_utc" not in _ENGINE_ALLOWED_BAR
-    assert "open_time" in _ENGINE_ALLOWED_BAR
+    with pytest.raises(AttributeError):
+        _ = sb._ENGINE_ALLOWED_TOP_LEVEL
+    with pytest.raises(AttributeError):
+        _ = sb._ENGINE_ALLOWED_BAR

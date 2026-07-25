@@ -8,20 +8,6 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_ENGINE_ALLOWED_TOP_LEVEL = {
-    "schema_version",
-    "source",
-    "market",
-    "timeframe",
-    "requested_timeframe",
-    "returned_timeframe",
-    "retrieved_at",
-    "latest_closed_candle_time",
-    "candle_closure_verified",
-    "bars",
-}
-_ENGINE_ALLOWED_BAR = {"open_time", "open", "high", "low", "close", "closed"}
-
 
 class SnapshotBuilder:
     """Builds normalized snapshots from MCP CSV data.

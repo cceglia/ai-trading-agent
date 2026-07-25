@@ -9,8 +9,9 @@ class TestReasoningEffortSettings:
     These tests will fail RED (AttributeError) until the field is implemented.
     """
 
-    def test_reasoning_effort_default_is_empty_string(self):
+    def test_reasoning_effort_default_is_empty_string(self, monkeypatch: pytest.MonkeyPatch):
         """openai_reasoning_effort defaults to empty string (not set)."""
+        monkeypatch.setenv("TRADING_OPENAI_REASONING_EFFORT", "")
         assert Settings().openai_reasoning_effort == ""
 
     def test_reasoning_effort_from_env(self, monkeypatch: pytest.MonkeyPatch):

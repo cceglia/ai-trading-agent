@@ -9,7 +9,16 @@ from typing import Any
 
 from config.settings import Settings
 
+_settings: Settings | None = None
+
 logger = logging.getLogger(__name__)
+
+
+def _get_settings() -> Settings:
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
 def _cache_path(timeframe: str, symbol: str, cache_date: datetime) -> str:
@@ -23,7 +32,7 @@ def _cache_path(timeframe: str, symbol: str, cache_date: datetime) -> str:
     Returns:
         Path like "analysis/2026/07/21/XAUUSD/h4-16-analysis.json"
     """
-    settings = Settings()
+    settings = _get_settings()
 
     if timeframe == "D1":
         filename = "d1-analysis.json"
@@ -52,7 +61,7 @@ def _candle_period(timeframe: str, broker_now: datetime) -> tuple[datetime, date
     Raises:
         ValueError: If timeframe is not supported for caching
     """
-    settings = Settings()
+    settings = _get_settings()
 
     if timeframe == "MTF":
         return _candle_period("D1", broker_now)

@@ -9,7 +9,7 @@ from src.decision.models import (
     MarketContextSummary,
     ReviewVerdict,
 )
-from src.orchestrator.graph import MAX_REVIEW_ATTEMPTS, AgentState, TradingGraph
+from src.orchestrator.graph import AgentState, TradingGraph
 
 
 @pytest.fixture
@@ -107,24 +107,62 @@ class TestTradingGraphInit:
         assert trading_graph.reviewer is not None
 
 
+def test_trading_graph_accepts_max_review_attempts(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+):
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+        max_review_attempts=3,
+    )
+    assert graph.max_review_attempts == 3
+
+
+def test_trading_graph_defaults_max_review_attempts_from_settings(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+):
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+    )
+    assert graph.max_review_attempts == 2
+
+
 class TestTradingGraphNodes:
     def test_fetch_data_calls_provider(self, trading_graph, mock_data_provider):
         state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
             calendar_events=None,
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=None,
+            symbol="EURUSD",
+            symbol_price=None,
         )
         result = trading_graph._fetch_data(state)
         mock_data_provider.get_positions.assert_called_with("EURUSD")
@@ -135,42 +173,40 @@ class TestTradingGraphNodes:
     def test_fetch_data_handles_error(self, trading_graph, mock_data_provider):
         mock_data_provider.get_positions.side_effect = Exception("Connection lost")
         state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
             calendar_events=None,
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=None,
+            symbol="EURUSD",
+            symbol_price=None,
         )
         result = trading_graph._fetch_data(state)
         assert result["fatal_error"] == "Data fetch failed: Connection lost"
 
     def test_evaluate_calendar_fetches_events(self, trading_graph, mock_calendar_provider):
         state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=None,
             calendar_events=None,
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=None,
+            symbol="EURUSD",
+            symbol_price=None,
         )
         result = trading_graph._evaluate_calendar(state)
         mock_calendar_provider.fetch_events.assert_called_once()
@@ -197,7 +233,7 @@ class TestReviewRouting:
     def test_review_to_end_when_max_attempts(self, trading_graph):
         state = {
             "review": ReviewVerdict(approved=False, reasoning="Bad"),
-            "review_attempts": MAX_REVIEW_ATTEMPTS,
+            "review_attempts": trading_graph.max_review_attempts + 1,
             "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "end"
@@ -213,15 +249,15 @@ class TestReviewRouting:
     def test_review_ends_when_no_review_and_max_attempts(self, trading_graph):
         state = {
             "review": None,
-            "review_attempts": MAX_REVIEW_ATTEMPTS,
+            "review_attempts": trading_graph.max_review_attempts + 1,
             "fatal_error": None,
         }
         assert trading_graph._review_to_decide(state) == "end"
 
 
 class TestMaxReviewAttempts:
-    def test_constant_value(self):
-        assert MAX_REVIEW_ATTEMPTS == 2
+    def test_constant_value(self, trading_graph):
+        assert trading_graph.max_review_attempts == 2
 
 
 def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
@@ -263,21 +299,20 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
     result = graph._analyze_structure(state)
 
@@ -349,21 +384,20 @@ def test_analyze_structure_fetches_all_when_no_cache(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
     result = graph._analyze_structure(state)
 
@@ -405,21 +439,20 @@ def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="EURUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="EURUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -476,21 +509,20 @@ def test_analyze_structure_uses_preferred_bars(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="EURUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="EURUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -542,21 +574,20 @@ def test_analyze_structure_uses_broker_time_not_utc(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -621,21 +652,20 @@ def test_analyze_structure_full_cache_hit(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -702,21 +732,20 @@ def test_analyze_structure_cache_hit_confluence_correct(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -780,21 +809,20 @@ def test_analyze_structure_cache_hit_mtf_missing(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -856,21 +884,20 @@ def test_analyze_structure_partial_cache_miss(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -929,21 +956,20 @@ def test_analyze_structure_corrupt_cache_fallback(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -991,21 +1017,20 @@ def test_analyze_structure_fresh_saves_mtf_cache(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -1053,21 +1078,20 @@ def test_analyze_structure_saves_h1_cache(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -1102,21 +1126,20 @@ def test_analyze_structure_handles_broker_time_failure(tmp_path, monkeypatch):
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     result = graph._analyze_structure(state)
@@ -1157,21 +1180,20 @@ def test_analyze_structure_passes_broker_time_to_get_candles(tmp_path, monkeypat
     )
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -1224,21 +1246,20 @@ def test_analyze_structure_passes_broker_time_to_snapshot_builder(tmp_path, monk
     graph._snapshot_builder = mock_builder
 
     state = AgentState(
-        symbol="XAUUSD",
-        market_data={},
-        current_positions=[],
-        current_pending_orders=[],
-        account_info=None,
-        structure_analysis=None,
         calendar_events=None,
-        market_context=None,
+        current_pending_orders=[],
+        current_positions=[],
         decision=None,
-        review=None,
-        review_feedback=None,
-        review_attempts=0,
         errors=[],
         fatal_error=None,
         final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=None,
+        symbol="XAUUSD",
+        symbol_price=None,
     )
 
     graph._analyze_structure(state)
@@ -1298,21 +1319,20 @@ class TestSynthesizeContextCanonicalPrice:
         current_price_time, so the call kwargs assertion fails.
         """
         state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=_canonical_structure_analysis(),
             calendar_events=[],
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=_canonical_structure_analysis(),
+            symbol="EURUSD",
+            symbol_price=None,
         )
 
         result = trading_graph._synthesize_context(state)
@@ -1345,21 +1365,20 @@ class TestSynthesizeContextCanonicalPrice:
         assert returned.current_price is None
 
         state = AgentState(
-            symbol="EURUSD",
-            market_data={},
-            current_positions=[],
-            current_pending_orders=[],
-            account_info=None,
-            structure_analysis=_canonical_structure_analysis(),
             calendar_events=[],
-            market_context=None,
+            current_pending_orders=[],
+            current_positions=[],
             decision=None,
-            review=None,
-            review_feedback=None,
-            review_attempts=0,
             errors=[],
             fatal_error=None,
             final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=_canonical_structure_analysis(),
+            symbol="EURUSD",
+            symbol_price=None,
         )
 
         result = trading_graph._synthesize_context(state)
@@ -1368,3 +1387,212 @@ class TestSynthesizeContextCanonicalPrice:
         # the canonical price even though the LLM omitted it.
         assert result["market_context"].current_price == 1.12
         assert result["market_context"].current_price_time == "2024-01-03T20:00:00"
+
+
+# =============================================================================
+# TASK-1: AgentState rename account_info→symbol_price + remove market_data
+# =============================================================================
+
+
+def test_agentstate_rejects_account_info():
+    """AgentState must NOT have 'account_info'; it must have 'symbol_price' instead.
+
+    This validates the rename was applied to the type definition.
+    See task: Rename account_info → symbol_price in AgentState TypedDict.
+    """
+    assert "account_info" not in AgentState.__annotations__, (
+        "AgentState still has 'account_info' — it must be renamed to 'symbol_price'"
+    )
+    assert "symbol_price" in AgentState.__annotations__, (
+        "AgentState missing 'symbol_price' — it must be renamed from 'account_info'"
+    )
+
+
+def test_agentstate_rejects_market_data():
+    """AgentState must NOT have 'market_data' — the dead field was removed.
+
+    This validates the removal was applied to the type definition.
+    See task: Remove dead market_data field from AgentState.
+    """
+    assert "market_data" not in AgentState.__annotations__, (
+        "AgentState still has 'market_data' — it must be removed"
+    )
+
+
+# =============================================================================
+# TASK-3: Review Attempts Off-By-One — Retry cycle tests
+# =============================================================================
+
+
+def test_full_retry_cycle_gives_max_plus_one_decisions(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+    tmp_path,
+    monkeypatch,
+):
+    """With max_review_attempts=2, decider.decide must be called exactly 3 times
+    (1 original + 2 retries) when the reviewer always rejects.
+
+    RED: today _review_to_decide uses ``<`` so max_review_attempts=2 yields only
+    2 decisions (1 original + 1 retry).
+    """
+    from datetime import datetime
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    # Reviewer always rejects → triggers retry loop
+    mock_reviewer.review.return_value = ReviewVerdict(
+        approved=False,
+        reasoning="Risk too high",
+        concerns=["Position size exceeds limits"],
+        suggested_improvements="Reduce position size by 50%",
+    )
+
+    # Structure analyzer returns valid multi-timeframe result
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+        max_review_attempts=2,
+    )
+
+    graph.run("EURUSD")
+
+    assert mock_decider.decide.call_count == 3, (
+        f"Expected 3 decide calls with max_review_attempts=2 (1 original + 2 retries), "
+        f"got {mock_decider.decide.call_count}"
+    )
+
+
+def test_feedback_sent_on_all_retries(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+    tmp_path,
+    monkeypatch,
+):
+    """With max_review_attempts=2, feedback must be forwarded to decider.decide
+    on every retry call (calls 2 and 3), not just the first retry.
+
+    RED: today _review_to_decide short-circuits after 2 total decisions,
+    so this test never reaches call index 2.
+    """
+    from datetime import datetime
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_reviewer.review.return_value = ReviewVerdict(
+        approved=False,
+        reasoning="Risk too high",
+        concerns=["Position size exceeds limits"],
+        suggested_improvements="Reduce position size by 50%",
+    )
+
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+        max_review_attempts=2,
+    )
+
+    graph.run("EURUSD")
+
+    assert mock_decider.decide.call_count == 3, (
+        f"Need 3 decide calls to check feedback on retries, got {mock_decider.decide.call_count}"
+    )
+
+    call_2_kwargs = mock_decider.decide.call_args_list[1].kwargs
+    assert call_2_kwargs.get("feedback") is not None, (
+        f"Expected feedback on retry 1 (call 2), got {call_2_kwargs.get('feedback')!r}"
+    )
+
+    call_3_kwargs = mock_decider.decide.call_args_list[2].kwargs
+    assert call_3_kwargs.get("feedback") is not None, (
+        f"Expected feedback on retry 2 (call 3), got {call_3_kwargs.get('feedback')!r}"
+    )
+
+
+def test_first_decide_has_no_feedback(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+    tmp_path,
+    monkeypatch,
+):
+    """The first call to decider.decide must have feedback=None.
+
+    This may already be GREEN because _decide checks ``attempts > 1``
+    before forwarding feedback.
+    """
+    from datetime import datetime
+
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+    )
+
+    graph.run("EURUSD")
+
+    assert mock_decider.decide.call_count >= 1
+    call_1_kwargs = mock_decider.decide.call_args_list[0].kwargs
+    assert call_1_kwargs.get("feedback") is None, (
+        f"Expected feedback=None on first decide, got {call_1_kwargs.get('feedback')!r}"
+    )

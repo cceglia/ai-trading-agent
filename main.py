@@ -212,12 +212,6 @@ def main() -> None:
             if suggestions:
                 print(f"  Suggestions    : {suggestions}")
 
-        errors = result.get("errors") or []
-        if errors:
-            print(f"\n  ⚠️  Errors ({len(errors)}):")
-            for err in errors:
-                print(f"    • {err}")
-
         print(f"\n{'=' * 60}\n")
 
     except Exception as e:
