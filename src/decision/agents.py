@@ -23,6 +23,7 @@ class SynthesizerAgent:
         model: str = "gpt-4o",
         api_key: str | None = None,
         base_url: str | None = None,
+        reasoning_effort: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -34,6 +35,7 @@ class SynthesizerAgent:
                 openai_kwargs["base_url"] = base_url
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
+        self.reasoning_effort = reasoning_effort
 
     def synthesize(
         self,
@@ -46,10 +48,10 @@ class SynthesizerAgent:
     ) -> MarketContextSummary:
         logger.info("Synthesizing context for %s", symbol)
 
-        result = self.client.create(
-            model=self.model,
-            response_model=MarketContextSummary,
-            messages=[
+        create_kwargs: dict[str, Any] = {
+            "model": self.model,
+            "response_model": MarketContextSummary,
+            "messages": [
                 {"role": "system", "content": SYNTHESIZER_SYSTEM_PROMPT},
                 {
                     "role": "user",
@@ -61,10 +63,13 @@ class SynthesizerAgent:
                     ),
                 },
             ],
-        )
+        }
+        if self.reasoning_effort:
+            create_kwargs["reasoning_effort"] = self.reasoning_effort
+        result = self.client.create(**create_kwargs)
 
         logger.info("Synthesis complete: bias=%s confidence=%s", result.bias, result.confidence)
-        return result
+        return result  # type: ignore[no-any-return]
 
 
 class DeciderAgent:
@@ -76,6 +81,7 @@ class DeciderAgent:
         model: str = "gpt-4o",
         api_key: str | None = None,
         base_url: str | None = None,
+        reasoning_effort: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -87,6 +93,7 @@ class DeciderAgent:
                 openai_kwargs["base_url"] = base_url
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
+        self.reasoning_effort = reasoning_effort
 
     def decide(
         self,
@@ -108,17 +115,20 @@ class DeciderAgent:
         if feedback:
             prompt += f"\nReviewer feedback: {feedback}"
 
-        result = self.client.create(
-            model=self.model,
-            response_model=DecisionOutput,
-            messages=[
+        create_kwargs: dict[str, Any] = {
+            "model": self.model,
+            "response_model": DecisionOutput,
+            "messages": [
                 {"role": "system", "content": DECIDER_SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
             ],
-        )
+        }
+        if self.reasoning_effort:
+            create_kwargs["reasoning_effort"] = self.reasoning_effort
+        result = self.client.create(**create_kwargs)
 
         logger.info("Decision: action=%s", result.action)
-        return result
+        return result  # type: ignore[no-any-return]
 
 
 class ReviewerAgent:
@@ -130,6 +140,7 @@ class ReviewerAgent:
         model: str = "gpt-4o",
         api_key: str | None = None,
         base_url: str | None = None,
+        reasoning_effort: str | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -141,6 +152,7 @@ class ReviewerAgent:
                 openai_kwargs["base_url"] = base_url
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
+        self.reasoning_effort = reasoning_effort
 
     def review(
         self,
@@ -150,10 +162,10 @@ class ReviewerAgent:
     ) -> ReviewVerdict:
         logger.info("Reviewing decision for %s", decision.symbol)
 
-        result = self.client.create(
-            model=self.model,
-            response_model=ReviewVerdict,
-            messages=[
+        create_kwargs: dict[str, Any] = {
+            "model": self.model,
+            "response_model": ReviewVerdict,
+            "messages": [
                 {"role": "system", "content": REVIEWER_SYSTEM_PROMPT},
                 {
                     "role": "user",
@@ -164,7 +176,10 @@ class ReviewerAgent:
                     ),
                 },
             ],
-        )
+        }
+        if self.reasoning_effort:
+            create_kwargs["reasoning_effort"] = self.reasoning_effort
+        result = self.client.create(**create_kwargs)
 
         logger.info("Review complete: approved=%s", result.approved)
-        return result
+        return result  # type: ignore[no-any-return]

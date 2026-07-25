@@ -49,21 +49,25 @@ def main() -> None:
         # Convert empty strings to None (agents expect str | None)
         api_key = settings.openai_api_key or None
         base_url = settings.openai_base_url or None
+        reasoning_effort = settings.openai_reasoning_effort or None
 
         synthesizer = SynthesizerAgent(
             model=settings.openai_model,
             api_key=api_key,
             base_url=base_url,
+            reasoning_effort=reasoning_effort,
         )
         decider = DeciderAgent(
             model=settings.openai_model,
             api_key=api_key,
             base_url=base_url,
+            reasoning_effort=reasoning_effort,
         )
         reviewer = ReviewerAgent(
             model=settings.openai_model,
             api_key=api_key,
             base_url=base_url,
+            reasoning_effort=reasoning_effort,
         )
 
         graph = TradingGraph(

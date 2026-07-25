@@ -3,6 +3,22 @@ import pytest
 from config.settings import Settings
 
 
+class TestReasoningEffortSettings:
+    """Tests for the new openai_reasoning_effort Settings field.
+
+    These tests will fail RED (AttributeError) until the field is implemented.
+    """
+
+    def test_reasoning_effort_default_is_empty_string(self):
+        """openai_reasoning_effort defaults to empty string (not set)."""
+        assert Settings().openai_reasoning_effort == ""
+
+    def test_reasoning_effort_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        """TRADING_OPENAI_REASONING_EFFORT env var overrides the default."""
+        monkeypatch.setenv("TRADING_OPENAI_REASONING_EFFORT", "high")
+        assert Settings().openai_reasoning_effort == "high"
+
+
 class TestTerminalSettings:
     """Tests for the new terminal_server_url and terminal_api_key Settings fields.
 

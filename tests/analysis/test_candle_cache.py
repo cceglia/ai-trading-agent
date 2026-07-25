@@ -86,10 +86,11 @@ def test_cache_path_h4_hour_04_is_zero_padded():
 # =============================================================================
 
 
-def test_d1_candle_period_before_close():
+def test_d1_candle_period_before_close(monkeypatch):
     """Before D1 close (17:00), the last closed candle is yesterday's."""
     from src.analysis.candle_cache import _candle_period
 
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
     # Before D1 close (17:00) -> last candle is yesterday's
     now = datetime(2026, 7, 21, 14, 0)
     start, end = _candle_period("D1", now)
@@ -97,10 +98,11 @@ def test_d1_candle_period_before_close():
     assert end == datetime(2026, 7, 21, 17, 0)
 
 
-def test_d1_candle_period_after_close():
+def test_d1_candle_period_after_close(monkeypatch):
     """After D1 close (17:00), the current candle is today's."""
     from src.analysis.candle_cache import _candle_period
 
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
     now = datetime(2026, 7, 21, 18, 0)
     start, end = _candle_period("D1", now)
     assert start == datetime(2026, 7, 21, 17, 0)
@@ -162,10 +164,11 @@ def test_h1_candle_period_midnight():
 # =============================================================================
 
 
-def test_get_cache_date_d1_before_close():
+def test_get_cache_date_d1_before_close(monkeypatch):
     """Before D1 close, cache date is yesterday's date (from period_start)."""
     from src.analysis.candle_cache import _get_cache_date
 
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
     now = datetime(2026, 7, 21, 14, 0)  # before close -> yesterday's candle
     cache_date = _get_cache_date("D1", now)
     # folder date = 2026-07-20 (yesterday's candle), no hour needed for D1
@@ -488,9 +491,11 @@ def test_cache_path_mtf_uses_d1_date(tmp_path, monkeypatch):
 # =============================================================================
 
 
-def test_settings_has_d1_close_time():
+def test_settings_has_d1_close_time(monkeypatch):
     from config.settings import Settings
 
+    # Explicitly set the env so it's not influenced by .env
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
     s = Settings()
     assert hasattr(s, "d1_close_time")
     assert s.d1_close_time == "17:00"

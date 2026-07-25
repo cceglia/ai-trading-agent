@@ -45,9 +45,5 @@
   "43": "test_analyze_structure_fetches_all_when_no_cache",
   "44": "test_analyze_structure_fresh_saves_mtf_cache",
   "45": "test_analyze_structure_cache_hit_confluence_correct",
-  "46": "test_analyze_structure_cache_hit_mtf_missing",
-  "47": "test_analyze_structure_converts_csv_to_snapshots",
-  "48": "test_analyze_structure_uses_preferred_bars",
-  "49": "test_analyze_structure_cache_hit_confluence_correct",
-  "50": "test_analyze_structure_corrupt_cache_fallback"
+  "46": "test_analyze_structure_cache_hit_mtf_missing"
 }

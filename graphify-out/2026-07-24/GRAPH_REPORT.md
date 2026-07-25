@@ -1,12 +1,12 @@
-# Graph Report - Agent  (2026-07-25)
+# Graph Report - Agent  (2026-07-24)
 
 ## Corpus Check
-- 41 files · ~19,675 words
+- 41 files · ~19,245 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 630 nodes · 1141 edges · 51 communities (39 shown, 12 thin omitted)
-- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 171 edges (avg confidence: 0.54)
+- 612 nodes · 1108 edges · 47 communities (38 shown, 9 thin omitted)
+- Extraction: 85% EXTRACTED · 15% INFERRED · 0% AMBIGUOUS · INFERRED: 163 edges (avg confidence: 0.54)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -51,19 +51,15 @@
 - test_analyze_structure_fresh_saves_mtf_cache
 - test_analyze_structure_cache_hit_confluence_correct
 - test_analyze_structure_cache_hit_mtf_missing
-- test_analyze_structure_converts_csv_to_snapshots
-- test_analyze_structure_uses_preferred_bars
-- test_analyze_structure_cache_hit_confluence_correct
-- test_analyze_structure_corrupt_cache_fallback
 
 ## God Nodes (most connected - your core abstractions)
-1. `MarketContextSummary` - 51 edges
+1. `MarketContextSummary` - 49 edges
 2. `AgentState` - 42 edges
 3. `TradingGraph` - 40 edges
-4. `SynthesizerAgent` - 39 edges
-5. `TerminalDataProvider` - 36 edges
-6. `DecisionOutput` - 36 edges
-7. `SnapshotBuilder` - 35 edges
+4. `TerminalDataProvider` - 36 edges
+5. `DecisionOutput` - 36 edges
+6. `SnapshotBuilder` - 35 edges
+7. `SynthesizerAgent` - 32 edges
 8. `ReviewVerdict` - 32 edges
 9. `_make_mcp_result()` - 32 edges
 10. `Evaluator` - 31 edges
@@ -83,15 +79,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (51 total, 12 thin omitted)
+## Communities (47 total, 9 thin omitted)
 
 ### Community 0 - "MarketContextSummary"
-Cohesion: 0.15
-Nodes (13): BiasLevel, DecisionAction, MarketContextSummary, Structural bias levels., Summary of market context from synthesizer agent., StrEnum, sample_decision(), sample_market_context() (+5 more)
+Cohesion: 0.11
+Nodes (18): BaseModel, BiasLevel, DecisionAction, DecisionOutput, Structural bias levels., Decision output from decider agent., Review verdict from reviewer agent., ReviewVerdict (+10 more)
 
 ### Community 1 - "Mt5DataProvider"
-Cohesion: 0.10
-Nodes (19): BaseSettings, Trading agent configuration., Settings, main(), Trading AI Agent - CLI Entry Point., MonkeyPatch, Configure structured logging for the trading agent., setup_logging() (+11 more)
+Cohesion: 0.14
+Nodes (14): BaseSettings, Trading agent configuration., Settings, MonkeyPatch, openai_reasoning_effort defaults to empty string (not set)., TRADING_OPENAI_REASONING_EFFORT env var overrides the default., Tests for the new terminal_server_url and terminal_api_key Settings fields., Settings().terminal_server_url returns the default MCP URL. (+6 more)
 
 ### Community 2 - "DataSource"
 Cohesion: 0.09
@@ -99,7 +95,7 @@ Nodes (19): Protocol, CalendarProvider, DataSource, Any, datetime, Fetch OHLC ca
 
 ### Community 3 - "AgentState"
 Cohesion: 0.11
-Nodes (13): mock_decider(), mock_reviewer(), mock_synthesizer(), _analyze_structure must call get_broker_time() instead of datetime.now(UTC)., When all 3 TFs + MTF are cached, must NOT call get_candles., When per-TF files exist but MTF is missing, must fall back to fresh fetch., When only 2 of 3 TFs are cached, must fetch all fresh., test_analyze_structure_cache_hit_mtf_missing() (+5 more)
+Nodes (14): mock_decider(), mock_reviewer(), mock_synthesizer(), get_candles must be called with broker_time param., _analyze_structure must fetch all three timeframes fresh (no partial cache)., _analyze_structure must request preferred_bars for each timeframe., When only 2 of 3 TFs are cached, must fetch all fresh., Corrupt per-TF cache file must not crash — fall back to fresh fetch. (+6 more)
 
 ### Community 4 - "SnapshotBuilder"
 Cohesion: 0.07
@@ -118,8 +114,8 @@ Cohesion: 0.09
 Nodes (4): LLM prompts with embedded rules.json content., TestDeciderPrompt, TestReviewerPrompt, TestSynthesizerPrompt
 
 ### Community 8 - "SynthesizerAgent"
-Cohesion: 0.15
-Nodes (10): LangGraph orchestrator for trading analysis., Analyze market structure with candle-aligned caching.          The multi-timefra, Run the trading graph for a symbol.          Args:             symbol: Trading s, TradingGraph, H1 analysis must now be saved to cache like D1/H4., If get_broker_time() fails, _analyze_structure should set fatal_error., get_candles must be called with broker_time param., test_analyze_structure_handles_broker_time_failure() (+2 more)
+Cohesion: 0.12
+Nodes (11): Any, Build a compact version of structure analysis suitable for LLM prompts.      The, Fetch market data from MT5., Analyze market structure with candle-aligned caching.          The multi-timefra, Extract compact analytical fields from a single timeframe engine output.      Th, Evaluate calendar events., Synthesize market context., Make trading decision. (+3 more)
 
 ### Community 9 - "ForexFactoryCalendar"
 Cohesion: 0.16
@@ -130,8 +126,8 @@ Cohesion: 0.25
 Nodes (7): Agent Instructions, Architecture, Critical Invariants, graphify, Quick Commands, Testing, Toolchain
 
 ### Community 24 - "_make_mcp_tool_result"
-Cohesion: 0.27
-Nodes (4): _make_mcp_result(), Create a mock object mimicking mcp.types.CallToolResult.      Matches the real s, Verify get_broker_time returns naive datetime and sends correct request., TestGetBrokerTime
+Cohesion: 0.17
+Nodes (6): _make_mcp_result(), Verify get_candles returns correctly formatted CSV., Create a mock object mimicking mcp.types.CallToolResult.      Matches the real s, Verify get_broker_time returns naive datetime and sends correct request., TestGetBrokerTime, TestGetCandlesCsv
 
 ### Community 25 - "TerminalApiError"
 Cohesion: 0.24
@@ -150,48 +146,44 @@ Cohesion: 0.06
 Nodes (31): AbstractEventLoop, Any, datetime, Terminal MCP data provider via MCP Streamable HTTP protocol., Tear down MCP session., Call an MCP tool via the persistent session.          Returns:             CallT, Call an MCP tool with retry on transient failures.          Args:             to, Non-retryable server-side error from the terminal MCP server. (+23 more)
 
 ### Community 32 - "SynthesizerAgent"
-Cohesion: 0.10
-Nodes (12): Reviews trading decisions and provides feedback., ReviewerAgent, When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., ReviewerAgent must accept reasoning_effort param., ReviewerAgent must pass api_key to OpenAI constructor., review() must include reasoning_effort in create() kwargs when set., SynthesizerAgent must pass base_url to OpenAI constructor. (+4 more)
+Cohesion: 0.08
+Nodes (12): OpenAI, Synthesizes market context from structure analysis and calendar., SynthesizerAgent, SynthesizerAgent must pass both api_key and base_url when provided., When not specified, reasoning_effort defaults to None., SynthesizerAgent must pass base_url to OpenAI constructor., SynthesizerAgent must pass api_key to OpenAI constructor., When no base_url given, OpenAI() uses its own default. (+4 more)
 
 ### Community 33 - "MarketContextSummary"
-Cohesion: 0.13
-Nodes (15): Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., Empty string → None conversion in main.py (same pattern as api_key/base_url)., Agent must accept None reasoning_effort without error., Agent must accept empty string reasoning_effort (though main.py converts it)., End-to-end: reasoning_effort flows from constructor → create() kwargs., synthesize() must include reasoning_effort in create() kwargs when set. (+7 more)
+Cohesion: 0.12
+Nodes (13): DeciderAgent, Makes trading decisions based on market context., Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must accept reasoning_effort param., DeciderAgent must accept reasoning_effort param., DeciderAgent must pass api_key to OpenAI constructor., ReviewerAgent must pass api_key to OpenAI constructor. (+5 more)
 
 ### Community 34 - "setup_logging"
-Cohesion: 0.11
-Nodes (10): User prompt must render current_price and current_price_time values., When no price is supplied, the current-price line must state None., SynthesizerAgent must use SYNTHESIZER_SYSTEM_PROMPT from prompts.py., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs., DeciderAgent.decide must accept a current_price keyword argument., DeciderAgent user prompt must render the current_price anchor value., Regression guard: positional decide(context, [], []) must not raise., DeciderAgent must use DECIDER_SYSTEM_PROMPT from prompts.py. (+2 more)
+Cohesion: 0.18
+Nodes (5): Any, MarketContextSummary, Summary of market context from synthesizer agent., Regression guard: positional decide(context, [], []) must not raise., TestMarketContextSummary
 
 ### Community 35 - "DecisionOutput"
-Cohesion: 0.18
-Nodes (6): BaseModel, Review verdict from reviewer agent., ReviewVerdict, ReviewerAgent must use REVIEWER_SYSTEM_PROMPT from prompts.py., TestReviewVerdict, TestReviewRouting
+Cohesion: 0.40
+Nodes (3): CompiledStateGraph, Initialize trading graph with dependencies.          Args:             data_prov, Build the LangGraph StateGraph.
 
 ### Community 36 - "TestGetCandlesCsv"
-Cohesion: 0.13
-Nodes (9): OpenAI, DeciderAgent, Makes trading decisions based on market context., SynthesizerAgent must accept reasoning_effort param., When not specified, reasoning_effort defaults to None., DeciderAgent must accept reasoning_effort param., DeciderAgent must pass api_key to OpenAI constructor., decide() must include reasoning_effort in create() kwargs when set. (+1 more)
+Cohesion: 0.17
+Nodes (12): main(), Trading AI Agent - CLI Entry Point., LangGraph orchestrator for trading analysis., TradingGraph, snapshot_builder.build must be called with broker_time., When no cache files exist, all 3 TFs must be fetched fresh., _analyze_structure must use SnapshotBuilder to convert CSV to dicts., Fresh-fetch path must also save the MTF cache file. (+4 more)
 
 ### Community 37 - "_select_canonical_current_price"
-Cohesion: 0.33
-Nodes (6): RED-first tests for the canonical current-price selection helper (TASK-6).  Thes, Lazy-import the not-yet-existing helper so collection succeeds.      Raises ``Im, Build a single per-timeframe engine-output dict for the selector., _select_canonical_current_price(), TestSelectCanonicalCurrentPrice, _tf()
+Cohesion: 0.27
+Nodes (8): Select the canonical current price across timeframes.      The canonical current, _select_canonical_current_price(), RED-first tests for the canonical current-price selection helper (TASK-6).  Thes, Lazy-import the not-yet-existing helper so collection succeeds.      Raises ``Im, Build a single per-timeframe engine-output dict for the selector., _select_canonical_current_price(), TestSelectCanonicalCurrentPrice, _tf()
 
 ### Community 38 - "AgentState"
 Cohesion: 0.19
-Nodes (9): AgentState, State for the trading graph., Conditional edge from review to decide or end., snapshot_builder.build must be called with broker_time., Fresh-fetch path must also save the MTF cache file., test_analyze_structure_fresh_saves_mtf_cache(), test_analyze_structure_passes_broker_time_to_snapshot_builder(), TestTradingGraphNodes (+1 more)
+Nodes (9): AgentState, State for the trading graph., Conditional edge from review to decide or end., When all 3 TFs + MTF are cached, must NOT call get_candles., When per-TF files exist but MTF is missing, must fall back to fresh fetch., test_analyze_structure_cache_hit_mtf_missing(), test_analyze_structure_full_cache_hit(), TestTradingGraphNodes (+1 more)
+
+### Community 39 - "setup_logging"
+Cohesion: 0.36
+Nodes (3): Configure structured logging for the trading agent., setup_logging(), TestSetupLogging
 
 ### Community 40 - "graph.py"
-Cohesion: 0.40
-Nodes (3): CompiledStateGraph, Initialize trading graph with dependencies.          Args:             data_prov, Build the LangGraph StateGraph.
+Cohesion: 0.12
+Nodes (11): Reviews trading decisions and provides feedback., ReviewerAgent, ReviewerAgent must accept reasoning_effort param., ReviewerAgent must pass base_url to OpenAI constructor., Tests for prompt usage in agents., SynthesizerAgent must use SYNTHESIZER_SYSTEM_PROMPT from prompts.py., DeciderAgent.decide must accept a current_price keyword argument., DeciderAgent user prompt must render the current_price anchor value. (+3 more)
 
 ### Community 41 - "_canonical_structure_analysis"
 Cohesion: 0.33
 Nodes (4): _canonical_structure_analysis(), Build a structure_analysis fixture whose H1 timeframe has the     most-recent cl, _synthesize_context must compute the canonical current price from         the pe, Even when the LLM-returned summary has current_price=None, the         orchestra
-
-### Community 44 - "test_analyze_structure_fresh_saves_mtf_cache"
-Cohesion: 0.17
-Nodes (11): Any, Select the canonical current price across timeframes.      The canonical current, Build a compact version of structure analysis suitable for LLM prompts.      The, Fetch market data from MT5., Extract compact analytical fields from a single timeframe engine output.      Th, Evaluate calendar events., Synthesize market context., Make trading decision. (+3 more)
-
-### Community 45 - "test_analyze_structure_cache_hit_confluence_correct"
-Cohesion: 0.21
-Nodes (4): Any, DecisionOutput, Decision output from decider agent., TestDecisionOutput
 
 ### Community 46 - "test_analyze_structure_cache_hit_mtf_missing"
 Cohesion: 0.17
@@ -200,22 +192,22 @@ Nodes (7): reasoning_effort is a create()-level kwarg, not an OpenAI() construct
 ## Knowledge Gaps
 - **27 isolated node(s):** `trading-ai-agent`, `graphify`, `Quick Commands`, `Critical Invariants`, `Architecture` (+22 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `TradingGraph` connect `SynthesizerAgent` to `MarketContextSummary`, `Mt5DataProvider`, `DecisionOutput`, `SnapshotBuilder`, `AgentState`, `AgentState`, `graph.py`, `test_analyze_structure_handles_broker_time_failure`, `test_analyze_structure_fetches_all_when_no_cache`, `test_analyze_structure_fresh_saves_mtf_cache`, `test_analyze_structure_cache_hit_confluence_correct`, `test_analyze_structure_converts_csv_to_snapshots`, `test_analyze_structure_uses_preferred_bars`, `test_analyze_structure_cache_hit_confluence_correct`, `test_analyze_structure_corrupt_cache_fallback`?**
-  _High betweenness centrality (0.182) - this node is a cross-community bridge._
-- **Why does `TerminalDataProvider` connect `._run_async` to `Mt5DataProvider`, `setup_logging`, `_make_mcp_tool_result`, `TerminalApiError`, `test_terminal_data_provider.py`, `TestGetCandlesBrokerNow`, `TestGetPositions`, `TestGetPendingOrders`, `TestGetSymbolPrice`?**
-  _High betweenness centrality (0.167) - this node is a cross-community bridge._
-- **Why does `main()` connect `Mt5DataProvider` to `SynthesizerAgent`, `MarketContextSummary`, `TestGetCandlesCsv`, `SynthesizerAgent`, `ForexFactoryCalendar`, `._run_async`?**
+- **Why does `TradingGraph` connect `TestGetCandlesCsv` to `MarketContextSummary`, `setup_logging`, `DecisionOutput`, `SnapshotBuilder`, `AgentState`, `AgentState`, `SynthesizerAgent`, `test_analyze_structure_handles_broker_time_failure`, `test_analyze_structure_fetches_all_when_no_cache`, `test_analyze_structure_fresh_saves_mtf_cache`, `test_analyze_structure_cache_hit_confluence_correct`?**
+  _High betweenness centrality (0.189) - this node is a cross-community bridge._
+- **Why does `TerminalDataProvider` connect `._run_async` to `TestGetCandlesCsv`, `_make_mcp_tool_result`, `TerminalApiError`, `test_terminal_data_provider.py`, `TestGetCandlesBrokerNow`, `TestGetPositions`, `TestGetPendingOrders`, `TestGetSymbolPrice`?**
+  _High betweenness centrality (0.169) - this node is a cross-community bridge._
+- **Why does `main()` connect `TestGetCandlesCsv` to `SynthesizerAgent`, `Mt5DataProvider`, `MarketContextSummary`, `setup_logging`, `graph.py`, `ForexFactoryCalendar`, `._run_async`?**
   _High betweenness centrality (0.141) - this node is a cross-community bridge._
-- **Are the 23 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
-  _`MarketContextSummary` has 23 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 21 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
+  _`MarketContextSummary` has 21 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 9 inferred relationships involving `AgentState` (e.g. with `SnapshotBuilder` and `DecisionOutput`) actually correct?**
   _`AgentState` has 9 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 9 inferred relationships involving `TradingGraph` (e.g. with `SnapshotBuilder` and `DecisionOutput`) actually correct?**
   _`TradingGraph` has 9 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 10 inferred relationships involving `SynthesizerAgent` (e.g. with `DecisionOutput` and `MarketContextSummary`) actually correct?**
-  _`SynthesizerAgent` has 10 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 9 inferred relationships involving `TerminalDataProvider` (e.g. with `TestErrorHandling` and `TestGetBrokerTime`) actually correct?**
+  _`TerminalDataProvider` has 9 INFERRED edges - model-reasoned connections that need verification._

@@ -12,6 +12,10 @@ class Settings(BaseSettings):
         default="", description="OpenAI-compatible base URL (empty = use default)"
     )
 
+    openai_reasoning_effort: str = Field(
+        default="", description="OpenAI reasoning_effort (low/medium/high), empty = not set"
+    )
+
     # Terminal MCP Configuration
     terminal_server_url: str = Field(
         default="http://127.0.0.1:22346/mcp", description="Terminal MCP server URL for candle data"
