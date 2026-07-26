@@ -15,11 +15,18 @@ const allowedOrigins = process.env.CORS_ORIGINS?.split(",") || ["http://localhos
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json());
 
-const dataDir = process.env.DATA_DIR || "../data/runs";
+// Derive analyzer directory from server's own location (server/src/index.ts -> ../../analyzer)
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const analyzerDir = path.resolve(__dirname, "../../analyzer");
+
+// Data directory comes from TRADING_ANALYSIS_CACHE_DIR (single source of truth).
+// Matches the analyzer's default of "data/" when not set.
+const dataDir = process.env.TRADING_ANALYSIS_CACHE_DIR || path.resolve(analyzerDir, "data");
+
 const scanner = new ResultScanner(dataDir);
 const runner = new RunService(
   process.env.PYTHON_CMD || "python",
-  process.env.ANALYZER_DIR || ".",
+  analyzerDir,
   dataDir
 );
 
@@ -28,7 +35,6 @@ app.use("/api/run", createRunRouter(runner));
 
 // Serve the built UI in production
 if (process.env.NODE_ENV === "production") {
-  const __dirname = path.dirname(new URL(import.meta.url).pathname);
   const uiDistPath = path.join(__dirname, "../../ui/dist");
   if (fs.existsSync(uiDistPath)) {
     app.use(express.static(uiDistPath));
