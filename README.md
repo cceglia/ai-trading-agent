@@ -1,24 +1,42 @@
 # Trading AI Agent
 
-AI-powered trading agent for multi-timeframe market structure analysis, economic calendar monitoring, and advisory-only trading decision-making.
+AI-powered trading agent for multi-timeframe market structure analysis, economic calendar
+monitoring, and advisory-only trading decision-making. The full stack comprises a Python
+analysis engine, a Node.js REST API server, and a Vue 3 terminal-themed dashboard.
 
 ## Overview
 
-This agent combines a **16-module deterministic market structure engine** with **LLM-based decision synthesis** to provide advisory-only trading recommendations. It analyzes market structure across D1, H4, and H1 timeframes, evaluates economic calendar events, and produces structured trading decisions through a LangGraph orchestration pipeline with automated review loops.
+The agent combines a **16-module deterministic market structure engine** with **LLM-based
+decision synthesis** to provide advisory-only trading recommendations. It analyzes market
+structure across D1, H4, and H1 timeframes, evaluates economic calendar events, and produces
+structured trading decisions through a LangGraph orchestration pipeline with automated review
+loops.
+
+Results are written as JSON files to a versioned directory tree and served through a REST API
+with a corresponding web UI.
 
 **Key characteristics:**
 
 - **Advisory-only** — `entry_authorized` is always `False`; the system never executes trades
-- **Protocol-based dependency injection** — all dependencies wired via `DataSource`, `CalendarProvider`, and `StructureAnalyzer` protocols
-- **Deterministic market structure engine** — 16 self-contained modules for swing detection, BOS/CHoCH, liquidity, support/resistance, and confidence scoring
-- **LLM-enhanced synthesis** — context synthesis, decision generation, and independent review via structured output (Instructor + OpenAI)
-- **Cost-controlled** — `CostTracker` tracks per-symbol spend against configurable limits using model-specific pricing tables
+- **Protocol-based dependency injection** — all dependencies wired via `DataSource`,
+  `CalendarProvider`, and `StructureAnalyzer` protocols
+- **Deterministic market structure engine** — 16 self-contained modules for swing detection,
+  BOS/CHoCH, liquidity, support/resistance, and confidence scoring
+- **LLM-enhanced synthesis** — context synthesis, decision generation, and independent review
+  via structured output (Instructor + OpenAI)
+- **Cost-controlled** — `CostTracker` tracks per-symbol spend against configurable limits using
+  model-specific pricing tables
 - **Synthesizer caching** — caches identical analysis inputs to eliminate redundant LLM calls
-- **MTF candle caching** — disk-backed cache keyed by symbol/timeframe/close-time for faster re-analysis
-- **Knowledge graph** — graphify-updated dependency graph supports codebase queries and cross-file navigation
-- **Pre-commit hooks** — automated `ruff` lint+format, `mypy` static checks, and graphify update on commit
+- **MTF candle caching** — disk-backed cache keyed by symbol/timeframe/close-time for faster
+  re-analysis
+- **Knowledge graph** — graphify-updated dependency graph supports codebase queries and
+  cross-file navigation
+- **Pre-commit hooks** — automated `ruff` lint+format, `mypy` static checks, and graphify
+  update on commit
 
 ## Architecture
+
+### Analysis Pipeline (LangGraph State Machine)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -44,49 +62,72 @@ This agent combines a **16-module deterministic market structure engine** with *
 │                                        └────────────────────────┘  │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+```
 
-Dependencies (Protocol-based DI):
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│   DataSource     │  │StructureAnalyzer │  │CalendarProvider  │
-│   (Protocol)     │  │   (Protocol)     │  │   (Protocol)     │
-└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
-         │                     │                      │
-┌────────▼─────────┐  ┌────────▼─────────┐  ┌────────▼─────────┐
-│TerminalDataProv. │  │MarketStructure   │  │ForexFactory      │
-│  (MT5 via MCP)   │  │    Engine        │  │   Calendar       │
-└──────────────────┘  └──────────────────┘  └──────────────────┘
+### Service Architecture
 
-Supporting Modules:
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│   CandleCache    │  │   Synthesizer    │  │   CostTracker    │
-│ (MTF disk cache) │  │ Cache (LLM dedup)│  │ (model pricing)  │
-└──────────────────┘  └──────────────────┘  └──────────────────┘
+```
+┌──────────┐     HTTP/API      ┌──────────┐     spawns child     ┌──────────┐
+│  MT5 MCP │◄─────────────────►│ Analyzer │◄────────────────────►│  Server  │
+│ Terminal │  MCP Streamable   │ (Python) │   python main.py     │  (Node)  │
+│(host:22346)│                 │  (CLI)   │                      │(port 3000)│
+└──────────┘                   └────┬─────┘                      └────▲─────┘
+                                    │                                 │
+                                    │ reads/writes                    │ reads
+                                    ▼                                 │
+                            ┌──────────────┐                         │
+                            │    data/      │◄────────────────────────┘
+                            │  (JSON files) │    filesystem via ResultScanner
+                            └──────────────┘
+                                    ▲
+                                    │ HTTP (axios)
+                                    │
+                            ┌───────┴────────┐
+                            │  UI (Vue 3)    │
+                            │  Vite dev:5173 │
+                            │  Prod: served  │
+                            │  by Express    │
+                            └────────────────┘
 ```
 
 ### Design Principles
 
 - **SOLID**: Single responsibility per module, open for extension via protocols
-- **Dependency Injection**: All dependencies injected via protocol interfaces; orchestration code never imports concrete implementations
-- **Advisory-Only**: System never executes trades; `entry_authorized` is always `False` (enforced via invariant check)
+- **Dependency Injection**: All dependencies injected via protocol interfaces; orchestration
+  code never imports concrete implementations
+- **Advisory-Only**: System never executes trades; `entry_authorized` is always `False`
+  (enforced via invariant check)
 - **Cost Control**: Configurable per-symbol spend limits with model-specific token pricing
-- **Cache-Heavy**: Multi-level caching (candle data + synthesizer output) reduces redundant computation and LLM calls
-- **Broker-Local Time**: All time-sensitive operations align to broker/server time, not local wall clock
+- **Cache-Heavy**: Multi-level caching (candle data + synthesizer output) reduces redundant
+  computation and LLM calls
+- **Broker-Local Time**: All time-sensitive operations align to broker/server time, not local
+  wall clock
+
+## Services
+
+| Service | Language | Directory | Purpose |
+|---|---|---|---|
+| **Analyzer** (core) | Python 3.14+ | `analyzer/` | CLI-based trading analysis engine. Fetches MT5 data via MCP, runs 16-module deterministic market structure engine, synthesizes context via LLM, makes advisory decisions, and reviews them. |
+| **Server** (API) | Node.js/TypeScript | `server/` | Express REST API that serves analysis results from the filesystem and can trigger new analyses by spawning the Python analyzer as a child process. |
+| **UI** (frontend) | Vue 3 + Vite | `ui/` | Dark-terminal-themed web dashboard displaying analysis results, OHLC charts, run history, and a detail view for individual symbol analyses. |
 
 ## Installation
 
 ### Prerequisites
 
 - Python 3.11+
+- Node.js 20+
 - MetaTrader 5 terminal running (for live data) with a matching MCP server
 - OpenAI API key or compatible LLM endpoint
 
-### Setup
+### Native Setup
 
 ```bash
 # Clone the repository
 git clone <repository-url>
 cd Agent
 
+# --- Analyzer ---
 # Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
@@ -98,6 +139,16 @@ pip install -e .
 
 # Install dev dependencies (optional)
 pip install -e ".[dev]"
+
+# --- Server ---
+cd server
+npm install
+cd ..
+
+# --- UI ---
+cd ui
+npm install
+cd ..
 ```
 
 ### Environment Configuration
@@ -111,12 +162,13 @@ cp .env.template .env
 
 ## Configuration
 
-### Environment Variables
+### Environment Variables — Analyzer
 
-All settings use the `TRADING_` prefix and are loaded via `pydantic-settings` from `.env` or the environment.
+All settings use the `TRADING_` prefix and are loaded via `pydantic-settings` from `.env` or
+the environment.
 
 | Variable | Default | Description |
-|----------|---------|-------------|
+|---|---|---|
 | **Terminal / Data** | | |
 | `TRADING_TERMINAL_SERVER_URL` | `http://127.0.0.1:22346/mcp` | MCP server URL for MT5 candle data and positions |
 | `TRADING_TERMINAL_API_KEY` | — | Bearer token for terminal MCP server authentication |
@@ -140,6 +192,18 @@ All settings use the `TRADING_` prefix and are loaded via `pydantic-settings` fr
 | **Logging** | | |
 | `TRADING_LOG_LEVEL` | `INFO` | Logging level |
 
+### Environment Variables — Server
+
+These are loaded from the environment (or a `.env` file in `server/`) by the Express server.
+
+| Variable | Default | Description |
+|---|---|---|
+| `PORT` | `3000` | HTTP listen port |
+| `DATA_DIR` | `../data/runs` | Path to analysis result files (relative to `server/`) |
+| `PYTHON_CMD` | `python` | Python executable for spawning the analyzer |
+| `ANALYZER_DIR` | `.` | Working directory for the Python analyzer process |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed CORS origins |
+
 ### Default Model Pricing
 
 ```json
@@ -153,28 +217,29 @@ All settings use the `TRADING_` prefix and are loaded via `pydantic-settings` fr
 }
 ```
 
-Override via `TRADING_MODEL_PRICING` as a JSON environment variable. Any price set to `0` logs a warning — cost tracking will undercount.
+Override via `TRADING_MODEL_PRICING` as a JSON environment variable. Any price set to `0` logs
+a warning — cost tracking will undercount.
 
 ### Cost Analysis
 
 LLM calls per symbol pipeline:
 
 | Step | Calls | Description |
-|------|-------|-------------|
+|---|---|---|
 | 1. Synthesizer | 1 | Structure analysis + calendar → market context |
 | 2. Decider | 1 | Context + positions → decision |
 | 3. Reviewer | 1 | Context + decision → verdict |
 | 4. Decider retry | up to `MAX_REVIEW_ATTEMPTS` | Revised decision with reviewer feedback |
 | 5. Reviewer retry | up to `MAX_REVIEW_ATTEMPTS` | Re-review of revised decision |
 
-**Total: up to `(2 + 2 × MAX_REVIEW_ATTEMPTS)` LLM calls per symbol**
+**Total: up to `(2 + 2 x MAX_REVIEW_ATTEMPTS)` LLM calls per symbol**
 
 With default `MAX_REVIEW_ATTEMPTS=2`: **up to 6 calls per symbol**
 
 #### Token Estimates (GPT-4o)
 
 | Agent | Input tokens | Output tokens |
-|-------|-------------|--------------|
+|---|---|---|
 | Synthesizer | ~2,000 | ~500 |
 | Decider | ~1,500 | ~300 |
 | Reviewer | ~1,500 | ~200 |
@@ -190,7 +255,7 @@ With default `MAX_REVIEW_ATTEMPTS=2`: **up to 6 calls per symbol**
 
 ## Usage
 
-### CLI
+### Analyzer CLI
 
 ```bash
 # Analyze a single symbol
@@ -202,6 +267,31 @@ python main.py EURUSD --model DeepSeek-V4-Flash --base-url http://localhost:1143
 # Override log level
 python main.py EURUSD --log-level DEBUG
 ```
+
+### API Server
+
+```bash
+cd server
+npm run dev      # Development with hot-reload (tsx watch)
+npm run build    # TypeScript compile
+npm start        # Run compiled server (port 3000)
+```
+
+The server exposes:
+
+- `GET /api/runs` — List analysis runs (optional query params: `symbol`, `from`, `to`)
+- `GET /api/runs/:symbol/:year/:month/:day/:file` — Get a specific run result
+- `POST /api/run` — Trigger a new analysis (body: `{"symbols": ["EURUSD"], "model": "gpt-4o"}`)
+
+### UI Dashboard
+
+```bash
+cd ui
+npm run dev    # Vite dev server (port 5173, proxies /api to :3000)
+npm run build  # Production build → ui/dist/
+```
+
+In production the Express server serves the built UI files from `ui/dist/`.
 
 ### Programmatic Usage
 
@@ -269,111 +359,116 @@ result = graph.run("EURUSD")
 ## Project Structure
 
 ```
-├── main.py                          # CLI entry point
-├── config/
-│   └── settings.py                  # Pydantic BaseSettings with env prefix TRADING_
-├── src/
-│   ├── logging_config.py            # Logging configuration
-│   ├── analysis/
-│   │   ├── candle_cache.py          # MTF candle data disk cache
-│   │   ├── structure_analyzer.py    # Protocol adapter → engine
-│   │   └── market_structure_engine/ # 16-module deterministic engine
-│   │       ├── candles.py           # Candle data handling
-│   │       ├── config.py            # Engine configuration
-│   │       ├── context.py           # Analysis context
-│   │       ├── engine.py            # Core engine pipeline
-│   │       ├── errors.py            # Error definitions
-│   │       ├── events.py            # BOS/CHoCH detection
-│   │       ├── indicators.py        # Technical indicators
-│   │       ├── levels.py            # Support/resistance mapping
-│   │       ├── liquidity.py         # Liquidity analysis
-│   │       ├── review.py            # Analysis review
-│   │       ├── scoring.py           # Confidence scoring
-│   │       ├── structure.py         # Market structure state
-│   │       ├── swings.py            # Swing detection
-│   │       ├── utils.py             # Utilities
-│   │       └── validation.py        # Data validation
-│   ├── decision/
-│   │   ├── protocols.py             # DataSource, CalendarProvider, StructureAnalyzer
-│   │   ├── models.py                # Pydantic models for structured output
-│   │   ├── agents.py                # SynthesizerAgent, DeciderAgent, ReviewerAgent
-│   │   ├── prompts.py               # Agent system/user prompts
-│   │   ├── cost_tracker.py          # Per-symbol cost tracking with model pricing
-│   │   └── synthesizer_cache.py     # LLM output deduplication cache
-│   ├── data/
-│   │   ├── terminal_data_provider.py # MT5 data via MCP server (retry, auth, broker-time)
-│   │   └── snapshot_builder.py       # Multi-timeframe data snapshots
-│   ├── calendar/
-│   │   ├── forexfactory.py          # ForexFactory scraper with 4h cache
-│   │   └── evaluator.py             # Event filtering by currency & impact
-│   └── orchestrator/
-│       └── graph.py                  # LangGraph state machine (6-node pipeline)
-├── tests/                           # 356 tests (unit + integration)
-│   ├── analysis/
-│   │   ├── test_candle_cache.py
-│   │   └── test_engine_fields.py
-│   ├── calendar/
-│   │   └── test_evaluator.py
+├── .dockerignore                            # Docker build exclusions
+├── .env.template                            # Environment variables template
+├── .pre-commit-config.yaml                  # Pre-commit hooks
+├── AGENTS.md                                # Agent instructions
+├── Dockerfile.dev                           # Development Docker image
+├── Dockerfile.prod                          # Production Docker image
+├── README.md
+├── docker-compose.devel.yml                 # Development Compose
+├── docker-compose.prod.yml                  # Production Compose
+├── rules.json                               # Bias calculation rules
+│
+├── analyzer/                                # Python analysis engine
+│   ├── main.py                              # CLI entry point
+│   ├── pyproject.toml
 │   ├── config/
-│   │   └── test_settings.py
-│   ├── data/
-│   │   ├── test_snapshot_builder.py
-│   │   └── test_terminal_data_provider.py
-│   ├── decision/
-│   │   ├── test_agents.py
-│   │   ├── test_agents_api_key.py
-│   │   ├── test_agents_prompts.py
-│   │   ├── test_cost_tracker.py
-│   │   ├── test_models.py
-│   │   ├── test_prompts.py
-│   │   ├── test_protocols.py
-│   │   └── test_synthesizer_cache.py
-│   └── orchestrator/
-│       ├── test_canonical_price.py
-│       ├── test_graph.py
-│       └── test_synthesizer_cache.py
-├── rules.json                       # Bias calculation rules & evidence hierarchy
-├── .pre-commit-config.yaml          # ruff, mypy, trailing-whitespace, graphify
-├── graphify-out/                    # Auto-generated knowledge graph
-├── pyproject.toml                   # Project metadata & tool config
-└── .env.template                    # Environment variable template
+│   │   └── settings.py                      # Pydantic BaseSettings
+│   ├── src/
+│   │   ├── analysis/                        # Market structure engine (16 modules)
+│   │   │   └── market_structure_engine/
+│   │   ├── calendar/                        # ForexFactory scraper + evaluator
+│   │   ├── data/                            # MT5 data provider + snapshot builder
+│   │   ├── decision/                        # LLM agents + protocols + cost tracker
+│   │   ├── orchestrator/                    # LangGraph state machine
+│   │   └── output/                          # Result models + JSON writer
+│   └── tests/                               # 356 tests
+│
+├── server/                                  # Node.js Express API
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── vitest.config.ts
+│   ├── .env.example
+│   └── src/
+│       ├── index.ts                         # Express app (port 3000)
+│       ├── types.ts                         # TypeScript interfaces
+│       ├── routes/
+│       │   ├── run.ts                       # POST /api/run
+│       │   └── runs.ts                      # GET /api/runs
+│       ├── services/
+│       │   ├── runner.ts                    # Spawns Python analyzer
+│       │   └── scanner.ts                   # Reads result JSON files
+│       └── __tests__/
+│
+├── ui/                                      # Vue 3 frontend
+│   ├── package.json
+│   ├── index.html
+│   ├── vite.config.ts
+│   ├── tailwind.config.js
+│   └── src/
+│       ├── main.ts
+│       ├── App.vue
+│       ├── router.ts                        # Dashboard + Detail views
+│       ├── lib/api.ts                       # Axios API client
+│       ├── composables/                     # useRuns, useRun
+│       ├── components/                      # OhlcChart, RunCard, etc.
+│       └── views/                           # Dashboard.vue, Detail.vue
+│
+├── data/                                    # Runtime data (git-ignored)
+└── graphify-out/                            # Knowledge graph
 ```
 
 ## Components
 
-### Data Layer (`src/data/`)
+### Data Layer (`analyzer/src/data/`)
 
-- **TerminalDataProvider** (`DataSource` protocol): Fetches OHLC candles, positions, pending orders, and broker-local time from MetaTrader 5 via an MCP server. Implements retry logic with exponential backoff and optional bearer-token authentication.
-- **SnapshotBuilder** (`src/data/snapshot_builder.py`): Constructs multi-timeframe (D1/H4/H1) data snapshots enriched with current price, structure analysis results, and calendar events.
+- **TerminalDataProvider** (`DataSource` protocol): Fetches OHLC candles, positions, pending
+  orders, and broker-local time from MetaTrader 5 via an MCP server. Implements retry logic
+  with exponential backoff and optional bearer-token authentication.
+- **SnapshotBuilder** (`src/data/snapshot_builder.py`): Constructs multi-timeframe (D1/H4/H1)
+  data snapshots enriched with current price, structure analysis results, and calendar events.
 
-### Analysis Layer (`src/analysis/`)
+### Analysis Layer (`analyzer/src/analysis/`)
 
-- **MarketStructureEngine** (`StructureAnalyzer` protocol): 16-module deterministic engine for technical analysis. Operates on OHLC data without any stochastic or LLM components:
+- **MarketStructureEngine** (`StructureAnalyzer` protocol): 16-module deterministic engine for
+  technical analysis. Operates on OHLC data without any stochastic or LLM components:
   - Swing detection and classification
   - BOS (Break of Structure) and CHoCH (Change of Character) identification
   - Support/resistance level mapping (swing highs/lows, structural levels)
   - Liquidity analysis (stop-run clusters, order-block detection)
   - Multi-timeframe alignment and confidence scoring
   - All outputs are deterministic — same input always produces same result
-- **Candle Cache** (`src/analysis/candle_cache.py`): Disk-backed cache for MTF analysis results, keyed by `symbol/timeframe/candle_close_time`. Determines when re-analysis is needed based on broker-local time and cached candle periods. Reduces MCP server round-trips on repeated analysis of the same closed candles.
+- **Candle Cache** (`src/analysis/candle_cache.py`): Disk-backed cache for MTF analysis
+  results, keyed by `symbol/timeframe/candle_close_time`. Determines when re-analysis is
+  needed based on broker-local time and cached candle periods. Reduces MCP server round-trips
+  on repeated analysis of the same closed candles.
 
-### Decision Layer (`src/decision/`)
+### Decision Layer (`analyzer/src/decision/`)
 
-- **Protocols** (`protocols.py`): `DataSource`, `CalendarProvider`, `StructureAnalyzer` — runtime-checkable `typing.Protocol` interfaces for dependency injection.
-- **Models** (`models.py`): Pydantic models for `MarketContextSummary`, `DecisionOutput` (with `entry_authorized: bool = False`), `ReviewVerdict`, and supporting types.
+- **Protocols** (`protocols.py`): `DataSource`, `CalendarProvider`, `StructureAnalyzer` —
+  runtime-checkable `typing.Protocol` interfaces for dependency injection.
+- **Models** (`models.py`): Pydantic models for `MarketContextSummary`, `DecisionOutput`
+  (with `entry_authorized: bool = False`), `ReviewVerdict`, and supporting types.
 - **Agents** (`agents.py`): LLM-powered agents using Instructor for structured JSON output:
   - `SynthesizerAgent` — combines structure analysis + calendar events → market context summary
-  - `DeciderAgent` — generates trading decision (direction, entry, SL, TP, risk-reward) based on context
+  - `DeciderAgent` — generates trading decision (direction, entry, SL, TP, risk-reward)
   - `ReviewerAgent` — independent quality review of the decision with veto power
-- **CostTracker** (`cost_tracker.py`): Tracks cumulative token usage and USD cost per analysis run using model-specific pricing tables. Raises a `CostLimitExceeded` error when `cost_per_symbol_limit` is reached.
-- **SynthesizerCache** (`synthesizer_cache.py`): Content-addressable cache for synthesizer outputs. When identical analysis inputs are re-encountered (same structure state + calendar events), the cached LLM response is returned, saving both time and cost.
+- **CostTracker** (`cost_tracker.py`): Tracks cumulative token usage and USD cost per analysis
+  run using model-specific pricing tables. Raises a `CostLimitExceeded` error when
+  `cost_per_symbol_limit` is reached.
+- **SynthesizerCache** (`synthesizer_cache.py`): Content-addressable cache for synthesizer
+  outputs. When identical analysis inputs are re-encountered (same structure state + calendar
+  events), the cached LLM response is returned, saving both time and cost.
 
-### Calendar Layer (`src/calendar/`)
+### Calendar Layer (`analyzer/src/calendar/`)
 
-- **ForexFactoryCalendar** (`CalendarProvider` protocol): Scrapes ForexFactory economic calendar with 4-hour in-memory caching. Filters by upcoming events.
-- **Evaluator**: Filters events by relevant currencies and impact level (high/medium/low) for the analyzed symbol.
+- **ForexFactoryCalendar** (`CalendarProvider` protocol): Scrapes ForexFactory economic
+  calendar with 4-hour in-memory caching. Filters by upcoming events.
+- **Evaluator**: Filters events by relevant currencies and impact level (high/medium/low) for
+  the analyzed symbol.
 
-### Orchestrator (`src/orchestrator/`)
+### Orchestrator (`analyzer/src/orchestrator/`)
 
 - **TradingGraph**: LangGraph state machine managing the 6-node analysis pipeline:
   1. `fetch_data` — retrieves candles, positions, and broker time
@@ -381,16 +476,107 @@ result = graph.run("EURUSD")
   3. `evaluate_calendar` — fetches and filters economic events
   4. `synthesize_context` — LLM combines structure + calendar into a narrative context
   5. `decide` — LLM generates a trading decision with specific levels
-  6. `review` — LLM independently reviews the decision; if rejected, loops back to `decide` (up to `MAX_REVIEW_ATTEMPTS`)
-  - The advisory-only invariant is enforced at the model layer: `DecisionOutput.entry_authorized` defaults to `False` and its Pydantic validator forces it to `False` regardless of LLM output; the structure analyzer also rejects any engine result where `entry_authorized` is not `False`.
+  6. `review` — LLM independently reviews the decision; if rejected, loops back to `decide`
+     (up to `MAX_REVIEW_ATTEMPTS`)
+  - The advisory-only invariant is enforced at the model layer: `DecisionOutput.entry_authorized`
+    defaults to `False` and its Pydantic validator forces it to `False` regardless of LLM output;
+    the structure analyzer also rejects any engine result where `entry_authorized` is not `False`.
 
-### Configuration (`config/`)
+### Configuration (`analyzer/config/`)
 
-- **Settings**: Pydantic `BaseSettings` class binding all environment variables (`TRADING_*` prefix). Supports `.env` file loading, field validation, and complex types like `dict[str, dict[str, float]]` for model pricing (auto-parsed from JSON env var).
+- **Settings**: Pydantic `BaseSettings` class binding all environment variables (`TRADING_*`
+  prefix). Supports `.env` file loading, field validation, and complex types like
+  `dict[str, dict[str, float]]` for model pricing (auto-parsed from JSON env var).
+
+### Server (`server/`)
+
+- **Express app** (`src/index.ts`): CORS-configured REST API that serves result JSON files
+  from the filesystem and proxies new analysis runs to the Python CLI.
+- **ResultScanner** (`src/services/scanner.ts`): Walks the `data/` directory tree, parses
+  result JSON files, and returns typed `RunSummary` or `FullResult` objects.
+- **RunService** (`src/services/runner.ts`): Spawns `python main.py` as a child process with
+  the requested symbols and optional model override. Enforces a 10-minute timeout.
+- **Routes**: `GET /api/runs` (list with filters), `GET /api/runs/:symbol/:year/:month/:day/:file`
+  (detail), `POST /api/run` (trigger).
+
+### UI (`ui/`)
+
+- **Dashboard view** (`Dashboard.vue`): Lists all analysis runs with symbol, bias, confidence,
+  action, review status, and current price. Includes filters and a symbol sidebar.
+- **Detail view** (`Detail.vue`): Full analysis breakdown for a single symbol — OHLC chart
+  with SL/TP overlay, decision reasoning, review verdict, and calendar context.
+- **Components**: `OhlcChart.vue` (echarts candle chart), `RunCard.vue` (run summary card),
+  `SymbolSidebar.vue` (symbol filter), `TimelineBar.vue` (time-based run navigation).
+- **API client** (`lib/api.ts`): Axios-based client communicating with the Express server.
+
+## Docker
+
+The project includes Docker support for both development and production environments.
+
+### Prerequisites
+
+- Docker Engine 24+
+- Docker Compose v2+
+
+### Development
+
+```bash
+# Build and start the dev container
+docker compose -f docker-compose.devel.yml up -d --build
+
+# First-time: install dependencies inside the container
+docker compose -f docker-compose.devel.yml exec trading-agent-devel bash
+cd /app/analyzer && pip install -e ".[dev]"
+cd /app/server && npm install
+exit
+
+# Run the analyzer
+docker compose -f docker-compose.devel.yml exec trading-agent-devel \
+  bash -c "cd /app/analyzer && python main.py XAUUSD"
+
+# Start the API server (port 3000)
+docker compose -f docker-compose.devel.yml exec trading-agent-devel \
+  bash -c "cd /app/server && npm run dev"
+```
+
+The dev container uses bind mounts for all source directories, so code changes on the host
+are immediately visible inside the container. The container stays alive with `sleep infinity` —
+use `docker compose exec` to run commands.
+
+### Production
+
+```bash
+# Build and start
+docker compose -f docker-compose.prod.yml up -d --build
+
+# Check logs
+docker compose -f docker-compose.prod.yml logs -f
+
+# Stop
+docker compose -f docker-compose.prod.yml down
+```
+
+The production image is self-contained:
+
+- All dependencies are installed at build time (`npm ci`, `pip install`)
+- The Vue UI is built into static files (`ui/dist/`)
+- The TypeScript server is compiled (`server/dist/`)
+- The Express server serves both the REST API and the built UI on port 3000
+- Only the `data/` directory is persisted via bind mount
+
+### Images
+
+| Image | Base | Size | Purpose |
+|---|---|---|---|
+| `trading-agent:devel` | Ubuntu 26.04 | ~270 MB content | Development with bind mounts, Python venv, Node 22, tsx |
+| `trading-agent:prod` | Ubuntu 26.04 | ~400 MB content | Production with all deps baked in, UI built |
 
 ## Testing
 
 ```bash
+# Analyzer (Python) — run from analyzer/
+cd analyzer
+
 # Run all tests (356 tests)
 pytest
 
@@ -402,9 +588,15 @@ pytest tests/decision/test_cost_tracker.py -v
 
 # Run tests matching a keyword
 pytest -k "cache"
+
+# Server (Node)
+cd server && npm test        # vitest
+
+# UI type checking
+cd ui && npm run typecheck   # vue-tsc
 ```
 
-### Test Coverage
+### Test Coverage — Analyzer
 
 The test suite contains **356 tests** covering:
 
@@ -412,7 +604,8 @@ The test suite contains **356 tests** covering:
 - **Calendar**: Event evaluator logic
 - **Config**: Settings loading, env prefix, validation, model pricing
 - **Data**: Snapshot builder, terminal data provider (retry, auth, broker time)
-- **Decision**: Agents (API key handling, prompt rendering), cost tracker, models, protocols, synthesizer cache
+- **Decision**: Agents (API key handling, prompt rendering), cost tracker, models, protocols,
+  synthesizer cache
 - **Orchestrator**: Full graph pipeline, canonical price handling, synthesizer cache integration
 - **Main**: CLI entry point argument handling
 
@@ -420,17 +613,28 @@ All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked in te
 
 ## Development
 
-### Code Quality
+### Commands
 
 ```bash
-# Static type checking (strict mode)
-mypy src/
+# --- Analyzer ---
+cd analyzer
+mypy src/              # Static type checking (strict mode)
+ruff check src/        # Linting
+ruff format src/       # Auto-format
+pytest                 # Run all tests
 
-# Linting
-ruff check src/
+# --- Server ---
+cd server
+npm run dev            # tsx watch (hot-reload)
+npm run build          # tsc compile
+npm test               # vitest
+npm run typecheck      # tsc --noEmit
 
-# Auto-format
-ruff format src/
+# --- UI ---
+cd ui
+npm run dev            # Vite dev server (port 5173)
+npm run build          # Vite build → ui/dist/
+npm run typecheck      # vue-tsc --noEmit
 ```
 
 ### Pre-commit Hooks
@@ -438,7 +642,7 @@ ruff format src/
 The repository includes a `.pre-commit-config.yaml` that runs automatically on `git commit`:
 
 | Hook | Action |
-|------|--------|
+|---|---|
 | `ruff` | Lint with auto-fix (blocks on unfixed issues) |
 | `ruff-format` | Format Python code |
 | `mypy` | Static type check (`src/` only) |
@@ -458,7 +662,9 @@ pre-commit install
 
 ### Knowledge Graph
 
-A persistent knowledge graph is maintained at `graphify-out/` with god nodes, community structure, and cross-file relationships. It auto-updates on commit via pre-commit hook, or can be rebuilt manually:
+A persistent knowledge graph is maintained at `graphify-out/` with god nodes, community
+structure, and cross-file relationships. It auto-updates on commit via pre-commit hook, or
+can be rebuilt manually:
 
 ```bash
 graphify update .
@@ -477,13 +683,13 @@ graphify explain "<concept>"
 1. Follow existing code conventions
 2. All functions must have type hints
 3. Write tests for new functionality
-4. Run `mypy src/ && ruff check src/ && pytest` before committing
+4. Run `mypy src/ && ruff check src/ && pytest` before committing (Analyzer)
 5. Ensure `entry_authorized = False` in all decision outputs (the graph enforces this)
 6. Install pre-commit hooks to catch issues early
 
 ### Dependencies
 
-**Core:**
+**Analyzer core:**
 - `instructor` — Structured LLM output
 - `langgraph` — Workflow orchestration (LangGraph state machine)
 - `pydantic-settings` — Configuration management with env prefix
@@ -491,12 +697,24 @@ graphify explain "<concept>"
 - `mcp` — Model Context Protocol client
 - `requests` + `beautifulsoup4` — Web scraping (ForexFactory)
 
-**Dev:**
+**Analyzer dev:**
 - `pytest` + `pytest-asyncio` + `pytest-cov` — Testing
 - `mypy` — Static type checking (strict mode)
 - `ruff` — Linter and formatter
 - `responses` — HTTP request mocking
 - `pre-commit` — Git hook framework
+
+**Server:**
+- `express` — HTTP framework
+- `cors` — Cross-origin resource sharing
+- `dotenv` — Environment variable loading
+- `typescript`, `tsx`, `vitest`, `supertest` — Dev toolchain
+
+**UI:**
+- `vue` + `vue-router` — Frontend framework
+- `vue-echarts` + `echarts` — OHLC chart rendering
+- `axios` — HTTP client
+- `vite`, `vue-tsc`, `tailwindcss` — Dev toolchain
 
 ## License
 
