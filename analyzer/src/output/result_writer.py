@@ -1,0 +1,104 @@
+from __future__ import annotations
+
+import json
+import logging
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+from src.output.result_models import AnalysisResult, OHLCBar, OHLCData, SLTPOverlay
+
+logger = logging.getLogger(__name__)
+
+
+class ResultWriter:
+    """Writes analysis results to JSON files in the data/ directory tree."""
+
+    def __init__(self, base_dir: str | Path | None = None) -> None:
+        if base_dir is None:
+            from config.settings import Settings
+
+            base_dir = Settings().analysis_cache_dir
+        self.base_dir = Path(base_dir)
+
+    def write(
+        self,
+        symbol: str,
+        result: dict[str, Any],
+        ohlc: dict[str, list[OHLCBar]],
+        broker_now: datetime,
+    ) -> Path:
+        """Write result JSON to disk. Returns the file path written.
+
+        Args:
+            symbol: Trading symbol (e.g., "XAUUSD")
+            result: Pipeline output dict from TradingGraph.run()
+            ohlc: Dict of timeframe -> list[OHLCBar]
+            broker_now: Broker local time (used for path construction)
+
+        Returns:
+            Path to the written file
+        """
+        path = self._build_path(symbol, broker_now)
+        path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Determine status
+        fatal_error = result.get("fatal_error")
+        errors = result.get("errors", [])
+        if fatal_error is not None:
+            status = "error"
+        elif errors:
+            status = "partial"
+        else:
+            status = "success"
+
+        # Build run_id from broker_now
+        run_id = broker_now.strftime("%Y-%m-%dT%H:%M:%S")
+
+        # Map ohlc dict -> OHLCData
+        ohlc_data = OHLCData(
+            D1=ohlc.get("D1", []),
+            H4=ohlc.get("H4", []),
+            H1=ohlc.get("H1", []),
+        )
+
+        # Build SL/TP overlay from decision if available
+        decision = result.get("decision")
+        sl_tp_overlay = SLTPOverlay()
+        if decision is not None:
+            sl_tp_overlay.entry_price = getattr(decision, "entry_price", None)
+            sl_tp_overlay.stop_loss = getattr(decision, "stop_loss", None)
+            sl_tp_overlay.take_profit = getattr(decision, "take_profit", None)
+
+        analysis_result = AnalysisResult(
+            symbol=symbol,
+            run_id=run_id,
+            started_at=broker_now,
+            completed_at=broker_now,
+            status=status,
+            errors=errors,
+            fatal_error=fatal_error,
+            market_context=result.get("market_context"),
+            decision=decision,
+            review=result.get("review"),
+            ohlc=ohlc_data,
+            sl_tp_overlay=sl_tp_overlay,
+        )
+
+        # Serialize to JSON — use model_dump(mode="json") for Pydantic v2
+        raw = analysis_result.model_dump(mode="json", by_alias=False)
+        path.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+
+        logger.info("Wrote analysis result to %s", path)
+        return path
+
+    def _build_path(self, symbol: str, broker_now: datetime) -> Path:
+        """Compute data/YYYY/MM/DD/SYMBOL/result-HH-MM.json path."""
+        return (
+            self.base_dir
+            / f"{broker_now:%Y}"
+            / f"{broker_now:%m}"
+            / f"{broker_now:%d}"
+            / symbol
+            / f"result-{broker_now:%H-%M}.json"
+        )

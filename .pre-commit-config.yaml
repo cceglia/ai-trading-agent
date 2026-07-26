@@ -28,9 +28,9 @@ repos:
             openai,
             mcp,
           ]
-        args: [--config-file=pyproject.toml]
+        args: [--config-file=analyzer/pyproject.toml]
         pass_filenames: false
-        entry: mypy src/
+        entry: mypy analyzer/src/
 
   # ── General pre-commit hooks ───────────────────────────────────────
   - repo: https://github.com/pre-commit/pre-commit-hooks

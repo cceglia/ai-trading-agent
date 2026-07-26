@@ -17,36 +17,36 @@ Rules:
 ## Quick Commands
 
 ```bash
-# Install (editable mode)
-pip install -e ".[dev]"
+# Install (from analyzer/ directory)
+cd analyzer && pip install -e ".[dev]"
 
-# Type check → lint → test (run in this order)
-mypy src/ && ruff check src/ && pytest
+# Type check → lint → test (run from analyzer/)
+cd analyzer && mypy src/ && ruff check src/ && pytest
 
 # Single test file
-pytest tests/decision/test_models.py -v
+cd analyzer && pytest tests/decision/test_models.py -v
 
 # Format
-ruff format src/
+cd analyzer && ruff format src/
 ```
 
 ## Critical Invariants
 
 - **Advisory-only**: `entry_authorized` must always be `False` in `DecisionOutput`. This system never executes trades.
 - **Environment prefix**: All settings use `TRADING_` prefix (e.g., `TRADING_OPENAI_API_KEY`). See `config/settings.py` `model_config`.
-- **Protocol DI**: All dependencies are injected via protocols in `src/decision/protocols.py` (`DataSource`, `CalendarProvider`, `StructureAnalyzer`). Do not import concrete implementations in orchestration code.
+- **Protocol DI**: All dependencies are injected via protocols in `analyzer/src/decision/protocols.py` (`DataSource`, `CalendarProvider`, `StructureAnalyzer`). Do not import concrete implementations in orchestration code.
 
 ## Architecture
 
-Entry point: `main.py` → `TradingGraph` (LangGraph state machine in `src/orchestrator/graph.py`)
+Entry point: `analyzer/main.py` → `TradingGraph` (LangGraph state machine in `analyzer/src/orchestrator/graph.py`)
 
 Pipeline: `fetch_data` → `analyze_structure` → `evaluate_calendar` → `synthesize_context` → `decide` → `review` → (retry or end)
 
 Key modules:
-- `src/data/mt5_data_provider.py` — MT5 data via MCP server (has retry logic, async internals wrapped sync)
-- `src/analysis/structure_analyzer.py` — Delegates to `market_structure_engine/` (16-module deterministic engine)
-- `src/calendar/forexfactory.py` — ForexFactory scraper with 4h cache
-- `src/decision/agents.py` — LLM agents using `instructor` for structured output
+- `analyzer/src/data/mt5_data_provider.py` — MT5 data via MCP server (has retry logic, async internals wrapped sync)
+- `analyzer/src/analysis/structure_analyzer.py` — Delegates to `market_structure_engine/` (16-module deterministic engine)
+- `analyzer/src/calendar/forexfactory.py` — ForexFactory scraper with 4h cache
+- `analyzer/src/decision/agents.py` — LLM agents using `instructor` for structured output
 - `rules.json` — Bias calculation rules and evidence hierarchy (loaded by analysis)
 
 ## Testing
@@ -54,7 +54,7 @@ Key modules:
 - Framework: pytest with `asyncio_mode = "auto"`
 - Fixtures in `tests/conftest.py`: `sample_market_context`, `sample_decision`, `sample_review`
 - All external dependencies (MT5, LLM) are mocked in tests
-- Run full suite: `pytest` (from repo root)
+- Run full suite: `pytest` (from analyzer/)
 
 ## Toolchain
 
