@@ -1,11 +1,11 @@
 # Graph Report - Agent  (2026-07-26)
 
 ## Corpus Check
-- 110 files · ~48,486 words
+- 108 files · ~48,012 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1413 nodes · 2682 edges · 89 communities (66 shown, 23 thin omitted)
+- 1413 nodes · 2682 edges · 90 communities (67 shown, 23 thin omitted)
 - Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 760 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
@@ -87,6 +87,7 @@
 - test_cache_path_mtf
 - test_cache_path_zero_padded_hour
 - test_d1_candle_period_before_close
+- TestCacheMiss
 
 ## God Nodes (most connected - your core abstractions)
 1. `MarketContextSummary` - 83 edges
@@ -115,7 +116,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (89 total, 23 thin omitted)
+## Communities (90 total, 23 thin omitted)
 
 ### Community 0 - "TestFatalError"
 Cohesion: 0.05
@@ -150,20 +151,20 @@ Cohesion: 0.08
 Nodes (19): CalendarProvider, DataSource, Any, datetime, Analyze market structure from snapshots.          Args:             snapshots: D, Fetch OHLC candles as CSV string.          Args:             symbol: Trading sym, Get latest price info for a symbol.          Args:             symbol: Trading s, Get open positions.          Args:             symbol: Optional symbol filter (+11 more)
 
 ### Community 8 - "TestCostTracking"
-Cohesion: 0.09
-Nodes (26): _canonical_structure_analysis(), _make_cached_summary(), datetime, Cache hit → cost_tracker.call_count == 0 (no LLM call recorded)., Cache miss → cost_tracker.call_count == 1 (one LLM call recorded)., 5 sequential runs on same symbol/day → exactly 1 LLM call.          First run: c, Build a ``MarketContextSummary`` that looks like it came from the cache., Minimal ``structure_analysis`` with H1 as most-recently-closed timeframe. (+18 more)
+Cohesion: 0.08
+Nodes (27): _canonical_structure_analysis(), _make_cached_summary(), datetime, Path, Cache hit → cost_tracker.call_count == 0 (no LLM call recorded)., Cache miss → cost_tracker.call_count == 1 (one LLM call recorded)., 5 sequential runs on same symbol/day → exactly 1 LLM call.          First run: c, Build a ``MarketContextSummary`` that looks like it came from the cache. (+19 more)
 
 ### Community 9 - "ForexFactoryCalendar"
-Cohesion: 0.06
+Cohesion: 0.07
 Nodes (21): CostTracker, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Record an LLM API call and return its cost.          Parameters         --------, Accumulated cost across all recorded calls., Number of calls recorded., Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d (+13 more)
 
 ### Community 10 - "TestProjectFiles"
-Cohesion: 0.08
-Nodes (22): Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., reasoning_effort is a create()-level kwarg, not an OpenAI() constructor arg., When reasoning_effort is set, it must appear in client.create() kwargs., When reasoning_effort is None, the key must be absent from create() kwargs. (+14 more)
+Cohesion: 0.06
+Nodes (29): main(), Main entry point.      Accepts one or more trading symbols, runs the analysis pi, Reviews trading decisions and provides feedback., Synthesizes market context from structure analysis and calendar., ReviewerAgent, SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored. (+21 more)
 
 ### Community 11 - "Agent Instructions"
 Cohesion: 0.06
-Nodes (23): EngineError, Any, Base class for deterministic engine errors., CaptureFixture, Tests for multi-symbol support in main.py., Verify main() calls graph.run() for each symbol., _build_parser accepts multiple symbols as nargs+., When one symbol fails, main() continues with remaining symbols. (+15 more)
+Nodes (23): EngineError, Any, Base class for deterministic engine errors., CaptureFixture, Tests for multi-symbol support in main.py., Test that argparse accepts multiple symbols via _build_parser., Verify main() calls graph.run() for each symbol., _build_parser accepts multiple symbols as nargs+. (+15 more)
 
 ### Community 12 - "config/__init__.py"
 Cohesion: 0.05
@@ -206,8 +207,8 @@ Cohesion: 0.17
 Nodes (7): End-to-end: reasoning_effort flows from constructor → create() kwargs., synthesize() must include reasoning_effort in create_with_completion kwargs when, Must NOT include reasoning_effort in create_with_completion kwargs when None., decide() must include reasoning_effort in create_with_completion() kwargs when s, review() must include reasoning_effort in create_with_completion() kwargs when s, Pre-built client: reasoning_effort still flows to create_with_completion()., TestReasoningEffortIntegration
 
 ### Community 22 - "tests/__init__.py"
-Cohesion: 0.06
-Nodes (23): main(), Main entry point.      Accepts one or more trading symbols, runs the analysis pi, DeciderAgent, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., ReviewerAgent, SynthesizerAgent must accept reasoning_effort param., When not specified, reasoning_effort defaults to None. (+15 more)
+Cohesion: 0.17
+Nodes (7): Tests for reasoning_effort logging in agent __init__ methods., SynthesizerAgent must log reasoning_effort at init., SynthesizerAgent must log reasoning_effort even when None., DeciderAgent must log reasoning_effort at init., ReviewerAgent must log reasoning_effort at init., Log message must include the agent class name., TestReasoningEffortLogging
 
 ### Community 23 - "tests/orchestrator/__init__.py"
 Cohesion: 0.12
@@ -254,8 +255,8 @@ Cohesion: 0.19
 Nodes (12): OHLCBar, OHLCData, BaseModel, Single OHLC bar for chart rendering., OHLC data keyed by timeframe., Entry, stop-loss and take-profit overlay for charts., SLTPOverlay, Tests for output result models. (+4 more)
 
 ### Community 36 - "TestRepeatedRuns"
-Cohesion: 0.11
-Nodes (14): mock_decider(), mock_reviewer(), mock_synthesizer(), Path, RED-first tests for orchestrator-level synthesizer cache integration.  Tests ver, Reset the ``_settings`` sentinel in ``synthesizer_cache`` before each test., Write arbitrary content to the synthesizer cache path.      This lets us simulat, When the cache is disabled, corrupt, or has bad pydantic data.      The orchestr (+6 more)
+Cohesion: 0.10
+Nodes (19): BiasLevel, DecisionAction, Structural bias levels., TestMaxReviewAttempts, TestTradingGraphInit, mock_decider(), mock_reviewer(), mock_synthesizer() (+11 more)
 
 ### Community 37 - "_select_canonical_current_price"
 Cohesion: 0.26
@@ -282,8 +283,8 @@ Cohesion: 0.27
 Nodes (12): _cache_path(), _candle_period(), get_cache_date(), _get_settings(), datetime, Determine if analysis should run for this timeframe.      Args:         timefram, Compute cache file path.      Args:         timeframe: "D1", "H4", or "H1", Compute the start and end of a candle period.      Args:         timeframe: "D1" (+4 more)
 
 ### Community 46 - "BiasLevel"
-Cohesion: 0.21
-Nodes (10): BiasLevel, DecisionAction, Structural bias levels., TestMaxReviewAttempts, TestTradingGraphInit, CostTracker integration — cache hit must not call LLM so     ``cost_tracker.call, Multiple invocations within a day — only the first miss calls the LLM., TestCostTracking (+2 more)
+Cohesion: 0.13
+Nodes (9): DeciderAgent, Makes trading decisions based on market context., DeciderAgent must accept reasoning_effort param., DeciderAgent must pass api_key to OpenAI constructor., ReviewerAgent must pass api_key to OpenAI constructor., When no api_key given, OpenAI() uses its own default., DeciderAgent must pass base_url to OpenAI constructor., SynthesizerAgent must pass api_key to OpenAI constructor. (+1 more)
 
 ### Community 47 - "test_analyze_structure_passes_broker_time_to_snapshot_builder"
 Cohesion: 0.25
@@ -313,6 +314,10 @@ Nodes (8): Path, End-to-end integration test for the result JSON pipeline., Pipe
 Cohesion: 0.25
 Nodes (7): _canonical_structure_analysis(), Build a structure_analysis fixture whose H1 timeframe has the     most-recent cl, _synthesize_context must compute the canonical current price from         the pe, Even when the LLM-returned summary has current_price=None, the         orchestra, get_broker_time() should be called once in _analyze_structure and     reused in, test_get_broker_time_called_once_per_run(), TestSynthesizeContextCanonicalPrice
 
+### Community 89 - "TestCacheMiss"
+Cohesion: 0.33
+Nodes (4): When no cache file exists for (symbol, day).      The orchestrator must call ``s, Cache miss \u2192 ``synthesizer.synthesize`` is called., Cache miss \u2192 the result is persisted via ``save_synthesis``.          RED:, TestCacheMiss
+
 ## Knowledge Gaps
 - **157 isolated node(s):** `trading-ai-agent`, `name`, `version`, `private`, `type` (+152 more)
   These have ≤1 connection - possible missing edges or undocumented components.
@@ -323,9 +328,9 @@ _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `get_profile()` connect `TestFatalError` to `src/orchestrator/__init__.py`?**
   _High betweenness centrality (0.107) - this node is a cross-community bridge._
-- **Why does `main()` connect `tests/__init__.py` to `MarketContextSummary`, `DataSource`, `AgentState`, `_select_canonical_current_price`, `ForexFactoryCalendar`, `TestProjectFiles`, `Agent Instructions`, `AgentState`, `tests/data/__init__.py`, `TestGetCandlesBrokerNow`?**
+- **Why does `main()` connect `TestProjectFiles` to `MarketContextSummary`, `DataSource`, `AgentState`, `_select_canonical_current_price`, `ForexFactoryCalendar`, `AgentState`, `Agent Instructions`, `BiasLevel`, `tests/data/__init__.py`, `TestGetCandlesBrokerNow`?**
   _High betweenness centrality (0.105) - this node is a cross-community bridge._
-- **Why does `TradingGraph` connect `AgentState` to `setup_logging`, `DataSource`, `DecisionOutput`, `TestRepeatedRuns`, `TestCostTracking`, `trading-ai-agent`, `BiasLevel`, `test_analyze_structure_full_cache_hit`, `src/orchestrator/__init__.py`, `tests/calendar/__init__.py`, `tests/__init__.py`, `TestSynthesizeContextCanonicalPrice`, `TestGetSymbolPrice`?**
+- **Why does `TradingGraph` connect `AgentState` to `setup_logging`, `DataSource`, `DecisionOutput`, `TestRepeatedRuns`, `TestCostTracking`, `TestProjectFiles`, `trading-ai-agent`, `test_analyze_structure_full_cache_hit`, `src/orchestrator/__init__.py`, `tests/calendar/__init__.py`, `TestSynthesizeContextCanonicalPrice`, `TestCacheMiss`, `TestGetSymbolPrice`?**
   _High betweenness centrality (0.100) - this node is a cross-community bridge._
 - **Are the 72 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
   _`MarketContextSummary` has 72 INFERRED edges - model-reasoned connections that need verification._

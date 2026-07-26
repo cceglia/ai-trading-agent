@@ -175,8 +175,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "analyzer_main_main",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 46,
+      "community_name": "BiasLevel",
       "norm_label": "main()"
     },
     {
@@ -252,8 +252,8 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "analyzer_main_rationale_136",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 46,
+      "community_name": "BiasLevel",
       "norm_label": "main entry point.      accepts one or more trading symbols, runs the analysis pi"
     },
     {
@@ -2092,8 +2092,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "agents.py"
     },
     {
@@ -2136,8 +2136,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_synthesizeragent_init",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": ".__init__()"
     },
     {
@@ -2147,8 +2147,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "openai",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "openai"
     },
     {
@@ -2202,8 +2202,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "revieweragent"
     },
     {
@@ -2213,8 +2213,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent_init",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": ".__init__()"
     },
     {
@@ -2224,8 +2224,8 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent_review",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 31,
+      "community_name": "TestGetSymbolPrice",
       "norm_label": ".review()"
     },
     {
@@ -2268,8 +2268,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_rationale_174",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "reviews trading decisions and provides feedback."
     },
     {
@@ -2422,8 +2422,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_decision_models",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "models.py"
     },
     {
@@ -2488,8 +2488,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "analyzer_src_decision_models_decisionoutput",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "decisionoutput"
     },
     {
@@ -2499,8 +2499,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "analyzer_src_decision_models_decisionoutput_enforce_entry_authorized",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "._enforce_entry_authorized()"
     },
     {
@@ -2543,8 +2543,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "analyzer_src_decision_models_rationale_55",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "decision output from decider agent."
     },
     {
@@ -3159,8 +3159,8 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_tradinggraph",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "tradinggraph"
     },
     {
@@ -3236,8 +3236,8 @@
       "source_location": "L517",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_tradinggraph_synthesize_context",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "._synthesize_context()"
     },
     {
@@ -3269,8 +3269,8 @@
       "source_location": "L651",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_tradinggraph_review_to_decide",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "._review_to_decide()"
     },
     {
@@ -3335,8 +3335,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_258",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "langgraph orchestrator for trading analysis."
     },
     {
@@ -3401,8 +3401,8 @@
       "source_location": "L518",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_518",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "synthesize market context."
     },
     {
@@ -3423,8 +3423,8 @@
       "source_location": "L652",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_652",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "conditional edge from review to decide or end."
     },
     {
@@ -3709,8 +3709,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_analysisresult",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": "analysisresult"
     },
     {
@@ -3753,8 +3753,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_37",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": "top-level pipeline output serialized to json for the web viewer."
     },
     {
@@ -3764,8 +3764,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "result_writer.py"
     },
     {
@@ -3786,8 +3786,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_init",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".__init__()"
     },
     {
@@ -3797,8 +3797,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_path",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "path"
     },
     {
@@ -3808,8 +3808,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_write",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".write()"
     },
     {
@@ -3819,8 +3819,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_any",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "any"
     },
     {
@@ -3830,8 +3830,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_ohlcbar",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ohlcbar"
     },
     {
@@ -3841,8 +3841,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_datetime",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "datetime"
     },
     {
@@ -3852,8 +3852,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_build_path",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "._build_path()"
     },
     {
@@ -3874,8 +3874,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_rationale_31",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "write result json to disk. returns the file path written.          args:"
     },
     {
@@ -3885,8 +3885,8 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_rationale_96",
-      "community": 53,
-      "community_name": ".write",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "compute data/yyyy/mm/dd/symbol/result-hh-mm.json path."
     },
     {
@@ -4006,8 +4006,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_d1_candle_period_after_close",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 53,
+      "community_name": ".write",
       "norm_label": "test_d1_candle_period_after_close()"
     },
     {
@@ -4061,8 +4061,8 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_h1_candle_period_midnight",
-      "community": 57,
-      "community_name": "test_analyze_structure_fetches_all_when_no_cache",
+      "community": 44,
+      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
       "norm_label": "test_h1_candle_period_midnight()"
     },
     {
@@ -4490,8 +4490,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_102",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 53,
+      "community_name": ".write",
       "norm_label": "after d1 close (17:00), the current candle is today's."
     },
     {
@@ -4545,8 +4545,8 @@
       "source_location": "L153",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_153",
-      "community": 57,
-      "community_name": "test_analyze_structure_fetches_all_when_no_cache",
+      "community": 44,
+      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
       "norm_label": "h1 period crossing midnight boundary works correctly."
     },
     {
@@ -6250,8 +6250,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": ".test_reviewer_passes_base_url_to_client()"
     },
     {
@@ -6338,8 +6338,8 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_reviewer_accepts_reasoning_effort",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": ".test_reviewer_accepts_reasoning_effort()"
     },
     {
@@ -6349,8 +6349,8 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "testreasoningeffortpassthrough"
     },
     {
@@ -6360,8 +6360,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_includes_reasoning_effort_when_set",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": ".test_create_includes_reasoning_effort_when_set()"
     },
     {
@@ -6371,8 +6371,8 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": ".test_create_omits_reasoning_effort_when_none()"
     },
     {
@@ -6382,8 +6382,8 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none_explicit",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": ".test_create_omits_reasoning_effort_when_none_explicit()"
     },
     {
@@ -6393,8 +6393,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_decider_create_passes_reasoning_effort",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": ".test_decider_create_passes_reasoning_effort()"
     },
     {
@@ -6404,8 +6404,8 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_reviewer_create_passes_reasoning_effort",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": ".test_reviewer_create_passes_reasoning_effort()"
     },
     {
@@ -6789,8 +6789,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_82",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "revieweragent must pass base_url to openai constructor."
     },
     {
@@ -6866,8 +6866,8 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_171",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "revieweragent must accept reasoning_effort param."
     },
     {
@@ -6877,8 +6877,8 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_185",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "reasoning_effort is a create()-level kwarg, not an openai() constructor arg."
     },
     {
@@ -6888,8 +6888,8 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_188",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "when reasoning_effort is set, it must appear in client.create() kwargs."
     },
     {
@@ -6899,8 +6899,8 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_214",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "when reasoning_effort is none, the key must be absent from create() kwargs."
     },
     {
@@ -6910,8 +6910,8 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_230",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "when reasoning_effort is explicitly none, key absent from create() kwargs."
     },
     {
@@ -6921,8 +6921,8 @@
       "source_location": "L246",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_246",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "decideragent passes reasoning_effort to create()."
     },
     {
@@ -6932,8 +6932,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_258",
-      "community": 10,
-      "community_name": "TestProjectFiles",
+      "community": 38,
+      "community_name": "AgentState",
       "norm_label": "revieweragent passes reasoning_effort to create()."
     },
     {
@@ -7900,8 +7900,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "testdecisionoutput"
     },
     {
@@ -7911,8 +7911,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput_test_creation",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_creation()"
     },
     {
@@ -7922,8 +7922,8 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput_test_action_values_are_strings",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_action_values_are_strings()"
     },
     {
@@ -7933,8 +7933,8 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput_test_entry_authorized_always_false",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_entry_authorized_always_false()"
     },
     {
@@ -7944,8 +7944,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput_test_optional_fields_default_none",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_optional_fields_default_none()"
     },
     {
@@ -7955,8 +7955,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_models_testdecisionoutput_test_all_actions",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_all_actions()"
     },
     {
@@ -9495,8 +9495,8 @@
       "source_location": "L268",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_fetches_all_timeframes",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "test_analyze_structure_fetches_all_timeframes()"
     },
     {
@@ -9561,8 +9561,8 @@
       "source_location": "L688",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_cache_hit_confluence_correct",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "test_analyze_structure_cache_hit_confluence_correct()"
     },
     {
@@ -9572,8 +9572,8 @@
       "source_location": "L766",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_cache_hit_mtf_missing",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "test_analyze_structure_cache_hit_mtf_missing()"
     },
     {
@@ -9594,8 +9594,8 @@
       "source_location": "L918",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_corrupt_cache_fallback",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "test_analyze_structure_corrupt_cache_fallback()"
     },
     {
@@ -9605,8 +9605,8 @@
       "source_location": "L987",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_fresh_saves_mtf_cache",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "test_analyze_structure_fresh_saves_mtf_cache()"
     },
     {
@@ -9627,8 +9627,8 @@
       "source_location": "L1113",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_analyze_structure_handles_broker_time_failure",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "test_analyze_structure_handles_broker_time_failure()"
     },
     {
@@ -9671,8 +9671,8 @@
       "source_location": "L1315",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_testsynthesizecontextcanonicalprice",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "testsynthesizecontextcanonicalprice"
     },
     {
@@ -9726,8 +9726,8 @@
       "source_location": "L1431",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_full_retry_cycle_gives_max_plus_one_decisions",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "test_full_retry_cycle_gives_max_plus_one_decisions()"
     },
     {
@@ -9737,8 +9737,8 @@
       "source_location": "L1490",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_feedback_sent_on_all_retries",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "test_feedback_sent_on_all_retries()"
     },
     {
@@ -9825,8 +9825,8 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_269",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "_analyze_structure must fetch all three timeframes fresh (no partial cache)."
     },
     {
@@ -9891,8 +9891,8 @@
       "source_location": "L689",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_689",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "cache-hit confluence must be the real engine confluence, not d1 analysis_context"
     },
     {
@@ -9902,8 +9902,8 @@
       "source_location": "L767",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_767",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "when per-tf files exist but mtf is missing, must fall back to fresh fetch."
     },
     {
@@ -9924,8 +9924,8 @@
       "source_location": "L919",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_919",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 3,
+      "community_name": "AgentState",
       "norm_label": "corrupt per-tf cache file must not crash \u2014 fall back to fresh fetch."
     },
     {
@@ -9935,8 +9935,8 @@
       "source_location": "L988",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_988",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "fresh-fetch path must also save the mtf cache file."
     },
     {
@@ -9957,8 +9957,8 @@
       "source_location": "L1114",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1114",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "if get_broker_time() fails, _analyze_structure should set fatal_error."
     },
     {
@@ -10045,8 +10045,8 @@
       "source_location": "L1441",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1441",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "with max_review_attempts=2, decider.decide must be called exactly 3 times     (1"
     },
     {
@@ -10056,8 +10056,8 @@
       "source_location": "L1500",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1500",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "with max_review_attempts=2, feedback must be forwarded to decider.decide     on"
     },
     {
@@ -10221,8 +10221,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_trading_graph",
-      "community": 36,
-      "community_name": "TestRepeatedRuns",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "trading_graph()"
     },
     {
@@ -10298,8 +10298,8 @@
       "source_location": "L202",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachehit",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "testcachehit"
     },
     {
@@ -10331,8 +10331,8 @@
       "source_location": "L307",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachehit_test_cache_hit_decide_still_called",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": ".test_cache_hit_decide_still_called()"
     },
     {
@@ -10342,8 +10342,8 @@
       "source_location": "L370",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachehit_test_cache_hit_review_still_called",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": ".test_cache_hit_review_still_called()"
     },
     {
@@ -10353,8 +10353,8 @@
       "source_location": "L430",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "testcachemiss"
     },
     {
@@ -10364,8 +10364,8 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss_test_cache_miss_calls_synthesizer",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 8,
+      "community_name": "TestCostTracking",
       "norm_label": ".test_cache_miss_calls_synthesizer()"
     },
     {
@@ -10386,8 +10386,8 @@
       "source_location": "L508",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss_test_cache_miss_saves_to_cache",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 8,
+      "community_name": "TestCostTracking",
       "norm_label": ".test_cache_miss_saves_to_cache()"
     },
     {
@@ -10441,8 +10441,8 @@
       "source_location": "L732",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testfatalerror",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "testfatalerror"
     },
     {
@@ -10474,8 +10474,8 @@
       "source_location": "L811",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachekeyisolation",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "testcachekeyisolation"
     },
     {
@@ -10639,8 +10639,8 @@
       "source_location": "L203",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_203",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "when the cache has a valid ``marketcontextsummary`` for (symbol, day).      the"
     },
     {
@@ -10672,8 +10672,8 @@
       "source_location": "L318",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_318",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "cache hit \\u2192 the decide node must still run.          the cache should only"
     },
     {
@@ -10683,8 +10683,8 @@
       "source_location": "L381",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_381",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 49,
+      "community_name": "test_analyze_structure_full_cache_hit",
       "norm_label": "cache hit \\u2192 the review node must still run."
     },
     {
@@ -10694,8 +10694,8 @@
       "source_location": "L431",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_431",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "when no cache file exists for (symbol, day).      the orchestrator must call ``s"
     },
     {
@@ -10705,8 +10705,8 @@
       "source_location": "L444",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_444",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 8,
+      "community_name": "TestCostTracking",
       "norm_label": "cache miss \\u2192 ``synthesizer.synthesize`` is called."
     },
     {
@@ -10727,8 +10727,8 @@
       "source_location": "L515",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_515",
-      "community": 89,
-      "community_name": "TestCacheMiss",
+      "community": 8,
+      "community_name": "TestCostTracking",
       "norm_label": "cache miss \\u2192 the result is persisted via ``save_synthesis``.          red:"
     },
     {
@@ -10782,8 +10782,8 @@
       "source_location": "L733",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_733",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "when ``state.fatal_error`` is set, ``_synthesize_context`` short-circuits."
     },
     {
@@ -10815,8 +10815,8 @@
       "source_location": "L812",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_812",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "cache key is based on (symbol, broker-day) \u2014 not on calendar events,     model v"
     },
     {
@@ -10936,8 +10936,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "test_ohlc_cache.py"
     },
     {
@@ -10947,8 +10947,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "testohlccachepath"
     },
     {
@@ -10958,8 +10958,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_d1",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_path_format_d1()"
     },
     {
@@ -10969,8 +10969,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_h4",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_path_format_h4()"
     },
     {
@@ -10980,8 +10980,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_h1",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_path_format_h1()"
     },
     {
@@ -10991,8 +10991,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_directory_structure",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_directory_structure()"
     },
     {
@@ -11112,8 +11112,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_1",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "tests for ohlc bar cache."
     },
     {
@@ -11123,8 +11123,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_31",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "full path follows analysis/yyyy/mm/dd/symbol/ pattern."
     },
     {
@@ -11530,8 +11530,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": "testanalysisresult"
     },
     {
@@ -11541,8 +11541,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_version_default",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_version_default()"
     },
     {
@@ -11552,8 +11552,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_market_context",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_with_market_context()"
     },
     {
@@ -11563,8 +11563,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_decision",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_with_decision()"
     },
     {
@@ -11574,8 +11574,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_review",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_with_review()"
     },
     {
@@ -11585,8 +11585,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_serialization_roundtrip",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_serialization_roundtrip()"
     },
     {
@@ -11596,8 +11596,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_entry_authorized_always_false",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_entry_authorized_always_false()"
     },
     {
@@ -11607,8 +11607,8 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_status_enum_values",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_status_enum_values()"
     },
     {
@@ -11618,8 +11618,8 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_fatal_error_and_errors",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_fatal_error_and_errors()"
     },
     {
@@ -11629,8 +11629,8 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_ohlc_and_sl_tp_defaults",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_ohlc_and_sl_tp_defaults()"
     },
     {
@@ -11640,8 +11640,8 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_all_fields_populated",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": ".test_all_fields_populated()"
     },
     {
@@ -11673,8 +11673,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_131",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": "critical invariant: entry_authorized must always be false."
     },
     {
@@ -11684,8 +11684,8 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_195",
-      "community": 38,
-      "community_name": "AgentState",
+      "community": 35,
+      "community_name": "DecisionOutput",
       "norm_label": "full-featured analysisresult with all optional fields set."
     },
     {
@@ -13023,7 +13023,7 @@
       "label": "app",
       "file_type": "code",
       "source_file": "server/src/index.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "server_src_index_app",
       "community": 5,
@@ -13034,7 +13034,7 @@
       "label": "scanner",
       "file_type": "code",
       "source_file": "server/src/index.ts",
-      "source_location": "L17",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "server_src_index_scanner",
       "community": 5,
@@ -13045,7 +13045,7 @@
       "label": "runner",
       "file_type": "code",
       "source_file": "server/src/index.ts",
-      "source_location": "L18",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "server_src_index_runner",
       "community": 5,
@@ -13056,7 +13056,7 @@
       "label": "port",
       "file_type": "code",
       "source_file": "server/src/index.ts",
-      "source_location": "L27",
+      "source_location": "L42",
       "_origin": "ast",
       "id": "server_src_index_port",
       "community": 5,
@@ -15190,7 +15190,7 @@
       "label": "Overview",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L5",
+      "source_location": "L7",
       "_origin": "ast",
       "id": "readme_overview",
       "community": 16,
@@ -15201,7 +15201,7 @@
       "label": "Architecture",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L21",
+      "source_location": "L37",
       "_origin": "ast",
       "id": "readme_architecture",
       "community": 16,
@@ -15209,10 +15209,32 @@
       "norm_label": "architecture"
     },
     {
+      "label": "Analysis Pipeline (LangGraph State Machine)",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "readme_analysis_pipeline_langgraph_state_machine",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "analysis pipeline (langgraph state machine)"
+    },
+    {
+      "label": "Service Architecture",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "readme_service_architecture",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "service architecture"
+    },
+    {
       "label": "Design Principles",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L66",
+      "source_location": "L93",
       "_origin": "ast",
       "id": "readme_design_principles",
       "community": 16,
@@ -15220,10 +15242,21 @@
       "norm_label": "design principles"
     },
     {
+      "label": "Services",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L106",
+      "_origin": "ast",
+      "id": "readme_services",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "services"
+    },
+    {
       "label": "Installation",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L75",
+      "source_location": "L114",
       "_origin": "ast",
       "id": "readme_installation",
       "community": 16,
@@ -15234,7 +15267,7 @@
       "label": "Prerequisites",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L77",
+      "source_location": "L116",
       "_origin": "ast",
       "id": "readme_prerequisites",
       "community": 16,
@@ -15242,21 +15275,21 @@
       "norm_label": "prerequisites"
     },
     {
-      "label": "Setup",
+      "label": "Native Setup",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L83",
+      "source_location": "L123",
       "_origin": "ast",
-      "id": "readme_setup",
+      "id": "readme_native_setup",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "setup"
+      "norm_label": "native setup"
     },
     {
       "label": "Environment Configuration",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L103",
+      "source_location": "L154",
       "_origin": "ast",
       "id": "readme_environment_configuration",
       "community": 16,
@@ -15267,7 +15300,7 @@
       "label": "Configuration",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L112",
+      "source_location": "L163",
       "_origin": "ast",
       "id": "readme_configuration",
       "community": 16,
@@ -15275,21 +15308,32 @@
       "norm_label": "configuration"
     },
     {
-      "label": "Environment Variables",
+      "label": "Environment Variables \u2014 Analyzer",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L114",
+      "source_location": "L165",
       "_origin": "ast",
-      "id": "readme_environment_variables",
+      "id": "readme_environment_variables_analyzer",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "environment variables"
+      "norm_label": "environment variables \u2014 analyzer"
+    },
+    {
+      "label": "Environment Variables \u2014 Server",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L195",
+      "_origin": "ast",
+      "id": "readme_environment_variables_server",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "environment variables \u2014 server"
     },
     {
       "label": "Default Model Pricing",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L143",
+      "source_location": "L207",
       "_origin": "ast",
       "id": "readme_default_model_pricing",
       "community": 16,
@@ -15300,7 +15344,7 @@
       "label": "Cost Analysis",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L158",
+      "source_location": "L223",
       "_origin": "ast",
       "id": "readme_cost_analysis",
       "community": 16,
@@ -15311,7 +15355,7 @@
       "label": "Token Estimates (GPT-4o)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L174",
+      "source_location": "L239",
       "_origin": "ast",
       "id": "readme_token_estimates_gpt_4o",
       "community": 16,
@@ -15322,7 +15366,7 @@
       "label": "Cost Estimate (GPT-4o)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L183",
+      "source_location": "L248",
       "_origin": "ast",
       "id": "readme_cost_estimate_gpt_4o",
       "community": 16,
@@ -15333,7 +15377,7 @@
       "label": "Usage",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L191",
+      "source_location": "L256",
       "_origin": "ast",
       "id": "readme_usage",
       "community": 16,
@@ -15341,21 +15385,43 @@
       "norm_label": "usage"
     },
     {
-      "label": "CLI",
+      "label": "Analyzer CLI",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L193",
+      "source_location": "L258",
       "_origin": "ast",
-      "id": "readme_cli",
+      "id": "readme_analyzer_cli",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "cli"
+      "norm_label": "analyzer cli"
+    },
+    {
+      "label": "API Server",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L271",
+      "_origin": "ast",
+      "id": "readme_api_server",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "api server"
+    },
+    {
+      "label": "UI Dashboard",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L286",
+      "_origin": "ast",
+      "id": "readme_ui_dashboard",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "ui dashboard"
     },
     {
       "label": "Programmatic Usage",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L206",
+      "source_location": "L296",
       "_origin": "ast",
       "id": "readme_programmatic_usage",
       "community": 16,
@@ -15366,7 +15432,7 @@
       "label": "Project Structure",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L269",
+      "source_location": "L359",
       "_origin": "ast",
       "id": "readme_project_structure",
       "community": 16,
@@ -15377,7 +15443,7 @@
       "label": "Components",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L342",
+      "source_location": "L422",
       "_origin": "ast",
       "id": "readme_components",
       "community": 16,
@@ -15385,98 +15451,120 @@
       "norm_label": "components"
     },
     {
-      "label": "Data Layer (`src/data/`)",
+      "label": "Data Layer (`analyzer/src/data/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L344",
+      "source_location": "L424",
       "_origin": "ast",
-      "id": "readme_data_layer_src_data",
+      "id": "readme_data_layer_analyzer_src_data",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "data layer (`src/data/`)"
+      "norm_label": "data layer (`analyzer/src/data/`)"
     },
     {
-      "label": "Analysis Layer (`src/analysis/`)",
+      "label": "Analysis Layer (`analyzer/src/analysis/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L349",
+      "source_location": "L432",
       "_origin": "ast",
-      "id": "readme_analysis_layer_src_analysis",
+      "id": "readme_analysis_layer_analyzer_src_analysis",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "analysis layer (`src/analysis/`)"
+      "norm_label": "analysis layer (`analyzer/src/analysis/`)"
     },
     {
-      "label": "Decision Layer (`src/decision/`)",
+      "label": "Decision Layer (`analyzer/src/decision/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L360",
+      "source_location": "L447",
       "_origin": "ast",
-      "id": "readme_decision_layer_src_decision",
+      "id": "readme_decision_layer_analyzer_src_decision",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "decision layer (`src/decision/`)"
+      "norm_label": "decision layer (`analyzer/src/decision/`)"
     },
     {
-      "label": "Calendar Layer (`src/calendar/`)",
+      "label": "Calendar Layer (`analyzer/src/calendar/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L371",
+      "source_location": "L464",
       "_origin": "ast",
-      "id": "readme_calendar_layer_src_calendar",
+      "id": "readme_calendar_layer_analyzer_src_calendar",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "calendar layer (`src/calendar/`)"
+      "norm_label": "calendar layer (`analyzer/src/calendar/`)"
     },
     {
-      "label": "Orchestrator (`src/orchestrator/`)",
+      "label": "Orchestrator (`analyzer/src/orchestrator/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L376",
+      "source_location": "L471",
       "_origin": "ast",
-      "id": "readme_orchestrator_src_orchestrator",
+      "id": "readme_orchestrator_analyzer_src_orchestrator",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "orchestrator (`src/orchestrator/`)"
+      "norm_label": "orchestrator (`analyzer/src/orchestrator/`)"
     },
     {
-      "label": "Configuration (`config/`)",
+      "label": "Configuration (`analyzer/config/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L387",
+      "source_location": "L485",
       "_origin": "ast",
-      "id": "readme_configuration_config",
+      "id": "readme_configuration_analyzer_config",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "configuration (`config/`)"
+      "norm_label": "configuration (`analyzer/config/`)"
     },
     {
-      "label": "Testing",
+      "label": "Server (`server/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L391",
+      "source_location": "L491",
       "_origin": "ast",
-      "id": "readme_testing",
+      "id": "readme_server_server",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "testing"
+      "norm_label": "server (`server/`)"
     },
     {
-      "label": "Test Coverage",
+      "label": "UI (`ui/`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L407",
+      "source_location": "L502",
       "_origin": "ast",
-      "id": "readme_test_coverage",
+      "id": "readme_ui_ui",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "test coverage"
+      "norm_label": "ui (`ui/`)"
+    },
+    {
+      "label": "Docker",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L512",
+      "_origin": "ast",
+      "id": "readme_docker",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "docker"
+    },
+    {
+      "label": "Prerequisites",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L516",
+      "_origin": "ast",
+      "id": "readme_prerequisites_516",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "prerequisites"
     },
     {
       "label": "Development",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L421",
+      "source_location": "L521",
       "_origin": "ast",
       "id": "readme_development",
       "community": 16,
@@ -15484,21 +15572,76 @@
       "norm_label": "development"
     },
     {
-      "label": "Code Quality",
+      "label": "Production",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L423",
+      "source_location": "L546",
       "_origin": "ast",
-      "id": "readme_code_quality",
+      "id": "readme_production",
       "community": 16,
       "community_name": "src/decision/__init__.py",
-      "norm_label": "code quality"
+      "norm_label": "production"
+    },
+    {
+      "label": "Images",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L567",
+      "_origin": "ast",
+      "id": "readme_images",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "images"
+    },
+    {
+      "label": "Testing",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L574",
+      "_origin": "ast",
+      "id": "readme_testing",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "testing"
+    },
+    {
+      "label": "Test Coverage \u2014 Analyzer",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L599",
+      "_origin": "ast",
+      "id": "readme_test_coverage_analyzer",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "test coverage \u2014 analyzer"
+    },
+    {
+      "label": "Development",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L614",
+      "_origin": "ast",
+      "id": "readme_development_614",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "development"
+    },
+    {
+      "label": "Commands",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "L616",
+      "_origin": "ast",
+      "id": "readme_commands",
+      "community": 16,
+      "community_name": "src/decision/__init__.py",
+      "norm_label": "commands"
     },
     {
       "label": "Pre-commit Hooks",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L436",
+      "source_location": "L640",
       "_origin": "ast",
       "id": "readme_pre_commit_hooks",
       "community": 16,
@@ -15509,7 +15652,7 @@
       "label": "Knowledge Graph",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L459",
+      "source_location": "L663",
       "_origin": "ast",
       "id": "readme_knowledge_graph",
       "community": 16,
@@ -15520,7 +15663,7 @@
       "label": "Contributing",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L475",
+      "source_location": "L681",
       "_origin": "ast",
       "id": "readme_contributing",
       "community": 16,
@@ -15531,7 +15674,7 @@
       "label": "Dependencies",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L484",
+      "source_location": "L690",
       "_origin": "ast",
       "id": "readme_dependencies",
       "community": 16,
@@ -15542,7 +15685,7 @@
       "label": "License",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L501",
+      "source_location": "L719",
       "_origin": "ast",
       "id": "readme_license",
       "community": 16,
@@ -43199,7 +43342,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/index.ts",
-      "source_location": "L11",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_index",
@@ -43210,7 +43353,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/index.ts",
-      "source_location": "L27",
+      "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_index",
@@ -43221,7 +43364,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/index.ts",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_index",
@@ -43232,7 +43375,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/index.ts",
-      "source_location": "L17",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_index",
@@ -45854,7 +45997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L21",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45865,7 +46008,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L342",
+      "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45876,7 +46019,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L112",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45887,18 +46030,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L421",
+      "source_location": "L614",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
-      "target": "readme_development",
+      "target": "readme_development_614",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L75",
+      "source_location": "L512",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_trading_ai_agent",
+      "target": "readme_docker",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45909,7 +46063,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L501",
+      "source_location": "L719",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45920,7 +46074,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L5",
+      "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45931,7 +46085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L269",
+      "source_location": "L359",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45942,7 +46096,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L391",
+      "source_location": "L106",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_trading_ai_agent",
+      "target": "readme_services",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L574",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45953,7 +46118,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L191",
+      "source_location": "L256",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_trading_ai_agent",
@@ -45964,7 +46129,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L66",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_architecture",
+      "target": "readme_analysis_pipeline_langgraph_state_machine",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_architecture",
@@ -45975,7 +46151,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L103",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_architecture",
+      "target": "readme_service_architecture",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_installation",
@@ -45986,7 +46173,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L77",
+      "source_location": "L123",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_installation",
+      "target": "readme_native_setup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_installation",
@@ -45997,18 +46195,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L83",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "readme_installation",
-      "target": "readme_setup",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "README.md",
-      "source_location": "L158",
+      "source_location": "L223",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_configuration",
@@ -46019,7 +46206,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L143",
+      "source_location": "L207",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_configuration",
@@ -46030,18 +46217,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L114",
+      "source_location": "L165",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_configuration",
-      "target": "readme_environment_variables",
+      "target": "readme_environment_variables_analyzer",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L183",
+      "source_location": "L195",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_configuration",
+      "target": "readme_environment_variables_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L248",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_cost_analysis",
@@ -46052,7 +46250,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L174",
+      "source_location": "L239",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_cost_analysis",
@@ -46063,18 +46261,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L193",
+      "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_usage",
-      "target": "readme_cli",
+      "target": "readme_analyzer_cli",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L206",
+      "source_location": "L271",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_usage",
+      "target": "readme_api_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L296",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_usage",
@@ -46085,98 +46294,175 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L349",
+      "source_location": "L286",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_components",
-      "target": "readme_analysis_layer_src_analysis",
+      "source": "readme_usage",
+      "target": "readme_ui_dashboard",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L371",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_components",
-      "target": "readme_calendar_layer_src_calendar",
+      "target": "readme_analysis_layer_analyzer_src_analysis",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L387",
+      "source_location": "L464",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_components",
-      "target": "readme_configuration_config",
+      "target": "readme_calendar_layer_analyzer_src_calendar",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L344",
+      "source_location": "L485",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_components",
-      "target": "readme_data_layer_src_data",
+      "target": "readme_configuration_analyzer_config",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L360",
+      "source_location": "L424",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_components",
-      "target": "readme_decision_layer_src_decision",
+      "target": "readme_data_layer_analyzer_src_data",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L376",
+      "source_location": "L447",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_components",
-      "target": "readme_orchestrator_src_orchestrator",
+      "target": "readme_decision_layer_analyzer_src_decision",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L407",
+      "source_location": "L471",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_components",
+      "target": "readme_orchestrator_analyzer_src_orchestrator",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L491",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_components",
+      "target": "readme_server_server",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L502",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_components",
+      "target": "readme_ui_ui",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L521",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_docker",
+      "target": "readme_development",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L567",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_docker",
+      "target": "readme_images",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L516",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_docker",
+      "target": "readme_prerequisites_516",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L546",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "readme_docker",
+      "target": "readme_production",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "README.md",
+      "source_location": "L599",
       "weight": 1.0,
       "_origin": "ast",
       "source": "readme_testing",
-      "target": "readme_test_coverage",
+      "target": "readme_test_coverage_analyzer",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L423",
+      "source_location": "L616",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_development",
-      "target": "readme_code_quality",
+      "source": "readme_development_614",
+      "target": "readme_commands",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L475",
+      "source_location": "L681",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_development",
+      "source": "readme_development_614",
       "target": "readme_contributing",
       "confidence_score": 1.0
     },
@@ -46184,10 +46470,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L484",
+      "source_location": "L690",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_development",
+      "source": "readme_development_614",
       "target": "readme_dependencies",
       "confidence_score": 1.0
     },
@@ -46195,10 +46481,10 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L459",
+      "source_location": "L663",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_development",
+      "source": "readme_development_614",
       "target": "readme_knowledge_graph",
       "confidence_score": 1.0
     },
@@ -46206,14 +46492,14 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L436",
+      "source_location": "L640",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "readme_development",
+      "source": "readme_development_614",
       "target": "readme_pre_commit_hooks",
       "confidence_score": 1.0
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6ebceb67dcfb0d556c5591e6fdccea52112a8366"
+  "built_at_commit": "57a633a7578e4d03f3f2f8fd64ddab4adf93edb8"
 }

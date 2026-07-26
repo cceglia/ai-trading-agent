@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "server/src/index.ts": {
-    "mtime": 1785082820.6289485,
-    "ast_hash": "46e390036a14b2fbde40a47a9ec01f5d",
+    "mtime": 1785085467.6010447,
+    "ast_hash": "54b1db0288ad319c3266a5f408464177",
     "semantic_hash": ""
   },
   "server/src/routes/run.ts": {
@@ -540,13 +540,23 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785082913.8998585,
-    "ast_hash": "147753623485ac48b25bfa071b49a9c8",
+    "mtime": 1785087631.343327,
+    "ast_hash": "d4341b6b1ea0626b10dbefd672813685",
     "semantic_hash": ""
   },
   "ui/index.html": {
     "mtime": 1785074487.1782546,
     "ast_hash": "1dc38cf546e3bb38b0af7f71c8c8ffc2",
+    "semantic_hash": ""
+  },
+  "docker-compose.devel.yml": {
+    "mtime": 1785085462.514034,
+    "ast_hash": "5bae46bb8b91e5e3f5cd5d0bc4262d45",
+    "semantic_hash": ""
+  },
+  "docker-compose.prod.yml": {
+    "mtime": 1785085463.3311138,
+    "ast_hash": "7b8d0790b60cead78dd5545ce3cde191",
     "semantic_hash": ""
   }
 }
