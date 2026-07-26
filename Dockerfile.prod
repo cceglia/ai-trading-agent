@@ -1,0 +1,44 @@
+FROM ubuntu:26.04 AS base
+
+# Install system dependencies, Node.js, Python 3
+RUN apt-get update && apt-get install -y \
+    nodejs npm python3 python3-dev python3-pip python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# ---- Create virtual environment ----
+RUN python3 -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+# ---- Layer 1: Dependencies (cached until package files change) ----
+
+# Server dependencies
+COPY server/package*.json ./server/
+RUN cd server && npm ci
+
+# Analyzer dependencies (install into venv)
+COPY analyzer/pyproject.toml ./analyzer/
+RUN cd analyzer && pip install --no-cache-dir "."
+
+# UI dependencies
+COPY ui/package*.json ./ui/
+RUN cd ui && npm ci
+
+# ---- Layer 2: Source code ----
+
+COPY . .
+
+# ---- Layer 3: Build artifacts ----
+
+# Build the UI
+RUN cd ui && npm run build
+
+# Build the server TypeScript
+RUN cd server && npm run build
+
+EXPOSE 3000
+
+ENV NODE_ENV=production
+
+CMD ["node", "server/dist/index.js"]

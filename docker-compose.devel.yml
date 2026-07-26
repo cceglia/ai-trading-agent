@@ -1,0 +1,26 @@
+services:
+  trading-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: trading-agent:devel
+    container_name: trading-agent-devel
+    volumes:
+      - ./analyzer:/app/analyzer
+      - ./server:/app/server
+      - ./ui:/app/ui
+      - ./data:/app/data
+      - ./rules.json:/app/rules.json
+      # Preserve node_modules installed inside the container
+      - trading_node_modules:/app/server/node_modules
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - PORT=3000
+    # Container stays alive via CMD sleep infinity
+    restart: unless-stopped
+
+volumes:
+  trading_node_modules:

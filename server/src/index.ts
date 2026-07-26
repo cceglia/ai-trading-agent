@@ -5,6 +5,8 @@ import { ResultScanner } from "./services/scanner.js";
 import { RunService } from "./services/runner.js";
 import { createRunsRouter } from "./routes/runs.js";
 import { createRunRouter } from "./routes/run.js";
+import path from "path";
+import fs from "fs";
 
 config();
 
@@ -23,6 +25,19 @@ const runner = new RunService(
 
 app.use("/api/runs", createRunsRouter(scanner));
 app.use("/api/run", createRunRouter(runner));
+
+// Serve the built UI in production
+if (process.env.NODE_ENV === "production") {
+  const __dirname = path.dirname(new URL(import.meta.url).pathname);
+  const uiDistPath = path.join(__dirname, "../../ui/dist");
+  if (fs.existsSync(uiDistPath)) {
+    app.use(express.static(uiDistPath));
+    // SPA fallback — must come after API routes
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(uiDistPath, "index.html"));
+    });
+  }
+}
 
 const port = parseInt(process.env.PORT || "3000", 10);
 app.listen(port, () => {

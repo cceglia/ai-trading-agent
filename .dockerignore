@@ -1,0 +1,14 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.opencode/
+graphify-out/
+node_modules/
+dist/
+.env
+*.md
+data/
