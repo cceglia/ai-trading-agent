@@ -18,5 +18,5 @@ services:
       - NODE_ENV=production
       - DATA_DIR=/app/data
       - ANALYZER_DIR=/app/analyzer
-      - TRADING_ANALYSIS_CACHE_DIR=/app/data
+
     restart: unless-stopped
