@@ -21,8 +21,6 @@ services:
       - .env
     environment:
       - PORT=3000
-      - DATA_DIR=/app/data
-      - ANALYZER_DIR=/app/analyzer
 
     # Container stays alive via CMD sleep infinity
     restart: unless-stopped
