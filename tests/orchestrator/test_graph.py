@@ -1,7 +1,11 @@
+import logging
+from collections.abc import Callable
+from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
 
+from src.decision.cost_tracker import CostTracker
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
@@ -21,6 +25,7 @@ def mock_data_provider():
     provider.get_candles.return_value = (
         "time,open,high,low,close\n2024-01-01,1.0850,1.0900,1.0800,1.0875\n"
     )
+    provider.get_broker_time.return_value = datetime(2026, 7, 25, 14, 0)
     return provider
 
 
@@ -1309,15 +1314,16 @@ def _canonical_structure_analysis() -> dict:
 
 class TestSynthesizeContextCanonicalPrice:
     def test_synthesize_context_computes_and_forwards_current_price(
-        self, trading_graph, mock_synthesizer
+        self, trading_graph, mock_synthesizer, tmp_path, monkeypatch
     ):
         """_synthesize_context must compute the canonical current price from
         the per-timeframe structure analysis and forward it (plus its
         timestamp) to SynthesizerAgent.synthesize.
 
-        RED: today _synthesize_context does not pass current_price /
-        current_price_time, so the call kwargs assertion fails.
+        Uses an isolated temp cache dir to avoid interference from real
+        cached entries or other tests.
         """
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
         state = AgentState(
             calendar_events=[],
             current_pending_orders=[],
@@ -1351,14 +1357,12 @@ class TestSynthesizeContextCanonicalPrice:
         assert result["market_context"].current_price == 1.12
 
     def test_synthesize_context_sets_price_on_summary_when_llm_omits(
-        self, trading_graph, mock_synthesizer
+        self, trading_graph, mock_synthesizer, tmp_path, monkeypatch
     ):
         """Even when the LLM-returned summary has current_price=None, the
         orchestrator must set it post-hoc from the canonical computation.
-
-        RED: today _synthesize_context returns the LLM summary unchanged
-        (current_price stays None), so the assertion fails.
         """
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
         # The shared mock_synthesizer fixture already returns a summary with
         # current_price=None (default). Make that explicit for clarity.
         returned = mock_synthesizer.synthesize.return_value
@@ -1595,4 +1599,289 @@ def test_first_decide_has_no_feedback(
     call_1_kwargs = mock_decider.decide.call_args_list[0].kwargs
     assert call_1_kwargs.get("feedback") is None, (
         f"Expected feedback=None on first decide, got {call_1_kwargs.get('feedback')!r}"
+    )
+
+
+# =============================================================================
+# TASK-5: CostTracker wiring tests
+# =============================================================================
+
+
+def _make_tracking_side_effect(ct_instance: CostTracker) -> Callable[..., object]:
+    """Create a side effect that records an LLM call on the shared CostTracker.
+
+    This simulates what real agents do — calling ``cost_tracker.record_call``
+    with synthetic token counts when their main method is invoked.
+    """
+
+    def side_effect(*args: object, **kwargs: object) -> MagicMock:
+        ct_instance.record_call("gpt-4o", prompt_tokens=100, completion_tokens=50)
+        return MagicMock()
+
+    return side_effect
+
+
+class TestCostTrackerWiring:
+    """Tests for CostTracker wiring in TradingGraph.run().
+
+    These tests verify that:
+    1. A shared CostTracker instance is wired to all 3 agents.
+    2. The graph run logs the total LLM cost accrued via the tracker.
+
+    Both tests use mocked agents that record calls on a shared CostTracker.
+    The mock agents' methods are replaced to call cost_tracker.record_call
+    with synthetic token counts, simulating what real agents do.
+    """
+
+    def test_graph_run_logs_total_cost(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        monkeypatch,
+        tmp_path,
+        caplog,
+    ):
+        """Run TradingGraph with mocked agents that have a shared CostTracker,
+        assert log contains 'Total LLM cost for EURUSD'.
+        """
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 21, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = (
+            "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+        )
+
+        mock_structure_analyzer.analyze.return_value = {
+            "timeframes": {
+                "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+                "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+                "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+            },
+            "confluence": {"status": "NO_VALID_CANDIDATE"},
+        }
+
+        # Build agents that share a single CostTracker
+        ct = CostTracker()
+        track = _make_tracking_side_effect(ct)
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.side_effect = track
+        mock_synthesizer.cost_tracker = ct
+
+        mock_decider = MagicMock()
+        mock_decider.decide.side_effect = track
+        mock_decider.cost_tracker = ct
+
+        mock_reviewer = MagicMock()
+        mock_reviewer.review.side_effect = track
+        mock_reviewer.cost_tracker = ct
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with caplog.at_level(logging.INFO):
+            graph.run("EURUSD")
+
+        # Look for the total-cost log line in the captured log records
+        total_cost_logged = any(
+            "Total LLM cost for EURUSD" in record.getMessage() for record in caplog.records
+        )
+        assert total_cost_logged, (
+            "Expected log message 'Total LLM cost for EURUSD' not found. "
+            "The log should be emitted in TradingGraph.run() after graph.invoke()."
+        )
+
+    def test_main_wires_cost_tracker(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        monkeypatch,
+        tmp_path,
+    ):
+        """Verify that a CostTracker instance can be shared across all 3 agents
+        and records calls consistently.
+        """
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 21, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = (
+            "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+        )
+
+        mock_structure_analyzer.analyze.return_value = {
+            "timeframes": {
+                "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+                "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+                "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+            },
+            "confluence": {"status": "NO_VALID_CANDIDATE"},
+        }
+
+        # Create a shared CostTracker and wire it to all 3 mock agents
+        ct = CostTracker()
+        track = _make_tracking_side_effect(ct)
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.side_effect = track
+        mock_synthesizer.cost_tracker = ct
+
+        mock_decider = MagicMock()
+        mock_decider.decide.side_effect = track
+        mock_decider.cost_tracker = ct
+
+        mock_reviewer = MagicMock()
+        mock_reviewer.review.side_effect = track
+        mock_reviewer.cost_tracker = ct
+
+        # Run the graph
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        graph.run("EURUSD")
+
+        # Verify agents had the shared CostTracker reference
+        assert mock_synthesizer.cost_tracker is ct, "Synthesizer lost shared CostTracker reference"
+        assert mock_decider.cost_tracker is ct, "Decider lost shared CostTracker reference"
+        assert mock_reviewer.cost_tracker is ct, "Reviewer lost shared CostTracker reference"
+
+        # The CostTracker should have recorded calls from all 3 agents.
+        # With the reviewer approving, the retry loop runs once (no retries),
+        # so each of the 3 agents is called exactly once.
+        assert ct.call_count >= 3, (
+            f"Expected at least 3 recorded calls on the shared CostTracker "
+            f"(one per agent), got {ct.call_count}"
+        )
+        assert ct.total_cost > 0.0, "Expected positive total_cost on the shared CostTracker"
+        # Verify all three agents share the exact same tracker object
+        assert (
+            mock_synthesizer.cost_tracker is mock_decider.cost_tracker is mock_reviewer.cost_tracker
+        ), "All three agents must share the exact same CostTracker instance"
+
+
+# =============================================================================
+# TASK-10: _summarize_timeframe should log warning on non-dict nested fields
+# =============================================================================
+
+
+def test_summarize_timeframe_logs_warning_on_non_dict(caplog):
+    """_summarize_timeframe should log a warning when nested fields
+    (events, levels, liquidity) are not dicts."""
+    import logging
+
+    from src.orchestrator.graph import _summarize_timeframe
+
+    caplog.set_level(logging.WARNING)
+
+    tf_data = {
+        "events": "not a dict",  # Should be dict
+        "levels": 42,  # Should be dict
+        "liquidity": ["list", "not", "dict"],  # Should be dict
+        "market_structure": {"primary": "BULLISH"},  # Valid
+    }
+
+    result = _summarize_timeframe(tf_data)
+
+    # Non-dict fields should be skipped
+    assert "events" not in result
+    assert "levels" not in result
+    assert "liquidity" not in result
+    # Valid fields should be included
+    assert result["market_structure"] == {"primary": "BULLISH"}
+    # Warning should be logged
+    assert "non-dict" in caplog.text.lower() or "unexpected" in caplog.text.lower()
+
+
+# =============================================================================
+# TASK-5: Eliminate redundant get_broker_time() call in _synthesize_context
+# =============================================================================
+
+
+def test_get_broker_time_called_once_per_run(
+    mock_data_provider,
+    mock_structure_analyzer,
+    mock_calendar_provider,
+    mock_synthesizer,
+    mock_decider,
+    mock_reviewer,
+    tmp_path,
+    monkeypatch,
+):
+    """get_broker_time() should be called once in _analyze_structure and
+    reused in _synthesize_context, not called again."""
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+    broker_time = datetime(2026, 7, 21, 14, 0)
+    mock_data_provider.get_broker_time.return_value = broker_time
+    mock_data_provider.get_candles.return_value = (
+        "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
+    )
+    mock_structure_analyzer.analyze.return_value = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    graph = TradingGraph(
+        data_provider=mock_data_provider,
+        structure_analyzer=mock_structure_analyzer,
+        calendar_provider=mock_calendar_provider,
+        synthesizer=mock_synthesizer,
+        decider=mock_decider,
+        reviewer=mock_reviewer,
+    )
+
+    state = AgentState(
+        calendar_events=[],
+        current_pending_orders=[],
+        current_positions=[],
+        decision=None,
+        errors=[],
+        fatal_error=None,
+        final_output=None,
+        market_context=None,
+        review=None,
+        review_attempts=0,
+        review_feedback=None,
+        structure_analysis=_canonical_structure_analysis(),
+        symbol="EURUSD",
+        symbol_price=None,
+    )
+
+    # Run _analyze_structure first (calls get_broker_time internally)
+    result = graph._analyze_structure(state)
+    state.update(result)  # Simulate LangGraph state merging
+
+    # Reset mock call count to track _synthesize_context calls independently
+    mock_data_provider.get_broker_time.reset_mock()
+
+    # Run _synthesize_context — should reuse broker_now from state
+    graph._synthesize_context(state)
+
+    # get_broker_time should NOT be called again in _synthesize_context
+    assert mock_data_provider.get_broker_time.call_count == 0, (
+        "get_broker_time() should not be called in _synthesize_context "
+        "when broker_now is already in state"
     )

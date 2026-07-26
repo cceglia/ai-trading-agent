@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
@@ -15,6 +16,11 @@ from src.analysis.candle_cache import (
 from src.analysis.market_structure_engine.config import get_profile
 from src.data.snapshot_builder import SnapshotBuilder
 from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
+from src.decision.synthesizer_cache import (
+    load_cached_synthesis,
+    save_synthesis,
+    should_run_synthesis,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +67,9 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
     # Events — keep only latest_material_event and latest_primary_event,
     # drop the full event lists (primary_events, internal_events, failed_breakouts)
     events = tf_data.get("events", {})
+    if events is not None and not isinstance(events, dict):
+        logger.warning("Unexpected type for 'events' in timeframe data: %s", type(events).__name__)
+        events = {}
     if isinstance(events, dict):
         compact_events: dict[str, Any] = {}
         for key in ("latest_material_event", "latest_primary_event", "failed_bos_count"):
@@ -72,6 +81,9 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
     # Levels — keep only nearest support/resistance summary fields,
     # drop the full supports/resistances lists
     levels = tf_data.get("levels", {})
+    if levels is not None and not isinstance(levels, dict):
+        logger.warning("Unexpected type for 'levels' in timeframe data: %s", type(levels).__name__)
+        levels = {}
     if isinstance(levels, dict):
         compact_levels: dict[str, Any] = {}
         for key in (
@@ -87,6 +99,12 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
 
     # Liquidity — keep only summary fields, drop pools/events lists
     liquidity = tf_data.get("liquidity", {})
+    if liquidity is not None and not isinstance(liquidity, dict):
+        logger.warning(
+            "Unexpected type for 'liquidity' in timeframe data: %s",
+            type(liquidity).__name__,
+        )
+        liquidity = {}
     if isinstance(liquidity, dict):
         compact_liquidity: dict[str, Any] = {}
         for key in ("nearest_buy_side", "nearest_sell_side", "dominant_draw", "latest_event"):
@@ -216,6 +234,7 @@ def _summarize_structure_analysis(
 class AgentState(TypedDict):
     """State for the trading graph."""
 
+    broker_now: datetime | None
     calendar_events: list[dict[str, Any]] | None
     current_pending_orders: list[dict[str, Any]]
     current_positions: list[dict[str, Any]]
@@ -379,7 +398,7 @@ class TradingGraph:
                     result = cached
                     result["_full_multi_timeframe"] = mtf_result
                     result["confluence"] = mtf_result.get("confluence", {})
-                    return {"structure_analysis": result}
+                    return {"structure_analysis": result, "broker_now": broker_now}
 
             # --- Cache miss: fetch all three timeframes fresh ---
             logger.info("Cache miss for %s — fetching fresh data", symbol)
@@ -444,7 +463,7 @@ class TradingGraph:
                 except Exception:
                     logger.warning("Failed to cache MTF analysis for %s", symbol)
 
-            return {"structure_analysis": result}
+            return {"structure_analysis": result, "broker_now": broker_now}
         except Exception as e:
             msg = f"Structure analysis failed: {e}"
             logger.error(msg)
@@ -493,10 +512,29 @@ class TradingGraph:
                 compact_structure.get("timeframes", {}) or {}
             )
 
+            # --- Check synthesizer cache before calling LLM ---
+            # Reuse broker_now from state (set by _analyze_structure) to avoid
+            # a redundant get_broker_time() call.
+            broker_now = state.get("broker_now")
+            if broker_now is None:
+                broker_now = self.data_provider.get_broker_time()
+            symbol = state["symbol"]
+
+            if not should_run_synthesis(symbol, broker_now):
+                cached = load_cached_synthesis(symbol, broker_now)
+                if cached is not None:
+                    logger.info("Using cached synthesis for %s", symbol)
+                    # Stamp the canonical price on cached summaries too
+                    if cached.current_price is None and current_price is not None:
+                        cached.current_price = current_price
+                        cached.current_price_time = current_price_time
+                    return {"market_context": cached}
+
+            # --- Cache miss (or disabled): call LLM ---
             context = self.synthesizer.synthesize(
                 structure_analysis=compact_structure,
                 calendar_events=state.get("calendar_events", []),
-                symbol=state["symbol"],
+                symbol=symbol,
                 current_price=current_price,
                 current_price_time=current_price_time,
             )
@@ -506,6 +544,9 @@ class TradingGraph:
             if context.current_price is None and current_price is not None:
                 context.current_price = current_price
                 context.current_price_time = current_price_time
+
+            # Write cache (best-effort, non-fatal)
+            save_synthesis(symbol, broker_now, context)
 
             return {"market_context": context}
         except Exception as e:
@@ -603,6 +644,7 @@ class TradingGraph:
         logger.info("Starting analysis for %s", symbol)
 
         initial_state = AgentState(
+            broker_now=None,
             calendar_events=None,
             current_pending_orders=[],
             current_positions=[],
@@ -620,5 +662,17 @@ class TradingGraph:
         )
 
         result: dict[str, Any] = self.graph.invoke(initial_state)
+
+        # Log cumulative LLM cost if a cost tracker is available on any agent
+        if hasattr(self.synthesizer, "cost_tracker") and self.synthesizer.cost_tracker is not None:
+            ct = self.synthesizer.cost_tracker
+            if ct.call_count > 0:
+                logger.info(
+                    "Total LLM cost for %s: $%.4f across %d calls",
+                    symbol,
+                    ct.total_cost,
+                    ct.call_count,
+                )
+
         logger.info("Analysis complete for %s", symbol)
         return result

@@ -25,6 +25,21 @@ def reset_candle_cache_settings():
     src.analysis.candle_cache._settings = None
 
 
+@pytest.fixture(autouse=True)
+def reset_synthesizer_cache_settings():
+    """Reset the _settings sentinel in synthesizer_cache before each test.
+
+    Mirrors ``reset_candle_cache_settings`` above. Tests that monkeypatch
+    env vars (TRADING_ANALYSIS_CACHE_DIR, TRADING_SYNTHESIZER_CACHE_ENABLED)
+    need the sentinel cleared so that ``_get_settings()`` picks up changes.
+    """
+    import src.decision.synthesizer_cache
+
+    src.decision.synthesizer_cache._settings = None
+    yield
+    src.decision.synthesizer_cache._settings = None
+
+
 @pytest.fixture
 def sample_market_context():
     return MarketContextSummary(

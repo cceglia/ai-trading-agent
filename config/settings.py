@@ -1,4 +1,6 @@
-from pydantic import Field
+import json
+
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -32,6 +34,52 @@ class Settings(BaseSettings):
         default=0.05, description="Maximum cost per symbol analysis in USD"
     )
 
+    # Model Pricing Configuration
+    model_pricing: dict[str, dict[str, float]] = Field(
+        default={
+            "gpt-4o": {"prompt": 0.0000025, "completion": 0.00001},
+            "gpt-4o-mini": {"prompt": 0.00000015, "completion": 0.0000006},
+            "gpt-4": {"prompt": 0.00003, "completion": 0.00006},
+            "gpt-3.5-turbo": {"prompt": 0.0000005, "completion": 0.0000015},
+            "DeepSeek-V4-Flash": {"prompt": 0.00000009, "completion": 0.00000018},
+            "DeepSeek-V4-Pro": {"prompt": 0.000000435, "completion": 0.00000087},
+        },
+        description="Per-model token pricing: {model: {prompt: $/token, completion: $/token}}",
+    )
+
+    @field_validator("model_pricing", mode="before")
+    @classmethod
+    def parse_model_pricing(cls, v: object) -> object:
+        """Parse JSON string env var and validate all prices are non-negative."""
+        if isinstance(v, str):
+            v = json.loads(v)
+        if isinstance(v, dict):
+            for model, prices in v.items():
+                if not isinstance(prices, dict):
+                    raise ValueError(
+                        f"Invalid pricing for {model!r}: expected dict, got {type(prices).__name__}"
+                    )
+                for key in ("prompt", "completion"):
+                    val = prices.get(key)
+                    if val is None:
+                        raise ValueError(f"Missing {key!r} price for {model!r}")
+                    if not isinstance(val, int | float):
+                        raise ValueError(f"Invalid {key!r} price for {model!r}: {val!r}")
+                    if val == 0:
+                        import logging
+
+                        logger = logging.getLogger(__name__)
+                        logger.warning(
+                            "Zero %s price for model %r — cost tracking will undercount",
+                            key,
+                            model,
+                        )
+                    if val < 0:
+                        raise ValueError(
+                            f"{key!r} price for {model!r} must be non-negative, got {val}"
+                        )
+        return v
+
     # Calendar Configuration
     calendar_cache_hours: int = Field(default=4, description="Hours to cache calendar events")
 
@@ -46,6 +94,9 @@ class Settings(BaseSettings):
     h4_close_interval_hours: int = Field(default=4, description="H4 interval in hours")
     analysis_cache_dir: str = Field(
         default="analysis", description="Base directory for analysis cache"
+    )
+    synthesizer_cache_enabled: bool = Field(
+        default=True, description="Enable synthesizer output caching"
     )
 
     model_config = {"env_prefix": "TRADING_", "env_file": ".env"}

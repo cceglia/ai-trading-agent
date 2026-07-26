@@ -5,6 +5,7 @@ import logging
 import sys
 
 from config.settings import Settings
+from src.decision.cost_tracker import CostTracker
 from src.logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
@@ -39,6 +40,8 @@ def main() -> None:
         from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
         from src.orchestrator.graph import TradingGraph
 
+        cost_tracker = CostTracker(pricing=settings.model_pricing)
+
         data_provider = TerminalDataProvider(
             server_url=settings.terminal_server_url,
             api_key=settings.terminal_api_key,
@@ -56,18 +59,21 @@ def main() -> None:
             api_key=api_key,
             base_url=base_url,
             reasoning_effort=reasoning_effort,
+            cost_tracker=cost_tracker,
         )
         decider = DeciderAgent(
             model=settings.openai_model,
             api_key=api_key,
             base_url=base_url,
             reasoning_effort=reasoning_effort,
+            cost_tracker=cost_tracker,
         )
         reviewer = ReviewerAgent(
             model=settings.openai_model,
             api_key=api_key,
             base_url=base_url,
             reasoning_effort=reasoning_effort,
+            cost_tracker=cost_tracker,
         )
 
         graph = TradingGraph(

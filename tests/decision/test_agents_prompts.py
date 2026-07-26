@@ -11,6 +11,15 @@ from src.decision.models import (
 )
 
 
+def _make_raw_response() -> MagicMock:
+    """Build a mock raw_response with a usable .usage attribute."""
+    raw = MagicMock()
+    raw.usage.prompt_tokens = 100
+    raw.usage.completion_tokens = 50
+    raw.usage.total_tokens = 150
+    return raw
+
+
 class TestAgentPrompts:
     def test_synthesizer_uses_detailed_prompt(self):
         """SynthesizerAgent must use SYNTHESIZER_SYSTEM_PROMPT from prompts.py."""
@@ -19,14 +28,17 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+            mock_client.create_with_completion.return_value = (
+                MarketContextSummary(
+                    symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+                ),
+                _make_raw_response(),
             )
             agent = SynthesizerAgent(api_key="test")
             agent.synthesize({}, [], "EURUSD")
 
             # Extract the messages sent
-            call_kwargs = mock_client.create.call_args
+            call_kwargs = mock_client.create_with_completion.call_args
             messages = call_kwargs[1]["messages"]
             system_msg = messages[0]["content"]
 
@@ -41,11 +53,14 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = DecisionOutput(
-                symbol="EURUSD",
-                action=DecisionAction.NO_TRADE,
-                reasoning="test",
-                entry_authorized=False,
+            mock_client.create_with_completion.return_value = (
+                DecisionOutput(
+                    symbol="EURUSD",
+                    action=DecisionAction.NO_TRADE,
+                    reasoning="test",
+                    entry_authorized=False,
+                ),
+                _make_raw_response(),
             )
             agent = DeciderAgent(api_key="test")
             context = MarketContextSummary(
@@ -53,7 +68,7 @@ class TestAgentPrompts:
             )
             agent.decide(context, [], [])
 
-            call_kwargs = mock_client.create.call_args
+            call_kwargs = mock_client.create_with_completion.call_args
             messages = call_kwargs[1]["messages"]
             system_msg = messages[0]["content"]
 
@@ -67,7 +82,10 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = ReviewVerdict(approved=True, reasoning="test")
+            mock_client.create_with_completion.return_value = (
+                ReviewVerdict(approved=True, reasoning="test"),
+                _make_raw_response(),
+            )
             agent = ReviewerAgent(api_key="test")
             context = MarketContextSummary(
                 symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
@@ -80,7 +98,7 @@ class TestAgentPrompts:
             )
             agent.review(decision, context, [])
 
-            call_kwargs = mock_client.create.call_args
+            call_kwargs = mock_client.create_with_completion.call_args
             messages = call_kwargs[1]["messages"]
             system_msg = messages[0]["content"]
 
@@ -94,8 +112,11 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+            mock_client.create_with_completion.return_value = (
+                MarketContextSummary(
+                    symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+                ),
+                _make_raw_response(),
             )
             agent = SynthesizerAgent(api_key="test")
 
@@ -117,8 +138,11 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+            mock_client.create_with_completion.return_value = (
+                MarketContextSummary(
+                    symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+                ),
+                _make_raw_response(),
             )
             agent = SynthesizerAgent(api_key="test")
             agent.synthesize(
@@ -129,7 +153,7 @@ class TestAgentPrompts:
                 current_price_time="2024-01-03T00:00:00",
             )
 
-            messages = mock_client.create.call_args[1]["messages"]
+            messages = mock_client.create_with_completion.call_args[1]["messages"]
             user_msg = messages[1]["content"]
 
             assert "1.0875" in user_msg
@@ -143,13 +167,16 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+            mock_client.create_with_completion.return_value = (
+                MarketContextSummary(
+                    symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+                ),
+                _make_raw_response(),
             )
             agent = SynthesizerAgent(api_key="test")
             agent.synthesize({}, [], "EURUSD")
 
-            messages = mock_client.create.call_args[1]["messages"]
+            messages = mock_client.create_with_completion.call_args[1]["messages"]
             user_msg = messages[1]["content"]
 
             # The current-price line must mention None when price is absent
@@ -163,8 +190,11 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = MarketContextSummary(
-                symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+            mock_client.create_with_completion.return_value = (
+                MarketContextSummary(
+                    symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
+                ),
+                _make_raw_response(),
             )
             agent = SynthesizerAgent(api_key="test")
 
@@ -180,11 +210,14 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = DecisionOutput(
-                symbol="EURUSD",
-                action=DecisionAction.NO_TRADE,
-                reasoning="test",
-                entry_authorized=False,
+            mock_client.create_with_completion.return_value = (
+                DecisionOutput(
+                    symbol="EURUSD",
+                    action=DecisionAction.NO_TRADE,
+                    reasoning="test",
+                    entry_authorized=False,
+                ),
+                _make_raw_response(),
             )
             agent = DeciderAgent(api_key="test")
             context = MarketContextSummary(
@@ -203,11 +236,14 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = DecisionOutput(
-                symbol="EURUSD",
-                action=DecisionAction.NO_TRADE,
-                reasoning="test",
-                entry_authorized=False,
+            mock_client.create_with_completion.return_value = (
+                DecisionOutput(
+                    symbol="EURUSD",
+                    action=DecisionAction.NO_TRADE,
+                    reasoning="test",
+                    entry_authorized=False,
+                ),
+                _make_raw_response(),
             )
             agent = DeciderAgent(api_key="test")
             context = MarketContextSummary(
@@ -215,7 +251,7 @@ class TestAgentPrompts:
             )
             agent.decide(context, [], [], current_price=1.0875)
 
-            messages = mock_client.create.call_args[1]["messages"]
+            messages = mock_client.create_with_completion.call_args[1]["messages"]
             user_msg = messages[1]["content"]
 
             assert "current_price" in user_msg
@@ -228,11 +264,14 @@ class TestAgentPrompts:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
             mock_from.return_value = mock_client
-            mock_client.create.return_value = DecisionOutput(
-                symbol="EURUSD",
-                action=DecisionAction.NO_TRADE,
-                reasoning="test",
-                entry_authorized=False,
+            mock_client.create_with_completion.return_value = (
+                DecisionOutput(
+                    symbol="EURUSD",
+                    action=DecisionAction.NO_TRADE,
+                    reasoning="test",
+                    entry_authorized=False,
+                ),
+                _make_raw_response(),
             )
             agent = DeciderAgent(api_key="test")
             context = MarketContextSummary(

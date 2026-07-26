@@ -1201,8 +1201,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_decision_agents",
-      "community": 40,
-      "community_name": "graph.py",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "agents.py"
     },
     {
@@ -1245,8 +1245,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "src_decision_agents_synthesizeragent_init",
-      "community": 39,
-      "community_name": "setup_logging",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": ".__init__()"
     },
     {
@@ -1256,8 +1256,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "openai",
-      "community": 39,
-      "community_name": "setup_logging",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "openai"
     },
     {
@@ -1278,8 +1278,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "src_decision_agents_decideragent",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "decideragent"
     },
     {
@@ -1289,8 +1289,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "src_decision_agents_decideragent_init",
-      "community": 39,
-      "community_name": "setup_logging",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": ".__init__()"
     },
     {
@@ -1322,8 +1322,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "src_decision_agents_revieweragent_init",
-      "community": 39,
-      "community_name": "setup_logging",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": ".__init__()"
     },
     {
@@ -1366,8 +1366,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "src_decision_agents_rationale_110",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "makes trading decisions based on market context."
     },
     {
@@ -1388,8 +1388,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_decision_cost_tracker",
-      "community": 40,
-      "community_name": "graph.py",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "cost_tracker.py"
     },
     {
@@ -1465,8 +1465,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "src_decision_cost_tracker_rationale_1",
-      "community": 40,
-      "community_name": "graph.py",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "costtracker \u2014 tracks llm api call costs.  exposes a single :class:`costtracker`"
     },
     {
@@ -3384,7 +3384,7 @@
       "norm_label": "trading_model_pricing json env var overrides the default."
     },
     {
-      "label": "Invalid JSON raises a validation error or falls back to default.",
+      "label": "Invalid JSON in TRADING_MODEL_PRICING raises a validation error or falls back to",
       "file_type": "rationale",
       "source_file": "tests/config/test_settings.py",
       "source_location": "L79",
@@ -3392,7 +3392,7 @@
       "id": "tests_config_test_settings_rationale_79",
       "community": 1,
       "community_name": "Mt5DataProvider",
-      "norm_label": "invalid json raises a validation error or falls back to default."
+      "norm_label": "invalid json in trading_model_pricing raises a validation error or falls back to"
     },
     {
       "label": "All price values in model_pricing are > 0.",
@@ -4864,8 +4864,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentapikey_test_reviewer_passes_api_key_to_client",
-      "community": 56,
-      "community_name": "DeciderAgent",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_reviewer_passes_api_key_to_client()"
     },
     {
@@ -4886,8 +4886,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "testagentbaseurl"
     },
     {
@@ -4897,8 +4897,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_synthesizer_passes_base_url_to_client()"
     },
     {
@@ -4908,8 +4908,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_decider_passes_base_url_to_client()"
     },
     {
@@ -4919,8 +4919,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
-      "community": 56,
-      "community_name": "DeciderAgent",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_reviewer_passes_base_url_to_client()"
     },
     {
@@ -4930,8 +4930,8 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_agents_default_to_none_base_url()"
     },
     {
@@ -4941,8 +4941,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_base_url_ignored_when_client_provided()"
     },
     {
@@ -4952,8 +4952,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": ".test_base_url_and_api_key_together()"
     },
     {
@@ -4963,8 +4963,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortconstructor",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "testreasoningeffortconstructor"
     },
     {
@@ -4996,8 +4996,8 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_decider_accepts_reasoning_effort",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": ".test_decider_accepts_reasoning_effort()"
     },
     {
@@ -5018,8 +5018,8 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "testreasoningeffortpassthrough"
     },
     {
@@ -5029,8 +5029,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_includes_reasoning_effort_when_set",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_create_includes_reasoning_effort_when_set()"
     },
     {
@@ -5040,8 +5040,8 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_create_omits_reasoning_effort_when_none()"
     },
     {
@@ -5051,8 +5051,8 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none_explicit",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_create_omits_reasoning_effort_when_none_explicit()"
     },
     {
@@ -5062,8 +5062,8 @@
       "source_location": "L245",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_decider_create_passes_reasoning_effort",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_decider_create_passes_reasoning_effort()"
     },
     {
@@ -5073,8 +5073,8 @@
       "source_location": "L257",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_reviewer_create_passes_reasoning_effort",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": ".test_reviewer_create_passes_reasoning_effort()"
     },
     {
@@ -5414,8 +5414,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_33",
-      "community": 56,
-      "community_name": "DeciderAgent",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "revieweragent must pass api_key to openai constructor."
     },
     {
@@ -5436,8 +5436,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_60",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "synthesizeragent must pass base_url to openai constructor."
     },
     {
@@ -5447,8 +5447,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_71",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "decideragent must pass base_url to openai constructor."
     },
     {
@@ -5458,8 +5458,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_82",
-      "community": 56,
-      "community_name": "DeciderAgent",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "revieweragent must pass base_url to openai constructor."
     },
     {
@@ -5469,8 +5469,8 @@
       "source_location": "L93",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_93",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "when no base_url given, openai() uses its own default."
     },
     {
@@ -5480,8 +5480,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_107",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "when a pre-built client is provided, base_url must be ignored."
     },
     {
@@ -5491,8 +5491,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_118",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 33,
+      "community_name": "MarketContextSummary",
       "norm_label": "synthesizeragent must pass both api_key and base_url when provided."
     },
     {
@@ -5524,8 +5524,8 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_158",
-      "community": 46,
-      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
+      "community": 56,
+      "community_name": "DeciderAgent",
       "norm_label": "decideragent must accept reasoning_effort param."
     },
     {
@@ -5546,8 +5546,8 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_185",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "reasoning_effort is a create()-level kwarg, not an openai() constructor arg."
     },
     {
@@ -5557,8 +5557,8 @@
       "source_location": "L188",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_188",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "when reasoning_effort is set, it must appear in client.create() kwargs."
     },
     {
@@ -5568,8 +5568,8 @@
       "source_location": "L214",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_214",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "when reasoning_effort is none, the key must be absent from create() kwargs."
     },
     {
@@ -5579,8 +5579,8 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_230",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "when reasoning_effort is explicitly none, key absent from create() kwargs."
     },
     {
@@ -5590,8 +5590,8 @@
       "source_location": "L246",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_246",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "decideragent passes reasoning_effort to create()."
     },
     {
@@ -5601,8 +5601,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "tests_decision_test_agents_api_key_rationale_258",
-      "community": 33,
-      "community_name": "MarketContextSummary",
+      "community": 46,
+      "community_name": "test_analyze_structure_cache_hit_mtf_missing",
       "norm_label": "revieweragent passes reasoning_effort to create()."
     },
     {
@@ -15145,7 +15145,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L964",
+      "source_location": "L966",
       "weight": 1.0,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentcostlogging_test_return_type_unaffected",
@@ -16645,7 +16645,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey",
@@ -16656,7 +16656,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentbaseurl",
@@ -16667,7 +16667,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentcostlogging",
@@ -16714,7 +16714,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortconstructor",
@@ -16725,7 +16725,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortintegration",
@@ -16736,7 +16736,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortlogging",
@@ -16747,7 +16747,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortnilconversion",
@@ -16758,7 +16758,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L933",
+      "source_location": "L964",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough",
@@ -17673,7 +17673,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentapikey",
@@ -17684,7 +17684,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentbaseurl",
@@ -17695,7 +17695,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentcostlogging",
@@ -17718,7 +17718,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortconstructor",
@@ -17729,7 +17729,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortintegration",
@@ -17740,7 +17740,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortlogging",
@@ -17751,7 +17751,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortnilconversion",
@@ -17762,7 +17762,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L889",
+      "source_location": "L963",
       "weight": 0.8,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testreasoningeffortpassthrough",
@@ -18244,7 +18244,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "tests/decision/test_agents_api_key.py",
-      "source_location": "L975",
+      "source_location": "L972",
       "weight": 1.0,
       "_origin": "ast",
       "source": "tests_decision_test_agents_api_key_testagentcostlogging_test_return_type_unaffected",

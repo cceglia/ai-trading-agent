@@ -92,3 +92,18 @@ class TestMainErrorDuplication:
             f"second time.\n"
             f"Full stdout:\n{captured.out}"
         )
+
+
+class TestMainCostLogging:
+    """main.py must not log 'Total LLM cost' — that's graph.run()'s job."""
+
+    def test_no_redundant_cost_log(self) -> None:
+        """main.py should not log 'Total LLM cost' — graph.run() already does."""
+        import inspect
+
+        from main import main as main_fn
+
+        source = inspect.getsource(main_fn)
+        assert source.count("Total LLM cost") == 0, (
+            "main.py still contains 'Total LLM cost' log line — should be removed"
+        )

@@ -1,7 +1,7 @@
 # Graph Report - Agent  (2026-07-26)
 
 ## Corpus Check
-- 48 files · ~29,930 words
+- 48 files · ~29,942 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -165,8 +165,8 @@ Cohesion: 0.29
 Nodes (4): datetime, Terminal MCP data provider via MCP Streamable HTTP protocol., Fetch OHLC candles from terminal MCP server.          Args:             symbol:, Fetch current broker server time from terminal MCP server.          Returns:
 
 ### Community 33 - "MarketContextSummary"
-Cohesion: 0.17
-Nodes (7): reasoning_effort is a create()-level kwarg, not an OpenAI() constructor arg., When reasoning_effort is set, it must appear in client.create() kwargs., When reasoning_effort is None, the key must be absent from create() kwargs., When reasoning_effort is explicitly None, key absent from create() kwargs., DeciderAgent passes reasoning_effort to create()., ReviewerAgent passes reasoning_effort to create()., TestReasoningEffortPassthrough
+Cohesion: 0.15
+Nodes (7): When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., SynthesizerAgent must pass base_url to OpenAI constructor., DeciderAgent must pass base_url to OpenAI constructor., ReviewerAgent must pass base_url to OpenAI constructor., When no base_url given, OpenAI() uses its own default., TestAgentBaseUrl
 
 ### Community 36 - "TestRepeatedRuns"
 Cohesion: 0.50
@@ -182,11 +182,11 @@ Nodes (14): CompiledStateGraph, AgentState, Any, State for the trading graph., I
 
 ### Community 39 - "setup_logging"
 Cohesion: 0.07
-Nodes (21): OpenAI, CostTracker, Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Record an LLM API call and return its cost.          Parameters         --------, Accumulated cost across all recorded calls., Number of calls recorded., Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d (+13 more)
+Nodes (20): CostTracker, Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Record an LLM API call and return its cost.          Parameters         --------, Accumulated cost across all recorded calls., Number of calls recorded., Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d, Zero tokens result in zero cost and call is NOT recorded. (+12 more)
 
 ### Community 40 - "graph.py"
-Cohesion: 0.16
-Nodes (10): _log_llm_call(), Any, Record an LLM call and log its cost. Returns cost or None if no usage., CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Tests for agent cost-logging helper extraction., _log_llm_call extracts duplicated cost-logging from agents., When usage is provided, logs cost details., When usage is None, logs N/A. (+2 more)
+Cohesion: 0.18
+Nodes (9): _log_llm_call(), Any, Record an LLM call and log its cost. Returns cost or None if no usage., Tests for agent cost-logging helper extraction., _log_llm_call extracts duplicated cost-logging from agents., When usage is provided, logs cost details., When usage is None, logs N/A., Records the call on the cost tracker when usage is provided. (+1 more)
 
 ### Community 41 - "_canonical_structure_analysis"
 Cohesion: 0.25
@@ -197,8 +197,8 @@ Cohesion: 0.06
 Nodes (58): _cache_path(), _get_cache_date(), _get_settings(), load_cached_synthesis(), Any, datetime, Path, File-based cache for SynthesizerAgent output, keyed by (symbol, broker-day).  Mi (+50 more)
 
 ### Community 46 - "test_analyze_structure_cache_hit_mtf_missing"
-Cohesion: 0.09
-Nodes (23): DeciderAgent, Makes trading decisions based on market context., Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., SynthesizerAgent must accept reasoning_effort param. (+15 more)
+Cohesion: 0.07
+Nodes (21): Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., SynthesizerAgent must accept reasoning_effort param., When not specified, reasoning_effort defaults to None., reasoning_effort is a create()-level kwarg, not an OpenAI() constructor arg., When reasoning_effort is set, it must appear in client.create() kwargs., DeciderAgent must pass api_key to OpenAI constructor. (+13 more)
 
 ### Community 47 - "test_analyze_structure_passes_broker_time_to_snapshot_builder"
 Cohesion: 0.10
@@ -221,8 +221,8 @@ Cohesion: 0.36
 Nodes (3): Configure structured logging for the trading agent., setup_logging(), TestSetupLogging
 
 ### Community 56 - "DeciderAgent"
-Cohesion: 0.20
-Nodes (7): main(), Trading AI Agent - CLI Entry Point., Reviews trading decisions and provides feedback., ReviewerAgent, ReviewerAgent must accept reasoning_effort param., ReviewerAgent must pass api_key to OpenAI constructor., ReviewerAgent must pass base_url to OpenAI constructor.
+Cohesion: 0.16
+Nodes (11): main(), Trading AI Agent - CLI Entry Point., OpenAI, DeciderAgent, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., ReviewerAgent, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker` (+3 more)
 
 ### Community 58 - "main"
 Cohesion: 0.18

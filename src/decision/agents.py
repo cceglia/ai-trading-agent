@@ -4,6 +4,7 @@ from typing import Any
 import instructor
 from openai import OpenAI
 
+from src.decision.cost_tracker import CostTracker
 from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 from src.decision.prompts import (
     DECIDER_SYSTEM_PROMPT,
@@ -12,6 +13,34 @@ from src.decision.prompts import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _log_llm_call(
+    agent_name: str,
+    model: str,
+    usage: Any,
+    cost_tracker: CostTracker,
+) -> float | None:
+    """Record an LLM call and log its cost. Returns cost or None if no usage."""
+    if usage is not None:
+        cost = cost_tracker.record_call(model, usage.prompt_tokens, usage.completion_tokens)
+        logger.info(
+            "LLM call: agent=%s model=%s tokens=(prompt=%d completion=%d total=%d) cost=$%.4f",
+            agent_name,
+            model,
+            usage.prompt_tokens,
+            usage.completion_tokens,
+            usage.total_tokens,
+            cost,
+        )
+        return cost
+    else:
+        logger.info(
+            "LLM call: agent=%s model=%s tokens=N/A cost=N/A (no usage data)",
+            agent_name,
+            model,
+        )
+        return None
 
 
 class SynthesizerAgent:
@@ -24,6 +53,7 @@ class SynthesizerAgent:
         api_key: str | None = None,
         base_url: str | None = None,
         reasoning_effort: str | None = None,
+        cost_tracker: CostTracker | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -36,6 +66,8 @@ class SynthesizerAgent:
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
         self.reasoning_effort = reasoning_effort
+        self.cost_tracker = cost_tracker or CostTracker()
+        logger.info("Agent=%s reasoning_effort=%s", self.__class__.__name__, self.reasoning_effort)
 
     def synthesize(
         self,
@@ -66,10 +98,12 @@ class SynthesizerAgent:
         }
         if self.reasoning_effort:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
-        result = self.client.create(**create_kwargs)
+        response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        logger.info("Synthesis complete: bias=%s confidence=%s", result.bias, result.confidence)
-        return result  # type: ignore[no-any-return]
+        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+
+        logger.info("Synthesis complete: bias=%s confidence=%s", response.bias, response.confidence)
+        return response  # type: ignore[no-any-return]
 
 
 class DeciderAgent:
@@ -82,6 +116,7 @@ class DeciderAgent:
         api_key: str | None = None,
         base_url: str | None = None,
         reasoning_effort: str | None = None,
+        cost_tracker: CostTracker | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -94,6 +129,8 @@ class DeciderAgent:
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
         self.reasoning_effort = reasoning_effort
+        self.cost_tracker = cost_tracker or CostTracker()
+        logger.info("Agent=%s reasoning_effort=%s", self.__class__.__name__, self.reasoning_effort)
 
     def decide(
         self,
@@ -125,10 +162,12 @@ class DeciderAgent:
         }
         if self.reasoning_effort:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
-        result = self.client.create(**create_kwargs)
+        response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        logger.info("Decision: action=%s", result.action)
-        return result  # type: ignore[no-any-return]
+        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+
+        logger.info("Decision: action=%s", response.action)
+        return response  # type: ignore[no-any-return]
 
 
 class ReviewerAgent:
@@ -141,6 +180,7 @@ class ReviewerAgent:
         api_key: str | None = None,
         base_url: str | None = None,
         reasoning_effort: str | None = None,
+        cost_tracker: CostTracker | None = None,
     ):
         if client is not None:
             self.client = instructor.from_openai(client)
@@ -153,6 +193,8 @@ class ReviewerAgent:
             self.client = instructor.from_openai(OpenAI(**openai_kwargs))
         self.model = model
         self.reasoning_effort = reasoning_effort
+        self.cost_tracker = cost_tracker or CostTracker()
+        logger.info("Agent=%s reasoning_effort=%s", self.__class__.__name__, self.reasoning_effort)
 
     def review(
         self,
@@ -179,7 +221,9 @@ class ReviewerAgent:
         }
         if self.reasoning_effort:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
-        result = self.client.create(**create_kwargs)
+        response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        logger.info("Review complete: approved=%s", result.approved)
-        return result  # type: ignore[no-any-return]
+        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+
+        logger.info("Review complete: approved=%s", response.approved)
+        return response  # type: ignore[no-any-return]
