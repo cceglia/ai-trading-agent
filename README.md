@@ -525,18 +525,16 @@ The project includes Docker support for both development and production environm
 docker compose -f docker-compose.devel.yml up -d --build
 
 # First-time: install dependencies inside the container
-docker compose -f docker-compose.devel.yml exec trading-agent-devel bash
-cd /app/analyzer && pip install -e ".[dev]"
-cd /app/server && npm install
-exit
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/analyzer && pip install -e '.[dev]' && cd /app/server && npm install"
 
 # Run the analyzer
-docker compose -f docker-compose.devel.yml exec trading-agent-devel \
-  bash -c "cd /app/analyzer && python main.py XAUUSD"
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/analyzer && python main.py XAUUSD"
 
 # Start the API server (port 3000)
-docker compose -f docker-compose.devel.yml exec trading-agent-devel \
-  bash -c "cd /app/server && npm run dev"
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && npm run dev"
 ```
 
 The dev container uses bind mounts for all source directories, so code changes on the host
