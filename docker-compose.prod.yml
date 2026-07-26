@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile.prod
     image: trading-agent:prod
     container_name: trading-agent-prod
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./data:/app/data
     ports:

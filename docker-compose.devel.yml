@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile.dev
     image: trading-agent:devel
     container_name: trading-agent-devel
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./analyzer:/app/analyzer
       - ./server:/app/server
