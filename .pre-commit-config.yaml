@@ -43,14 +43,3 @@ repos:
         exclude: ^graphify-out/
       - id: check-merge-conflict
       - id: debug-statements
-
-  # ── Graphify: update knowledge graph on code changes ────────────────
-  - repo: local
-    hooks:
-      - id: graphify-update
-        name: graphify update
-        entry: graphify update .
-        language: system
-        files: \.(py|md|json|yaml|toml)$
-        pass_filenames: false
-        always_run: false
