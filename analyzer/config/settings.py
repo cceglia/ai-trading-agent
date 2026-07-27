@@ -83,6 +83,15 @@ class Settings(BaseSettings):
     # Calendar Configuration
     calendar_cache_hours: int = Field(default=4, description="Hours to cache calendar events")
 
+    # Telegram Notification Configuration
+    telegram_bot_token: str = Field(
+        default="", description="Telegram bot token for trade notifications"
+    )
+    telegram_chat_id: str = Field(default="", description="Telegram chat ID for notifications")
+    web_ui_base_url: str = Field(
+        default="http://localhost:3000", description="Web UI base URL for notification links"
+    )
+
     # Logging
     log_level: str = Field(default="INFO", description="Logging level")
 

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     image: trading-agent:devel
-    container_name: trading-agent-devel
+    container_name: trading-agent
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

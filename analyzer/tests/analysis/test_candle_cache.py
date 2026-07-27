@@ -24,9 +24,13 @@ def test_cache_path_d1_uses_folder_date_not_broker_now():
     assert "2026/07/21" in path or "2026/07/20" in path  # depends on close time
 
 
-def test_cache_path_d1_no_hour_suffix():
+def test_cache_path_d1_no_hour_suffix(monkeypatch):
     """D1 cache filename has no hour suffix — always d1-analysis.json."""
     from src.analysis.candle_cache import _cache_path, get_cache_date
+
+    # Ensure the default cache dir is used regardless of env (Docker sets /app/data)
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "data")
+    monkeypatch.setattr("src.analysis.candle_cache._settings", None)
 
     broker_now = datetime(2026, 7, 21, 14, 0)
     cache_date = get_cache_date("D1", broker_now)
@@ -517,8 +521,11 @@ def test_settings_has_h4_close_interval_hours():
     assert s.h4_close_interval_hours == 4
 
 
-def test_settings_has_analysis_cache_dir():
+def test_settings_has_analysis_cache_dir(monkeypatch):
     from config.settings import Settings
+
+    # Ensure the default cache dir is used regardless of env (Docker sets /app/data)
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "data")
 
     s = Settings()
     assert hasattr(s, "analysis_cache_dir")

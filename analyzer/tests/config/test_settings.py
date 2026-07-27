@@ -26,8 +26,10 @@ class TestTerminalSettings:
     These tests will fail RED (AttributeError) until the fields are implemented.
     """
 
-    def test_terminal_server_url_default(self):
+    def test_terminal_server_url_default(self, monkeypatch: pytest.MonkeyPatch):
         """Settings().terminal_server_url returns the default MCP URL."""
+        # Ensure the default is used regardless of env (Docker sets host.docker.internal)
+        monkeypatch.setenv("TRADING_TERMINAL_SERVER_URL", "http://127.0.0.1:22346/mcp")
         assert Settings().terminal_server_url == "http://127.0.0.1:22346/mcp"
 
     def test_terminal_api_key_default(self, monkeypatch: pytest.MonkeyPatch):

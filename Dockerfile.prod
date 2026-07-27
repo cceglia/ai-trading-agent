@@ -13,9 +13,9 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # ---- Layer 1: Dependencies (cached until package files change) ----
 
-# Server dependencies
-COPY server/package*.json ./server/
-RUN cd server && npm ci
+# Server dependencies (Python FastAPI)
+COPY server/pyproject.toml ./server/
+RUN cd server && pip install --no-cache-dir "."
 
 # Analyzer dependencies (install into venv)
 COPY analyzer/pyproject.toml ./analyzer/
@@ -31,14 +31,13 @@ COPY . .
 
 # ---- Layer 3: Build artifacts ----
 
-# Build the UI
+# Build the UI (still requires Node.js)
 RUN cd ui && npm run build
-
-# Build the server TypeScript
-RUN cd server && npm run build
 
 EXPOSE 3000
 
-ENV NODE_ENV=production
+# server/src/ uses absolute imports like `from src.models import ...`
+# which need /app/server on PYTHONPATH to resolve.
+ENV PYTHONPATH="/app/server:$PYTHONPATH"
 
-CMD ["node", "server/dist/index.js"]
+CMD ["uvicorn", "server.src.main:app", "--host", "0.0.0.0", "--port", "3000"]

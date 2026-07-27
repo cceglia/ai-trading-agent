@@ -110,7 +110,6 @@
   "108": "test_d1_candle_period_after_close",
   "109": "test_d1_candle_period_before_close",
   "110": "tests/notification/__init__.py",
-  "111": "test_save_h4_creates_hour_suffixed_file",
   "114": "TestFatalError",
   "121": "server/tests/__init__.py"
 }

@@ -1,5 +1,6 @@
 """Tests for multi-symbol support in main.py."""
 
+import logging
 import sys
 from unittest.mock import MagicMock, patch
 
@@ -277,3 +278,254 @@ class TestMainMultiSymbolExecution:
         # Should create a result file (with some timestamp)
         run_files = list((tmp_path / "runs").rglob("*.json"))
         assert len(run_files) == 1
+
+
+class TestMainTelegramNotification:
+    """Test that --telegram flag triggers notifications for approved setups."""
+
+    @patch("main.Settings")
+    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
+    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
+    @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("src.decision.agents.SynthesizerAgent")
+    @patch("src.decision.agents.DeciderAgent")
+    @patch("src.decision.agents.ReviewerAgent")
+    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("src.notification.telegram_sender.send_trade_notification")
+    def test_telegram_sends_notification_on_approved_setup(
+        self,
+        mock_send: MagicMock,
+        mock_graph_cls: MagicMock,
+        mock_reviewer_cls: MagicMock,
+        mock_decider_cls: MagicMock,
+        mock_synth_cls: MagicMock,
+        mock_provider_cls: MagicMock,
+        mock_calendar_cls: MagicMock,
+        mock_analyzer_cls: MagicMock,
+        mock_settings_cls: MagicMock,
+    ) -> None:
+        """With --telegram flag, notification is sent for approved buy/sell setups."""
+        mock_settings = mock_settings_cls.return_value
+        mock_settings.openai_api_key = ""
+        mock_settings.openai_base_url = ""
+        mock_settings.openai_model = "gpt-4"
+        mock_settings.openai_reasoning_effort = ""
+        mock_settings.terminal_server_url = ""
+        mock_settings.terminal_api_key = ""
+        mock_settings.telegram_bot_token = "test-token"
+        mock_settings.telegram_chat_id = "test-chat-id"
+        mock_settings.web_ui_base_url = "http://localhost:3000"
+
+        mock_graph = MagicMock()
+        mock_graph.run.return_value = {
+            "errors": [],
+            "fatal_error": None,
+            "decision": {"action": "buy_setup", "entry_price": "1900.00"},
+            "market_context": {"bias": "bullish", "confidence": 0.85},
+            "review": {"approved": True},
+        }
+        mock_graph_cls.return_value = mock_graph
+
+        test_args = ["main.py", "XAUUSD", "--telegram"]
+        with patch.object(sys, "argv", test_args):
+            from main import main
+
+            main()
+
+        mock_send.assert_called_once()
+        call_kwargs = mock_send.call_args[1]
+        assert call_kwargs["symbol"] == "XAUUSD"
+        assert call_kwargs["decision"]["action"] == "buy_setup"
+        assert call_kwargs["review"]["approved"] is True
+
+    @patch("main.Settings")
+    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
+    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
+    @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("src.decision.agents.SynthesizerAgent")
+    @patch("src.decision.agents.DeciderAgent")
+    @patch("src.decision.agents.ReviewerAgent")
+    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("src.notification.telegram_sender.send_trade_notification")
+    def test_no_telegram_flag_skips_notification(
+        self,
+        mock_send: MagicMock,
+        mock_graph_cls: MagicMock,
+        mock_reviewer_cls: MagicMock,
+        mock_decider_cls: MagicMock,
+        mock_synth_cls: MagicMock,
+        mock_provider_cls: MagicMock,
+        mock_calendar_cls: MagicMock,
+        mock_analyzer_cls: MagicMock,
+        mock_settings_cls: MagicMock,
+    ) -> None:
+        """Without --telegram flag, no notification code executes."""
+        mock_settings = mock_settings_cls.return_value
+        mock_settings.openai_api_key = ""
+        mock_settings.openai_base_url = ""
+        mock_settings.openai_model = "gpt-4"
+        mock_settings.openai_reasoning_effort = ""
+        mock_settings.terminal_server_url = ""
+        mock_settings.terminal_api_key = ""
+
+        mock_graph = MagicMock()
+        mock_graph.run.return_value = {
+            "errors": [],
+            "fatal_error": None,
+            "decision": {"action": "buy_setup", "entry_price": "1900.00"},
+            "market_context": {"bias": "bullish"},
+            "review": {"approved": True},
+        }
+        mock_graph_cls.return_value = mock_graph
+
+        test_args = ["main.py", "XAUUSD"]
+        with patch.object(sys, "argv", test_args):
+            from main import main
+
+            main()
+
+        mock_send.assert_not_called()
+
+    @patch("main.Settings")
+    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
+    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
+    @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("src.decision.agents.SynthesizerAgent")
+    @patch("src.decision.agents.DeciderAgent")
+    @patch("src.decision.agents.ReviewerAgent")
+    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("src.notification.telegram_sender.send_trade_notification")
+    def test_telegram_skips_non_trade_action(
+        self,
+        mock_send: MagicMock,
+        mock_graph_cls: MagicMock,
+        mock_reviewer_cls: MagicMock,
+        mock_decider_cls: MagicMock,
+        mock_synth_cls: MagicMock,
+        mock_provider_cls: MagicMock,
+        mock_calendar_cls: MagicMock,
+        mock_analyzer_cls: MagicMock,
+        mock_settings_cls: MagicMock,
+    ) -> None:
+        """With --telegram, notification is NOT sent when action is no_trade."""
+        mock_settings = mock_settings_cls.return_value
+        mock_settings.openai_api_key = ""
+        mock_settings.openai_base_url = ""
+        mock_settings.openai_model = "gpt-4"
+        mock_settings.openai_reasoning_effort = ""
+        mock_settings.terminal_server_url = ""
+        mock_settings.terminal_api_key = ""
+        mock_settings.telegram_bot_token = "test-token"
+        mock_settings.telegram_chat_id = "test-chat-id"
+
+        mock_graph = MagicMock()
+        mock_graph.run.return_value = {
+            "errors": [],
+            "fatal_error": None,
+            "decision": {"action": "no_trade"},
+            "market_context": {"bias": "neutral"},
+            "review": {"approved": True},
+        }
+        mock_graph_cls.return_value = mock_graph
+
+        test_args = ["main.py", "XAUUSD", "--telegram"]
+        with patch.object(sys, "argv", test_args):
+            from main import main
+
+            main()
+
+        mock_send.assert_not_called()
+
+    @patch("main.Settings")
+    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
+    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
+    @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("src.decision.agents.SynthesizerAgent")
+    @patch("src.decision.agents.DeciderAgent")
+    @patch("src.decision.agents.ReviewerAgent")
+    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("src.notification.telegram_sender.send_trade_notification")
+    def test_telegram_skips_unapproved_review(
+        self,
+        mock_send: MagicMock,
+        mock_graph_cls: MagicMock,
+        mock_reviewer_cls: MagicMock,
+        mock_decider_cls: MagicMock,
+        mock_synth_cls: MagicMock,
+        mock_provider_cls: MagicMock,
+        mock_calendar_cls: MagicMock,
+        mock_analyzer_cls: MagicMock,
+        mock_settings_cls: MagicMock,
+    ) -> None:
+        """With --telegram, notification is NOT sent when review is not approved."""
+        mock_settings = mock_settings_cls.return_value
+        mock_settings.openai_api_key = ""
+        mock_settings.openai_base_url = ""
+        mock_settings.openai_model = "gpt-4"
+        mock_settings.openai_reasoning_effort = ""
+        mock_settings.terminal_server_url = ""
+        mock_settings.terminal_api_key = ""
+        mock_settings.telegram_bot_token = "test-token"
+        mock_settings.telegram_chat_id = "test-chat-id"
+
+        mock_graph = MagicMock()
+        mock_graph.run.return_value = {
+            "errors": [],
+            "fatal_error": None,
+            "decision": {"action": "buy_setup"},
+            "market_context": {"bias": "bullish"},
+            "review": {"approved": False},
+        }
+        mock_graph_cls.return_value = mock_graph
+
+        test_args = ["main.py", "XAUUSD", "--telegram"]
+        with patch.object(sys, "argv", test_args):
+            from main import main
+
+            main()
+
+        mock_send.assert_not_called()
+
+    @patch("main.Settings")
+    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
+    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
+    @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("src.decision.agents.SynthesizerAgent")
+    @patch("src.decision.agents.DeciderAgent")
+    @patch("src.decision.agents.ReviewerAgent")
+    @patch("src.orchestrator.graph.TradingGraph")
+    def test_telegram_warning_on_missing_credentials(
+        self,
+        mock_graph_cls: MagicMock,
+        mock_reviewer_cls: MagicMock,
+        mock_decider_cls: MagicMock,
+        mock_synth_cls: MagicMock,
+        mock_provider_cls: MagicMock,
+        mock_calendar_cls: MagicMock,
+        mock_analyzer_cls: MagicMock,
+        mock_settings_cls: MagicMock,
+        caplog: pytest.LogCaptureFixture,
+    ) -> None:
+        """Warning is logged when --telegram is set but token/chat_id are empty."""
+        mock_settings = mock_settings_cls.return_value
+        mock_settings.openai_api_key = ""
+        mock_settings.openai_base_url = ""
+        mock_settings.openai_model = "gpt-4"
+        mock_settings.openai_reasoning_effort = ""
+        mock_settings.terminal_server_url = ""
+        mock_settings.terminal_api_key = ""
+        mock_settings.telegram_bot_token = ""
+        mock_settings.telegram_chat_id = ""
+
+        mock_graph = MagicMock()
+        mock_graph.run.return_value = {"errors": [], "fatal_error": None}
+        mock_graph_cls.return_value = mock_graph
+
+        test_args = ["main.py", "XAUUSD", "--telegram"]
+        with patch.object(sys, "argv", test_args):
+            from main import main
+
+            with caplog.at_level(logging.WARNING):
+                main()
+
+        assert "--telegram flag set but TRADING_TELEGRAM_BOT_TOKEN" in caplog.text

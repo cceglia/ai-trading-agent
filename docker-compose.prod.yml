@@ -15,6 +15,5 @@ services:
       - .env
     environment:
       - PORT=3000
-      - NODE_ENV=production
 
     restart: unless-stopped

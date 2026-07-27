@@ -129,6 +129,11 @@ def _build_parser() -> argparse.ArgumentParser:
         "--base-url", help="OpenAI-compatible base URL (e.g., http://localhost:11434/v1)"
     )
     parser.add_argument("--log-level", default="INFO", help="Logging level")
+    parser.add_argument(
+        "--telegram",
+        action="store_true",
+        help="Send Telegram notifications for approved trade setups",
+    )
     return parser
 
 
@@ -149,6 +154,12 @@ def main() -> None:
         settings.openai_model = args.model
     if args.base_url:
         settings.openai_base_url = args.base_url
+
+    if args.telegram and (not settings.telegram_bot_token or not settings.telegram_chat_id):
+        logger.warning(
+            "--telegram flag set but TRADING_TELEGRAM_BOT_TOKEN or "
+            "TRADING_TELEGRAM_CHAT_ID is empty"
+        )
 
     logger.info("Starting Trading AI Agent for symbols: %s", ", ".join(args.symbols))
 
@@ -230,6 +241,43 @@ def main() -> None:
 
                 results.append((symbol, "success", result))
                 logger.info("Analysis complete for %s", symbol)
+
+                if args.telegram:
+                    from src.notification.telegram_sender import send_trade_notification
+
+                    decision_raw = result.get("decision")
+                    context_raw = result.get("market_context", result.get("context"))
+                    review_raw = result.get("review")
+
+                    decision = (
+                        decision_raw.model_dump()
+                        if hasattr(decision_raw, "model_dump")
+                        else (decision_raw or {})
+                    )
+                    context = (
+                        context_raw.model_dump()
+                        if hasattr(context_raw, "model_dump")
+                        else (context_raw or {})
+                    )
+                    review = (
+                        review_raw.model_dump()
+                        if hasattr(review_raw, "model_dump")
+                        else (review_raw or {})
+                    )
+
+                    if review.get("approved") and decision.get("action") in (
+                        "buy_setup",
+                        "sell_setup",
+                    ):
+                        send_trade_notification(
+                            symbol=symbol,
+                            decision=decision,
+                            context=context,
+                            review=review,
+                            web_ui_base_url=settings.web_ui_base_url,
+                            bot_token=settings.telegram_bot_token,
+                            chat_id=settings.telegram_chat_id,
+                        )
 
             except Exception as e:
                 logger.error("Failed for %s: %s", symbol, e)

@@ -1,11 +1,11 @@
 # Graph Report - Agent  (2026-07-27)
 
 ## Corpus Check
-- 113 files · ~50,343 words
+- 113 files · ~50,290 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1539 nodes · 2857 edges · 114 communities (85 shown, 29 thin omitted)
+- 1540 nodes · 2858 edges · 113 communities (85 shown, 28 thin omitted)
 - Extraction: 72% EXTRACTED · 28% INFERRED · 0% AMBIGUOUS · INFERRED: 800 edges (avg confidence: 0.69)
 - Token cost: 0 input · 0 output
 
@@ -107,7 +107,6 @@
 - TestListRunsIntegration
 - test_d1_candle_period_after_close
 - test_d1_candle_period_before_close
-- test_save_h4_creates_hour_suffixed_file
 - TestFatalError
 
 ## God Nodes (most connected - your core abstractions)
@@ -137,7 +136,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (114 total, 29 thin omitted)
+## Communities (113 total, 28 thin omitted)
 
 ### Community 0 - "TestFatalError"
 Cohesion: 0.05
@@ -160,8 +159,8 @@ Cohesion: 0.07
 Nodes (19): Evaluator, Any, datetime, Check if an event falls within the time window from now.          Returns False, Evaluate events for symbol with timeframe-dependent window.          Args:, Evaluates calendar events for trading symbols., High-impact event outside the window should NOT block., High-impact event within the window SHOULD block. (+11 more)
 
 ### Community 5 - "Evaluator"
-Cohesion: 0.10
-Nodes (24): load_cached_analysis(), Any, Save analysis result to disk.      Args:         timeframe: "D1", "H4", or "H1", Load cached analysis from disk if available.      Args:         timeframe: "D1",, save_analysis(), Analyze market structure with candle-aligned caching.          The multi-timefra, D1 save then load returns identical dict (round-trip fidelity)., H4 save then load returns identical dict. (+16 more)
+Cohesion: 0.09
+Nodes (26): load_cached_analysis(), Any, Save analysis result to disk.      Args:         timeframe: "D1", "H4", or "H1", Load cached analysis from disk if available.      Args:         timeframe: "D1",, save_analysis(), Analyze market structure with candle-aligned caching.          The multi-timefra, D1 save then load returns identical dict (round-trip fidelity)., H4 save then load returns identical dict. (+18 more)
 
 ### Community 6 - "Trading AI Agent"
 Cohesion: 0.11
@@ -197,7 +196,7 @@ Nodes (18): MarketContextSummary, Summary of market context from synthesizer age
 
 ### Community 14 - "src/calendar/__init__.py"
 Cohesion: 0.09
-Nodes (22): D1 should run analysis when no cache file exists., H4 should skip analysis when cache file exists for that period., D1 before close should always run analysis (candle not closed)., D1 after close with existing cache should skip analysis., H1 should run analysis when no H1 cache file exists., H4 filename includes the closing hour (e.g. h4-16-analysis.json)., H1 filename includes the closing hour (e.g. h1-14-analysis.json)., _get_settings must return the same Settings instance on every call. (+14 more)
+Nodes (22): At exact H1 boundary, period starts at that time., H4 cache date includes the closing hour in cache_date.hour., H4 should skip analysis when cache file exists for that period., D1 before close should always run analysis (candle not closed)., D1 after close without cache should run analysis., Verify the path check uses the correct folder date, not a stale one., H1 should skip analysis when cache file exists for that period., H1 filename includes the closing hour (e.g. h1-14-analysis.json). (+14 more)
 
 ### Community 15 - "src/data/__init__.py"
 Cohesion: 0.15
@@ -348,8 +347,8 @@ Cohesion: 0.24
 Nodes (5): DecisionOutput, BaseModel, Decision output from decider agent., TestDecisionOutput, mock_decider()
 
 ### Community 80 - "test_cache_path_d1_uses_folder_date_not_broker_now"
-Cohesion: 0.14
-Nodes (14): FastAPI, create_app(), FastAPI application entry point — port of the TypeScript Express server., Create and configure the FastAPI application., BaseModel, Server-specific Pydantic models., Request body for POST /api/run., Summary of a single analysis run, matching Node.js RunSummary shape. (+6 more)
+Cohesion: 0.13
+Nodes (15): FastAPI, create_app(), FastAPI application entry point — port of the TypeScript Express server., Create and configure the FastAPI application., ErrorBody, BaseModel, Server-specific Pydantic models., Request body for POST /api/run. (+7 more)
 
 ### Community 81 - ".write"
 Cohesion: 0.24
@@ -402,15 +401,15 @@ Nodes (16): AgentState, State for the trading graph., Conditional edge from revi
 ## Knowledge Gaps
 - **122 isolated node(s):** `trading-ai-agent`, `trading-server`, `*.vue`, `name`, `version` (+117 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **28 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `main()` connect `TestGetSymbolPrice` to `MarketContextSummary`, `DataSource`, `AgentState`, `_select_canonical_current_price`, `ForexFactoryCalendar`, `AgentState`, `src/data/__init__.py`, `main.py`, `tests/data/__init__.py`, `setup_logging`, `TestAgentApiKey`, `tests/__init__.py`, `send_trade_notification`, `TestGetCandlesBrokerNow`?**
-  _High betweenness centrality (0.142) - this node is a cross-community bridge._
+  _High betweenness centrality (0.141) - this node is a cross-community bridge._
 - **Why does `AgentState` connect `TestFatalError` to `DataSource`, `AgentState`, `Evaluator`, `TestCostTracking`, `ForexFactoryCalendar`, `DecisionOutput`, `trading-ai-agent`, `tests/calendar/__init__.py`, `test_h1_candle_period`, `TestOhlcCachePath`, `test_terminal_data_provider.py`?**
-  _High betweenness centrality (0.132) - this node is a cross-community bridge._
+  _High betweenness centrality (0.129) - this node is a cross-community bridge._
 - **Why does `get_profile()` connect `TestFatalError` to `Evaluator`?**
   _High betweenness centrality (0.094) - this node is a cross-community bridge._
 - **Are the 72 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
