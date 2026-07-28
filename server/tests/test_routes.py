@@ -217,3 +217,69 @@ class TestPostRun:
         resp = test_client.post("/api/run", json={"symbols": ["XAUUSD", "EURUSD123"]})
 
         assert resp.status_code == 200
+
+
+class TestCORS:
+    """CORS header verification tests."""
+
+    def _preflight(
+        self,
+        test_client,
+        origin="http://localhost:5173",
+        request_method="GET",
+        request_headers=None,
+    ):
+        """Issue an OPTIONS preflight request with standard CORS headers."""
+        headers = {
+            "Origin": origin,
+            "Access-Control-Request-Method": request_method,
+        }
+        if request_headers is not None:
+            headers["Access-Control-Request-Headers"] = request_headers
+        return test_client.options("/api/runs", headers=headers)
+
+    def test_cors_methods_restricted(self, client):
+        """OPTIONS preflight must return restricted allow-methods."""
+        test_client, _, _ = client
+        resp = self._preflight(test_client)
+        methods = resp.headers.get("access-control-allow-methods", "")
+        parts = {m.strip() for m in methods.split(",")}
+        assert parts == {"GET", "POST", "OPTIONS"}, f"Got {methods}"
+
+    def test_cors_headers_restricted(self, client):
+        """OPTIONS preflight must return restricted allow-headers.
+
+        The middleware includes the simple headers (Accept, Accept-Language,
+        Content-Language, Content-Type) plus the configured allow list
+        (Authorization, X-API-Key). We verify exact set equality to
+        prevent unintended headers.
+        """
+        test_client, _, _ = client
+        resp = self._preflight(
+            test_client,
+            request_headers="content-type, authorization, x-api-key",
+        )
+        headers = resp.headers.get("access-control-allow-headers", "")
+        parts = {h.strip().lower() for h in headers.split(",")}
+        assert parts == {
+            "accept",
+            "accept-language",
+            "authorization",
+            "content-language",
+            "content-type",
+            "x-api-key",
+        }, f"Unexpected headers: got {headers}"
+
+    def test_cors_allowed_origin_works(self, client):
+        """OPTIONS preflight from a configured origin should echo it back."""
+        test_client, _, _ = client
+        resp = self._preflight(test_client)
+        assert (
+            resp.headers.get("access-control-allow-origin") == "http://localhost:5173"
+        )
+
+    def test_cors_credentials_enabled(self, client):
+        """OPTIONS preflight must include allow-credentials: true."""
+        test_client, _, _ = client
+        resp = self._preflight(test_client)
+        assert resp.headers.get("access-control-allow-credentials") == "true"

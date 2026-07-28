@@ -18,11 +18,11 @@ def reset_candle_cache_settings():
     the module-level sentinel, the cached Settings instance from a prior
     test would shadow monkeypatched env vars.
     """
-    import src.analysis.candle_cache
+    from src.analysis.candle_cache import reload_settings
 
-    src.analysis.candle_cache._settings = None
+    reload_settings()
     yield
-    src.analysis.candle_cache._settings = None
+    reload_settings()
 
 
 @pytest.fixture(autouse=True)

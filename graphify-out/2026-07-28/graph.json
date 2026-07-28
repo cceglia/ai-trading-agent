@@ -21,8 +21,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_config_settings",
-      "community": 2,
-      "community_name": "DataSource",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "config/settings.py"
     },
     {
@@ -87,52 +87,52 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_main",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "analyzer/main.py"
     },
     {
       "label": "_format_field()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L25",
+      "source_location": "L17",
       "_origin": "ast",
       "id": "analyzer_main_format_field",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "_format_field()"
     },
     {
       "label": "_format_field_int()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L39",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_main_format_field_int",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "_format_field_int()"
     },
     {
       "label": "_get_decision_field()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L54",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_main_get_decision_field",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "_get_decision_field()"
     },
     {
       "label": "_print_symbol_summary()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L69",
+      "source_location": "L61",
       "_origin": "ast",
       "id": "analyzer_main_print_symbol_summary",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "_print_symbol_summary()"
     },
     {
@@ -142,19 +142,19 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_main_py_any",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "any"
     },
     {
       "label": "_build_parser()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L125",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "analyzer_main_build_parser",
-      "community": 11,
-      "community_name": "Agent Instructions",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "_build_parser()"
     },
     {
@@ -164,118 +164,19 @@
       "source_location": "",
       "_origin": "ast",
       "id": "argumentparser",
-      "community": 11,
-      "community_name": "Agent Instructions",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "argumentparser"
-    },
-    {
-      "label": "_parse_and_configure_settings()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L147",
-      "_origin": "ast",
-      "id": "analyzer_main_parse_and_configure_settings",
-      "community": 11,
-      "community_name": "Agent Instructions",
-      "norm_label": "_parse_and_configure_settings()"
-    },
-    {
-      "label": "Namespace",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "namespace",
-      "community": 11,
-      "community_name": "Agent Instructions",
-      "norm_label": "namespace"
-    },
-    {
-      "label": "_create_agents()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L174",
-      "_origin": "ast",
-      "id": "analyzer_main_create_agents",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_create_agents()"
-    },
-    {
-      "label": "_initialize_pipeline()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L215",
-      "_origin": "ast",
-      "id": "analyzer_main_initialize_pipeline",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_initialize_pipeline()"
-    },
-    {
-      "label": "_write_result()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L252",
-      "_origin": "ast",
-      "id": "analyzer_main_write_result",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_write_result()"
-    },
-    {
-      "label": "_send_telegram_notification()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L283",
-      "_origin": "ast",
-      "id": "analyzer_main_send_telegram_notification",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_send_telegram_notification()"
-    },
-    {
-      "label": "_run_single_symbol()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L333",
-      "_origin": "ast",
-      "id": "analyzer_main_run_single_symbol",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_run_single_symbol()"
-    },
-    {
-      "label": "_print_summary()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L370",
-      "_origin": "ast",
-      "id": "analyzer_main_print_summary",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_print_summary()"
-    },
-    {
-      "label": "_run_pipeline()",
-      "file_type": "code",
-      "source_file": "analyzer/main.py",
-      "source_location": "L391",
-      "_origin": "ast",
-      "id": "analyzer_main_run_pipeline",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "_run_pipeline()"
     },
     {
       "label": "main()",
       "file_type": "code",
       "source_file": "analyzer/main.py",
-      "source_location": "L416",
+      "source_location": "L140",
       "_origin": "ast",
       "id": "analyzer_main_main",
-      "community": 11,
-      "community_name": "Agent Instructions",
+      "community": 50,
+      "community_name": "main.py",
       "norm_label": "main()"
     },
     {
@@ -285,163 +186,75 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_main_rationale_1",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "trading ai agent - cli entry point."
     },
     {
       "label": "Safely extract an attribute or dict key from an unknown object.      Handles bot",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L30",
+      "source_location": "L22",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_30",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "id": "analyzer_main_rationale_22",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "safely extract an attribute or dict key from an unknown object.      handles bot"
     },
     {
       "label": "Safely extract an integer attribute or dict key.",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L44",
+      "source_location": "L36",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_44",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "id": "analyzer_main_rationale_36",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "safely extract an integer attribute or dict key."
     },
     {
       "label": "Get a decision field that may be None (e.g. entry_price).",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L59",
+      "source_location": "L51",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_59",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "id": "analyzer_main_rationale_51",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "get a decision field that may be none (e.g. entry_price)."
     },
     {
       "label": "Print a compact analysis summary for one symbol to stdout.",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L70",
+      "source_location": "L62",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_70",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
+      "id": "analyzer_main_rationale_62",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "print a compact analysis summary for one symbol to stdout."
     },
     {
       "label": "Build the CLI argument parser.      Returns:         Configured ArgumentParser i",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L126",
+      "source_location": "L119",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_126",
-      "community": 11,
-      "community_name": "Agent Instructions",
+      "id": "analyzer_main_rationale_119",
+      "community": 20,
+      "community_name": "tests/data/__init__.py",
       "norm_label": "build the cli argument parser.      returns:         configured argumentparser i"
     },
     {
-      "label": "Parse CLI args into a configured Settings instance.      Applies CLI overrides (",
+      "label": "Main entry point.      Accepts one or more trading symbols, runs the analysis pi",
       "file_type": "rationale",
       "source_file": "analyzer/main.py",
-      "source_location": "L148",
+      "source_location": "L141",
       "_origin": "ast",
-      "id": "analyzer_main_rationale_148",
-      "community": 11,
-      "community_name": "Agent Instructions",
-      "norm_label": "parse cli args into a configured settings instance.      applies cli overrides ("
-    },
-    {
-      "label": "Create the three LLM agents used in the pipeline.      Args:         settings: A",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L178",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_178",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "create the three llm agents used in the pipeline.      args:         settings: a"
-    },
-    {
-      "label": "Create the full analysis pipeline (data providers, agents, graph).      Args:",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L220",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_220",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "create the full analysis pipeline (data providers, agents, graph).      args:"
-    },
-    {
-      "label": "Write analysis result to disk via the ResultWriter.      Falls back to ``datetim",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L257",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_257",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "write analysis result to disk via the resultwriter.      falls back to ``datetim"
-    },
-    {
-      "label": "Send a Telegram notification for an approved trade setup.      Only sends when t",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L288",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_288",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "send a telegram notification for an approved trade setup.      only sends when t"
-    },
-    {
-      "label": "Run the full analysis pipeline for a single symbol.      Args:         graph: Co",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L340",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_340",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "run the full analysis pipeline for a single symbol.      args:         graph: co"
-    },
-    {
-      "label": "Print the formatted analysis summary for all symbols.      Args:         results",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L371",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_371",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "print the formatted analysis summary for all symbols.      args:         results"
-    },
-    {
-      "label": "Run the full analysis pipeline for all symbols.      Args:         settings: App",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L397",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_397",
-      "community": 21,
-      "community_name": "tests/decision/__init__.py",
-      "norm_label": "run the full analysis pipeline for all symbols.      args:         settings: app"
-    },
-    {
-      "label": "Main entry point.      Parses CLI arguments, initialises the analysis pipeline,",
-      "file_type": "rationale",
-      "source_file": "analyzer/main.py",
-      "source_location": "L417",
-      "_origin": "ast",
-      "id": "analyzer_main_rationale_417",
-      "community": 11,
-      "community_name": "Agent Instructions",
-      "norm_label": "main entry point.      parses cli arguments, initialises the analysis pipeline,"
+      "id": "analyzer_main_rationale_141",
+      "community": 50,
+      "community_name": "main.py",
+      "norm_label": "main entry point.      accepts one or more trading symbols, runs the analysis pi"
     },
     {
       "label": "trading-ai-agent",
@@ -2356,8 +2169,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "openai",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "openai"
     },
     {
@@ -2389,8 +2202,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_decideragent_init",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".__init__()"
     },
     {
@@ -2422,8 +2235,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent_init",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".__init__()"
     },
     {
@@ -3808,8 +3621,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_save_ohlc_cache",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "save_ohlc_cache()"
     },
     {
@@ -3819,8 +3632,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_py_ohlcbar",
-      "community": 81,
-      "community_name": ".write",
+      "community": 10,
+      "community_name": "TestProjectFiles",
       "norm_label": "ohlcbar"
     },
     {
@@ -3830,8 +3643,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_load_ohlc_cache",
-      "community": 81,
-      "community_name": ".write",
+      "community": 10,
+      "community_name": "TestProjectFiles",
       "norm_label": "load_ohlc_cache()"
     },
     {
@@ -3852,8 +3665,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_rationale_57",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "save ohlc bars to cache, same directory structure as analysis cache.      args:"
     },
     {
@@ -3863,8 +3676,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_rationale_80",
-      "community": 81,
-      "community_name": ".write",
+      "community": 10,
+      "community_name": "TestProjectFiles",
       "norm_label": "load cached ohlc bars from disk if available.      args:         timeframe: \"d1\""
     },
     {
@@ -3951,8 +3764,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "result_models.py"
     },
     {
@@ -3962,8 +3775,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_ohlcbar",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ohlcbar"
     },
     {
@@ -3973,8 +3786,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_py_basemodel",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "basemodel"
     },
     {
@@ -3984,8 +3797,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_ohlcdata",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ohlcdata"
     },
     {
@@ -3995,8 +3808,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_sltpoverlay",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "sltpoverlay"
     },
     {
@@ -4006,8 +3819,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_analysisresult",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "analysisresult"
     },
     {
@@ -4017,8 +3830,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_11",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "single ohlc bar for chart rendering."
     },
     {
@@ -4028,8 +3841,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_21",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ohlc data keyed by timeframe."
     },
     {
@@ -4039,8 +3852,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_29",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "entry, stop-loss and take-profit overlay for charts."
     },
     {
@@ -4050,8 +3863,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_37",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "top-level pipeline output serialized to json for the web viewer."
     },
     {
@@ -4061,8 +3874,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "result_writer.py"
     },
     {
@@ -4083,8 +3896,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_init",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".__init__()"
     },
     {
@@ -4094,8 +3907,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_path",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "path"
     },
     {
@@ -4105,8 +3918,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_write",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".write()"
     },
     {
@@ -4116,8 +3929,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_any",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "any"
     },
     {
@@ -4127,8 +3940,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_ohlcbar",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ohlcbar"
     },
     {
@@ -4138,8 +3951,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_py_datetime",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "datetime"
     },
     {
@@ -4149,8 +3962,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_resultwriter_build_path",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "._build_path()"
     },
     {
@@ -4171,8 +3984,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_rationale_31",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "write result json to disk. returns the file path written.          args:"
     },
     {
@@ -4182,8 +3995,8 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "analyzer_src_output_result_writer_rationale_96",
-      "community": 86,
-      "community_name": "TestAgentApiKey",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "compute data/yyyy/mm/dd/symbol/result-hh-mm.json path."
     },
     {
@@ -4226,8 +4039,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_d1_uses_folder_date_not_broker_now",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_cache_path_d1_uses_folder_date_not_broker_now()"
     },
     {
@@ -4248,8 +4061,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_h4_includes_closing_hour",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_cache_path_h4_includes_closing_hour()"
     },
     {
@@ -4270,8 +4083,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_zero_padded_hour",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_cache_path_zero_padded_hour()"
     },
     {
@@ -4369,8 +4182,8 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_testget_cache_date_d1_before_close",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "testget_cache_date_d1_before_close()"
     },
     {
@@ -4380,8 +4193,8 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_testget_cache_date_d1_after_close",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "testget_cache_date_d1_after_close()"
     },
     {
@@ -4402,8 +4215,8 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_d1_without_cache",
-      "community": 92,
-      "community_name": "test_should_run_d1_without_cache",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_should_run_d1_without_cache()"
     },
     {
@@ -4490,8 +4303,8 @@
       "source_location": "L313",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_h1_with_cache",
-      "community": 14,
-      "community_name": "src/calendar/__init__.py",
+      "community": 102,
+      "community_name": "test_cache_path_zero_padded_hour",
       "norm_label": "test_should_run_h1_with_cache()"
     },
     {
@@ -4501,8 +4314,8 @@
       "source_location": "L327",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_h1_different_period",
-      "community": 93,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_should_run_h1_different_period()"
     },
     {
@@ -4545,8 +4358,8 @@
       "source_location": "L383",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_load_returns_none_when_missing",
-      "community": 94,
-      "community_name": "test_load_returns_none_when_missing",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_load_returns_none_when_missing()"
     },
     {
@@ -4567,8 +4380,8 @@
       "source_location": "L402",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_h1_creates_hour_suffixed_file",
-      "community": 95,
-      "community_name": "test_save_h1_creates_hour_suffixed_file",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_save_h1_creates_hour_suffixed_file()"
     },
     {
@@ -4578,8 +4391,8 @@
       "source_location": "L413",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_h4_creates_hour_suffixed_file",
-      "community": 96,
-      "community_name": "test_save_h4_creates_hour_suffixed_file",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_save_h4_creates_hour_suffixed_file()"
     },
     {
@@ -4589,8 +4402,8 @@
       "source_location": "L424",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_load_handles_corrupt_json",
-      "community": 97,
-      "community_name": "test_load_handles_corrupt_json",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "test_load_handles_corrupt_json()"
     },
     {
@@ -4732,8 +4545,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_17",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "d1 file path uses folder_date from get_cache_date, not raw broker_now."
     },
     {
@@ -4754,8 +4567,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_42",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "h4 filename includes the closing hour (e.g. h4-16-analysis.json)."
     },
     {
@@ -4776,8 +4589,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_64",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "midnight-boundary candles use 00 as the hour suffix (h4-00, h1-00)."
     },
     {
@@ -4875,8 +4688,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_172",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "before d1 close, cache date is yesterday's date (from period_start)."
     },
     {
@@ -4886,8 +4699,8 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_183",
-      "community": 26,
-      "community_name": "test_terminal_data_provider.py",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "after d1 close, cache date is today's date (from period_start)."
     },
     {
@@ -4908,8 +4721,8 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_208",
-      "community": 92,
-      "community_name": "test_should_run_d1_without_cache",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "d1 should run analysis when no cache file exists."
     },
     {
@@ -4996,8 +4809,8 @@
       "source_location": "L314",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_314",
-      "community": 14,
-      "community_name": "src/calendar/__init__.py",
+      "community": 102,
+      "community_name": "test_cache_path_zero_padded_hour",
       "norm_label": "h1 should skip analysis when cache file exists for that period."
     },
     {
@@ -5007,8 +4820,8 @@
       "source_location": "L328",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_328",
-      "community": 93,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "h1 should run when cache exists for a different period."
     },
     {
@@ -5051,8 +4864,8 @@
       "source_location": "L384",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_384",
-      "community": 94,
-      "community_name": "test_load_returns_none_when_missing",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "load returns none when no cache file exists."
     },
     {
@@ -5073,8 +4886,8 @@
       "source_location": "L403",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_403",
-      "community": 95,
-      "community_name": "test_save_h1_creates_hour_suffixed_file",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "h1 save creates a file with the hour suffix."
     },
     {
@@ -5084,8 +4897,8 @@
       "source_location": "L414",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_414",
-      "community": 96,
-      "community_name": "test_save_h4_creates_hour_suffixed_file",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "h4 save creates a file with the hour suffix."
     },
     {
@@ -5095,8 +4908,8 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_425",
-      "community": 97,
-      "community_name": "test_load_handles_corrupt_json",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "load returns none for corrupt json (does not raise)."
     },
     {
@@ -5810,8 +5623,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_py_monkeypatch",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "monkeypatch"
     },
     {
@@ -5832,8 +5645,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testterminalsettings",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "testterminalsettings"
     },
     {
@@ -5843,8 +5656,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testterminalsettings_test_terminal_server_url_default",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_terminal_server_url_default()"
     },
     {
@@ -5854,8 +5667,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testterminalsettings_test_terminal_api_key_default",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_terminal_api_key_default()"
     },
     {
@@ -5865,8 +5678,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testterminalsettings_test_terminal_api_key_from_env",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_terminal_api_key_from_env()"
     },
     {
@@ -5876,8 +5689,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testterminalsettings_test_terminal_server_url_from_env",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_terminal_server_url_from_env()"
     },
     {
@@ -5920,8 +5733,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testmodelpricingsettings_test_model_pricing_from_env_json",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_model_pricing_from_env_json()"
     },
     {
@@ -5975,8 +5788,8 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "testsynthesizercacheenabled"
     },
     {
@@ -5986,8 +5799,8 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled_test_synthesizer_cache_enabled_default_true",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_synthesizer_cache_enabled_default_true()"
     },
     {
@@ -5997,8 +5810,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled_test_synthesizer_cache_enabled_env_true",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_synthesizer_cache_enabled_env_true()"
     },
     {
@@ -6008,8 +5821,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled_test_synthesizer_cache_enabled_env_false",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_synthesizer_cache_enabled_env_false()"
     },
     {
@@ -6019,8 +5832,8 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled_test_synthesizer_cache_enabled_env_0",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_synthesizer_cache_enabled_env_0()"
     },
     {
@@ -6030,8 +5843,8 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testsynthesizercacheenabled_test_synthesizer_cache_enabled_env_invalid_falls_back_or_raises",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": ".test_synthesizer_cache_enabled_env_invalid_falls_back_or_raises()"
     },
     {
@@ -6074,8 +5887,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_24",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "tests for the new terminal_server_url and terminal_api_key settings fields."
     },
     {
@@ -6085,8 +5898,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_30",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "settings().terminal_server_url returns the default mcp url."
     },
     {
@@ -6096,8 +5909,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_36",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "settings().terminal_api_key returns empty string by default."
     },
     {
@@ -6107,8 +5920,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_41",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_terminal_api_key env var overrides the default."
     },
     {
@@ -6118,8 +5931,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_46",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_terminal_server_url env var overrides the default."
     },
     {
@@ -6162,8 +5975,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_72",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_model_pricing json env var overrides the default."
     },
     {
@@ -6217,8 +6030,8 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_120",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "tests for the new synthesizer_cache_enabled settings field.      red phase: thes"
     },
     {
@@ -6228,8 +6041,8 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_129",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "synthesizer_cache_enabled defaults to true when no env var is set."
     },
     {
@@ -6239,8 +6052,8 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_134",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_synthesizer_cache_enabled=true yields true."
     },
     {
@@ -6250,8 +6063,8 @@
       "source_location": "L139",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_139",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_synthesizer_cache_enabled=false yields false."
     },
     {
@@ -6261,8 +6074,8 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_144",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading_synthesizer_cache_enabled=0 yields false (bool coercion)."
     },
     {
@@ -6272,8 +6085,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_151",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "invalid trading_synthesizer_cache_enabled value either raises or falls back to d"
     },
     {
@@ -6580,8 +6393,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": ".test_decider_passes_base_url_to_client()"
     },
     {
@@ -6591,8 +6404,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": ".test_reviewer_passes_base_url_to_client()"
     },
     {
@@ -6646,8 +6459,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_synthesizer_accepts_reasoning_effort",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": ".test_synthesizer_accepts_reasoning_effort()"
     },
     {
@@ -7119,8 +6932,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_71",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": "decideragent must pass base_url to openai constructor."
     },
     {
@@ -7130,8 +6943,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_82",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": "revieweragent must pass base_url to openai constructor."
     },
     {
@@ -7174,8 +6987,8 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_132",
-      "community": 50,
-      "community_name": "main.py",
+      "community": 22,
+      "community_name": "tests/__init__.py",
       "norm_label": "synthesizeragent must accept reasoning_effort param."
     },
     {
@@ -9330,8 +9143,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "test_result_pipeline.py"
     },
     {
@@ -9341,8 +9154,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_test_result_pipeline_writes_json",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "test_result_pipeline_writes_json()"
     },
     {
@@ -9352,8 +9165,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_py_path",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "path"
     },
     {
@@ -9363,8 +9176,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_test_result_with_fatal_error",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "test_result_with_fatal_error()"
     },
     {
@@ -9385,8 +9198,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_rationale_1",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "end-to-end integration test for the result json pipeline."
     },
     {
@@ -9396,8 +9209,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_rationale_19",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "full pipeline simulation writes valid json result."
     },
     {
@@ -9407,8 +9220,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_rationale_131",
-      "community": 91,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "pipeline with fatal error produces valid error result."
     },
     {
@@ -9522,15 +9335,15 @@
       "norm_label": ".test_sends_buy_message()"
     },
     {
-      "label": ".test_sends_sell_message()",
+      "label": ".test_sellsend_message()",
       "file_type": "code",
       "source_file": "analyzer/tests/notification/test_telegram_sender.py",
       "source_location": "L38",
       "_origin": "ast",
-      "id": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_sell_message",
+      "id": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sellsend_message",
       "community": 88,
       "community_name": "send_trade_notification",
-      "norm_label": ".test_sends_sell_message()"
+      "norm_label": ".test_sellsend_message()"
     },
     {
       "label": ".test_skips_empty_token()",
@@ -11002,8 +10815,8 @@
       "source_location": "L430",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss",
-      "community": 57,
-      "community_name": "TestOhlcCachePath",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "testcachemiss"
     },
     {
@@ -11013,8 +10826,8 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss_test_cache_miss_calls_synthesizer",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_cache_miss_calls_synthesizer()"
     },
     {
@@ -11035,8 +10848,8 @@
       "source_location": "L508",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_testcachemiss_test_cache_miss_saves_to_cache",
-      "community": 57,
-      "community_name": "TestOhlcCachePath",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_cache_miss_saves_to_cache()"
     },
     {
@@ -11343,8 +11156,8 @@
       "source_location": "L431",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_431",
-      "community": 57,
-      "community_name": "TestOhlcCachePath",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "when no cache file exists for (symbol, day).      the orchestrator must call ``s"
     },
     {
@@ -11354,8 +11167,8 @@
       "source_location": "L444",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_444",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "cache miss \\u2192 ``synthesizer.synthesize`` is called."
     },
     {
@@ -11376,8 +11189,8 @@
       "source_location": "L515",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_rationale_515",
-      "community": 57,
-      "community_name": "TestOhlcCachePath",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "cache miss \\u2192 the result is persisted via ``save_synthesis``.          red:"
     },
     {
@@ -11651,8 +11464,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "testsaveloadohlccache"
     },
     {
@@ -11662,8 +11475,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_save_and_load_roundtrip",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_save_and_load_roundtrip()"
     },
     {
@@ -11673,8 +11486,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_py_path",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "path"
     },
     {
@@ -11684,8 +11497,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_load_missing_returns_none",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_load_missing_returns_none()"
     },
     {
@@ -11695,8 +11508,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_save_creates_directory_tree",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_save_creates_directory_tree()"
     },
     {
@@ -11706,8 +11519,8 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_corrupted_cache_returns_none",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_corrupted_cache_returns_none()"
     },
     {
@@ -11717,8 +11530,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_save_and_load_h4_roundtrip",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_save_and_load_h4_roundtrip()"
     },
     {
@@ -11728,8 +11541,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_save_and_load_h1_roundtrip",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_save_and_load_h1_roundtrip()"
     },
     {
@@ -11739,8 +11552,8 @@
       "source_location": "L143",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_file_content_integrity",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_file_content_integrity()"
     },
     {
@@ -11750,8 +11563,8 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testsaveloadohlccache_test_empty_bars_list",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".test_empty_bars_list()"
     },
     {
@@ -11783,8 +11596,8 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_144",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "saved json file contains exactly the expected data."
     },
     {
@@ -11794,8 +11607,8 @@
       "source_location": "L171",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_171",
-      "community": 81,
-      "community_name": ".write",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "saving an empty bar list should produce an empty json array."
     },
     {
@@ -12069,8 +11882,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "test_result_models.py"
     },
     {
@@ -12080,8 +11893,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "testohlcbar"
     },
     {
@@ -12091,8 +11904,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar_test_create",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_create()"
     },
     {
@@ -12102,8 +11915,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar_test_float_coercion",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_float_coercion()"
     },
     {
@@ -12113,8 +11926,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "testohlcdata"
     },
     {
@@ -12124,8 +11937,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata_test_default_empty_lists",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_default_empty_lists()"
     },
     {
@@ -12135,8 +11948,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata_test_with_bars",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_with_bars()"
     },
     {
@@ -12146,8 +11959,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "testsltpoverlay"
     },
     {
@@ -12157,8 +11970,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay_test_default_nulls",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_default_nulls()"
     },
     {
@@ -12168,8 +11981,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay_test_with_values",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_with_values()"
     },
     {
@@ -12179,8 +11992,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "testanalysisresult"
     },
     {
@@ -12190,8 +12003,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_version_default",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_version_default()"
     },
     {
@@ -12201,8 +12014,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_market_context",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_with_market_context()"
     },
     {
@@ -12212,8 +12025,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_decision",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_with_decision()"
     },
     {
@@ -12223,8 +12036,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_review",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_with_review()"
     },
     {
@@ -12234,8 +12047,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_serialization_roundtrip",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_serialization_roundtrip()"
     },
     {
@@ -12245,8 +12058,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_entry_authorized_always_false",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_entry_authorized_always_false()"
     },
     {
@@ -12256,8 +12069,8 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_status_enum_values",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_status_enum_values()"
     },
     {
@@ -12267,8 +12080,8 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_fatal_error_and_errors",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_fatal_error_and_errors()"
     },
     {
@@ -12278,8 +12091,8 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_ohlc_and_sl_tp_defaults",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_ohlc_and_sl_tp_defaults()"
     },
     {
@@ -12289,8 +12102,8 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_all_fields_populated",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": ".test_all_fields_populated()"
     },
     {
@@ -12300,8 +12113,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_1",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "tests for output result models."
     },
     {
@@ -12311,8 +12124,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_25",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "ints passed to float fields are promoted to float."
     },
     {
@@ -12322,8 +12135,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_131",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "critical invariant: entry_authorized must always be false."
     },
     {
@@ -12333,8 +12146,8 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_195",
-      "community": 82,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "full-featured analysisresult with all optional fields set."
     },
     {
@@ -12762,8 +12575,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "testargparsemultisymbol"
     },
     {
@@ -12773,8 +12586,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_accepts_multiple_symbols",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_accepts_multiple_symbols()"
     },
     {
@@ -12784,8 +12597,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_accepts_single_symbol",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_accepts_single_symbol()"
     },
     {
@@ -12795,8 +12608,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_has_output_dir_option",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_has_output_dir_option()"
     },
     {
@@ -12806,8 +12619,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_output_dir_default_none",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_output_dir_default_none()"
     },
     {
@@ -12817,8 +12630,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_model_option",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_model_option()"
     },
     {
@@ -12828,8 +12641,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_base_url_option",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_base_url_option()"
     },
     {
@@ -12839,8 +12652,8 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_log_level_option",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_log_level_option()"
     },
     {
@@ -12850,8 +12663,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testargparsemultisymbol_test_no_symbols_raises_error",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": ".test_no_symbols_raises_error()"
     },
     {
@@ -13026,8 +12839,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_11",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "test that argparse accepts multiple symbols via _build_parser."
     },
     {
@@ -13037,8 +12850,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_14",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "_build_parser accepts multiple symbols as nargs+."
     },
     {
@@ -13048,8 +12861,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_23",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "_build_parser is backward-compatible with single symbol."
     },
     {
@@ -13059,8 +12872,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_32",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "--output-dir option is accepted."
     },
     {
@@ -13070,8 +12883,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_41",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "--output-dir defaults to none."
     },
     {
@@ -13081,8 +12894,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_50",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "--model option is accepted."
     },
     {
@@ -13092,8 +12905,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_59",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "--base-url option is accepted."
     },
     {
@@ -13103,8 +12916,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_70",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "--log-level option defaults to info."
     },
     {
@@ -13114,8 +12927,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_79",
-      "community": 39,
-      "community_name": "test_should_run_h1_different_period",
+      "community": 11,
+      "community_name": "Agent Instructions",
       "norm_label": "calling without any symbols should raise a systemexit."
     },
     {
@@ -13466,7 +13279,7 @@
       "label": "AuthMiddleware",
       "file_type": "code",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L11",
+      "source_location": "L9",
       "_origin": "ast",
       "id": "server_src_middleware_auth_authmiddleware",
       "community": 105,
@@ -13488,7 +13301,7 @@
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L17",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "server_src_middleware_auth_authmiddleware_init",
       "community": 105,
@@ -13499,11 +13312,11 @@
       "label": ".dispatch()",
       "file_type": "code",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "server_src_middleware_auth_authmiddleware_dispatch",
-      "community": 105,
-      "community_name": "create_app",
+      "community": 84,
+      "community_name": "setup_logging",
       "norm_label": ".dispatch()"
     },
     {
@@ -13513,8 +13326,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "request",
-      "community": 105,
-      "community_name": "create_app",
+      "community": 84,
+      "community_name": "setup_logging",
       "norm_label": "request"
     },
     {
@@ -13524,8 +13337,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "requestresponseendpoint",
-      "community": 105,
-      "community_name": "create_app",
+      "community": 84,
+      "community_name": "setup_logging",
       "norm_label": "requestresponseendpoint"
     },
     {
@@ -13535,8 +13348,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "response",
-      "community": 105,
-      "community_name": "create_app",
+      "community": 84,
+      "community_name": "setup_logging",
       "norm_label": "response"
     },
     {
@@ -13554,9 +13367,9 @@
       "label": "Validates the ``X-API-Key`` header against a configured API key.      When ``api",
       "file_type": "rationale",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L12",
+      "source_location": "L10",
       "_origin": "ast",
-      "id": "server_src_middleware_auth_rationale_12",
+      "id": "server_src_middleware_auth_rationale_10",
       "community": 105,
       "community_name": "create_app",
       "norm_label": "validates the ``x-api-key`` header against a configured api key.      when ``api"
@@ -13744,8 +13557,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_runner",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "runner.py"
     },
     {
@@ -13788,8 +13601,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "server_src_runner_runservice_run_analysis",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": ".run_analysis()"
     },
     {
@@ -13799,8 +13612,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "server_src_runner_runservice_spawn_process",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "._spawn_process()"
     },
     {
@@ -13810,8 +13623,8 @@
       "source_location": "L101",
       "_origin": "ast",
       "id": "server_src_runner_runservice_wait_for_results",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "._wait_for_results()"
     },
     {
@@ -13821,8 +13634,8 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "server_src_runner_runservice_find_missing_symbols",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "._find_missing_symbols()"
     },
     {
@@ -13832,8 +13645,8 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "server_src_runner_runservice_read_results",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "._read_results()"
     },
     {
@@ -13843,8 +13656,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_runner_rationale_1",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "runservice \u2014 port of the typescript runner service.  spawns the python analyzer"
     },
     {
@@ -13865,8 +13678,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "server_src_runner_rationale_46",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "run analysis for the given symbols.          spawns: python main.py --output-dir"
     },
     {
@@ -13876,8 +13689,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "server_src_runner_rationale_64",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "spawn the python process and wait for completion.          on timeout the proces"
     },
     {
@@ -13887,8 +13700,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "server_src_runner_rationale_102",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "retry reading result files with backoff.          after a subprocess completes t"
     },
     {
@@ -13898,8 +13711,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "server_src_runner_rationale_126",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "return the subset of *symbols* that have no run in the scanner."
     },
     {
@@ -13909,8 +13722,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "server_src_runner_rationale_135",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "walk the data directory via resultscanner and return the         most recent res"
     },
     {
@@ -13920,8 +13733,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_scanner",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "scanner.py"
     },
     {
@@ -13942,8 +13755,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_init",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": ".__init__()"
     },
     {
@@ -13953,8 +13766,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_src_scanner_py_path",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "path"
     },
     {
@@ -13964,8 +13777,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_list_runs",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": ".list_runs()"
     },
     {
@@ -13975,8 +13788,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_src_scanner_py_runsummary",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "runsummary"
     },
     {
@@ -13986,8 +13799,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_get_run",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 28,
+      "community_name": "TestGetPositions",
       "norm_label": ".get_run()"
     },
     {
@@ -13997,8 +13810,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_src_scanner_py_any",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 28,
+      "community_name": "TestGetPositions",
       "norm_label": "any"
     },
     {
@@ -14008,8 +13821,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_invalidate_cache",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".invalidate_cache()"
     },
     {
@@ -14019,8 +13832,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_cache_key",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._cache_key()"
     },
     {
@@ -14030,8 +13843,8 @@
       "source_location": "L103",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_cache_get",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._cache_get()"
     },
     {
@@ -14041,8 +13854,8 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_cache_set",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._cache_set()"
     },
     {
@@ -14052,8 +13865,8 @@
       "source_location": "L116",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_walk_full",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._walk_full()"
     },
     {
@@ -14063,8 +13876,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_walk_pruned",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._walk_pruned()"
     },
     {
@@ -14074,8 +13887,8 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "server_src_scanner_resultscanner_to_summary",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "._to_summary()"
     },
     {
@@ -14085,8 +13898,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_1",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "resultscanner \u2014 port of the typescript scanner service."
     },
     {
@@ -14107,8 +13920,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_43",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "list all runs, optionally filtered by symbol and date range.          returns so"
     },
     {
@@ -14118,8 +13931,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_78",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 28,
+      "community_name": "TestGetPositions",
       "norm_label": "get a single run's full result. returns none if not found."
     },
     {
@@ -14129,8 +13942,8 @@
       "source_location": "L88",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_88",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "clear all cached list_runs results."
     },
     {
@@ -14140,8 +13953,8 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_121",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "full directory walk (fallback when no symbol is specified)."
     },
     {
@@ -14151,8 +13964,8 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_144",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "walk only directories that match *symbol_upper*.          directory layout:  dat"
     },
     {
@@ -14162,8 +13975,8 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "server_src_scanner_rationale_233",
-      "community": 25,
-      "community_name": "TerminalApiError",
+      "community": 21,
+      "community_name": "tests/decision/__init__.py",
       "norm_label": "parse a result json file into a runsummary.          path convention: data/yyyy/"
     },
     {
@@ -14173,8 +13986,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_settings",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "src/settings.py"
     },
     {
@@ -14184,8 +13997,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "server_src_settings_commadelimitedenvsource",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "_commadelimitedenvsource"
     },
     {
@@ -14195,8 +14008,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "envsettingssource",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "envsettingssource"
     },
     {
@@ -14206,8 +14019,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "server_src_settings_commadelimitedenvsource_prepare_field_value",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": ".prepare_field_value()"
     },
     {
@@ -14217,8 +14030,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_src_settings_py_any",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "any"
     },
     {
@@ -14250,8 +14063,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "server_src_settings_websettings_resolved_cache_dir",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".resolved_cache_dir()"
     },
     {
@@ -14261,8 +14074,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_src_settings_py_path",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "path"
     },
     {
@@ -14283,8 +14096,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_src_settings_rationale_1",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "server-specific settings using pydantic basesettings."
     },
     {
@@ -14294,8 +14107,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "server_src_settings_rationale_13",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "env source that parses comma-separated values for list fields.      pydantic-set"
     },
     {
@@ -14305,8 +14118,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "server_src_settings_rationale_29",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "split comma-separated env values for known list fields."
     },
     {
@@ -14327,8 +14140,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "server_src_settings_rationale_61",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "resolve ``analysis_cache_dir`` to an absolute path.          the analyzer resolv"
     },
     {
@@ -14368,7 +14181,7 @@
       "label": "sample_run_summary()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "server_tests_conftest_sample_run_summary",
       "community": 98,
@@ -14390,7 +14203,7 @@
       "label": "sample_full_result()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L37",
+      "source_location": "L35",
       "_origin": "ast",
       "id": "server_tests_conftest_sample_full_result",
       "community": 98,
@@ -14398,21 +14211,10 @@
       "norm_label": "sample_full_result()"
     },
     {
-      "label": "Any",
-      "file_type": "code",
-      "source_file": "",
-      "source_location": "",
-      "_origin": "ast",
-      "id": "server_tests_conftest_py_any",
-      "community": 98,
-      "community_name": "server/tests/conftest.py",
-      "norm_label": "any"
-    },
-    {
       "label": "mock_data_dir()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L100",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "server_tests_conftest_mock_data_dir",
       "community": 98,
@@ -14434,7 +14236,7 @@
       "label": "scanner()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L109",
+      "source_location": "L107",
       "_origin": "ast",
       "id": "server_tests_conftest_scanner",
       "community": 98,
@@ -14445,7 +14247,7 @@
       "label": "runner()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L115",
+      "source_location": "L113",
       "_origin": "ast",
       "id": "server_tests_conftest_runner",
       "community": 98,
@@ -14456,7 +14258,7 @@
       "label": "mock_scanner()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L129",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "server_tests_conftest_mock_scanner",
       "community": 98,
@@ -14467,7 +14269,7 @@
       "label": "mock_runner()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L138",
+      "source_location": "L136",
       "_origin": "ast",
       "id": "server_tests_conftest_mock_runner",
       "community": 98,
@@ -14478,18 +14280,18 @@
       "label": "client()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L146",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "server_tests_conftest_client",
-      "community": 98,
-      "community_name": "server/tests/conftest.py",
+      "community": 105,
+      "community_name": "create_app",
       "norm_label": "client()"
     },
     {
       "label": "client_with_auth()",
       "file_type": "code",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L157",
+      "source_location": "L155",
       "_origin": "ast",
       "id": "server_tests_conftest_client_with_auth",
       "community": 98,
@@ -14511,9 +14313,9 @@
       "label": "Sample RunSummary matching the Python model shape.",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L22",
+      "source_location": "L20",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_22",
+      "id": "server_tests_conftest_rationale_20",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "sample runsummary matching the python model shape."
@@ -14522,9 +14324,9 @@
       "label": "Sample FullResult matching AnalysisResult.model_dump(mode='json') shape.",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L38",
+      "source_location": "L36",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_38",
+      "id": "server_tests_conftest_rationale_36",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "sample fullresult matching analysisresult.model_dump(mode='json') shape."
@@ -14533,9 +14335,9 @@
       "label": "Create a temporary data directory with fixture JSON files.",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L101",
+      "source_location": "L99",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_101",
+      "id": "server_tests_conftest_rationale_99",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "create a temporary data directory with fixture json files."
@@ -14544,9 +14346,9 @@
       "label": "Create a ResultScanner pointing at the mock data directory.",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L110",
+      "source_location": "L108",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_110",
+      "id": "server_tests_conftest_rationale_108",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "create a resultscanner pointing at the mock data directory."
@@ -14555,9 +14357,9 @@
       "label": "Create a RunService with test defaults.",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L116",
+      "source_location": "L114",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_116",
+      "id": "server_tests_conftest_rationale_114",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "create a runservice with test defaults."
@@ -14566,20 +14368,20 @@
       "label": "Create a test client with mocked scanner and runner (no API key).",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L147",
+      "source_location": "L145",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_147",
-      "community": 98,
-      "community_name": "server/tests/conftest.py",
+      "id": "server_tests_conftest_rationale_145",
+      "community": 105,
+      "community_name": "create_app",
       "norm_label": "create a test client with mocked scanner and runner (no api key)."
     },
     {
       "label": "Create a test client with an API key configured.      The key is set via monkeyp",
       "file_type": "rationale",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L158",
+      "source_location": "L156",
       "_origin": "ast",
-      "id": "server_tests_conftest_rationale_158",
+      "id": "server_tests_conftest_rationale_156",
       "community": 98,
       "community_name": "server/tests/conftest.py",
       "norm_label": "create a test client with an api key configured.      the key is set via monkeyp"
@@ -14635,8 +14437,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "server_tests_test_integration_testlistrunsintegration",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 82,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": "testlistrunsintegration"
     },
     {
@@ -14646,8 +14448,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "server_tests_test_integration_testlistrunsintegration_test_returns_fixture_data",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 82,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": ".test_returns_fixture_data()"
     },
     {
@@ -14657,8 +14459,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "server_tests_test_integration_testlistrunsintegration_test_filters_by_symbol",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 82,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": ".test_filters_by_symbol()"
     },
     {
@@ -14668,8 +14470,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "server_tests_test_integration_testlistrunsintegration_test_filters_by_date_range",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 82,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": ".test_filters_by_date_range()"
     },
     {
@@ -14756,8 +14558,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "server_tests_test_integration_rationale_36",
-      "community": 44,
-      "community_name": "test_analyze_structure_fresh_saves_mtf_cache",
+      "community": 82,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": "integration tests for get /api/runs with real file i/o."
     },
     {
@@ -15658,8 +15460,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_tests_test_runner",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "test_runner.py"
     },
     {
@@ -15669,8 +15471,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "server_tests_test_runner_runner",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "runner()"
     },
     {
@@ -15680,8 +15482,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "server_tests_test_runner_mock_process",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "_mock_process()"
     },
     {
@@ -15691,8 +15493,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "server_tests_test_runner_make_run_summary",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "_make_run_summary()"
     },
     {
@@ -15746,8 +15548,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "server_tests_test_runner_testrunanalysis_test_nonzero_exit_raises_runtime_error",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": ".test_nonzero_exit_raises_runtime_error()"
     },
     {
@@ -15834,8 +15636,8 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "server_tests_test_runner_testwaitforresults_test_read_results_retries_on_empty_read",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": ".test_read_results_retries_on_empty_read()"
     },
     {
@@ -15889,8 +15691,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_1",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "unit tests for runservice."
     },
     {
@@ -15900,8 +15702,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_15",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "create a runservice with test defaults."
     },
     {
@@ -15911,8 +15713,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_25",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 98,
+      "community_name": "server/tests/conftest.py",
       "norm_label": "create a mock asyncio subprocess."
     },
     {
@@ -15922,8 +15724,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_42",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "create a minimal runsummary-like mock for the scanner."
     },
     {
@@ -15977,8 +15779,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_118",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 54,
+      "community_name": "main.py",
       "norm_label": "non-zero exit code should raise runtimeerror with stderr."
     },
     {
@@ -16065,8 +15867,8 @@
       "source_location": "L270",
       "_origin": "ast",
       "id": "server_tests_test_runner_rationale_270",
-      "community": 84,
-      "community_name": "setup_logging",
+      "community": 36,
+      "community_name": "TestRepeatedRuns",
       "norm_label": "scanner returns empty on first n-1 calls, then succeeds."
     },
     {
@@ -16703,8 +16505,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_tests_test_settings",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "tests/test_settings.py"
     },
     {
@@ -16791,8 +16593,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "testresolvedcachedir"
     },
     {
@@ -16802,8 +16604,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_project_root",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "._project_root()"
     },
     {
@@ -16813,8 +16615,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "server_tests_test_settings_py_path",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "path"
     },
     {
@@ -16824,8 +16626,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_test_resolved_cache_dir_relative",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_resolved_cache_dir_relative()"
     },
     {
@@ -16835,8 +16637,8 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_test_resolved_cache_dir_absolute",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_resolved_cache_dir_absolute()"
     },
     {
@@ -16846,8 +16648,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_test_resolved_cache_dir_default",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_resolved_cache_dir_default()"
     },
     {
@@ -16857,8 +16659,8 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_test_resolved_cache_dir_relative_from_env",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_resolved_cache_dir_relative_from_env()"
     },
     {
@@ -16868,8 +16670,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "server_tests_test_settings_testresolvedcachedir_test_resolved_cache_dir_absolute_from_env",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_resolved_cache_dir_absolute_from_env()"
     },
     {
@@ -16879,8 +16681,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_1",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "tests for websettings environment-variable loading.  the _commadelimitedenvsourc"
     },
     {
@@ -16967,8 +16769,8 @@
       "source_location": "L54",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_54",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "``resolved_cache_dir`` must behave consistently with the analyzer.      the anal"
     },
     {
@@ -16978,8 +16780,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_63",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "compute the project root from the test file location.          mirror the same t"
     },
     {
@@ -16989,8 +16791,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_71",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "given ``analysis_cache_dir=\"data\"``, the resolved path must be         ``<projec"
     },
     {
@@ -17000,8 +16802,8 @@
       "source_location": "L78",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_78",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "given an absolute path, ``resolved_cache_dir`` must return it         unchanged."
     },
     {
@@ -17011,8 +16813,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_84",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "the default ``analysis_cache_dir`` is ``\"data\"``, which must         resolve to"
     },
     {
@@ -17022,8 +16824,8 @@
       "source_location": "L91",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_91",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "setting ``trading_analysis_cache_dir`` to a relative value must         resolve"
     },
     {
@@ -17033,8 +16835,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "server_tests_test_settings_rationale_99",
-      "community": 29,
-      "community_name": "._run_async",
+      "community": 39,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "setting ``trading_analysis_cache_dir`` to an absolute value must         be retu"
     },
     {
@@ -19321,7 +19123,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L11",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19410,76 +19212,16 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "analyzer/main.py",
-      "source_location": "L174",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L215",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L147",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_parse_and_configure_settings",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L391",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_pipeline",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L333",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_single_symbol",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L283",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_send_telegram_notification",
-      "target": "analyzer_config_settings_settings",
-      "confidence_score": 1.0
+      "source": "analyzer_main_main",
+      "target": "analyzer_config_settings_settings"
     },
     {
       "relation": "references",
@@ -19897,7 +19639,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L125",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19908,18 +19650,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L174",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_create_agents",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L25",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19930,7 +19661,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L39",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19941,7 +19672,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L54",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19952,18 +19683,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L215",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_initialize_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L416",
+      "source_location": "L140",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -19974,29 +19694,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L147",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_parse_and_configure_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L370",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_print_summary",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L69",
+      "source_location": "L61",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -20004,55 +19702,11 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L391",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_run_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L333",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_run_single_symbol",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L283",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_send_telegram_notification",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L252",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main",
-      "target": "analyzer_main_write_result",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L17",
+      "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main",
@@ -20075,7 +19729,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L87",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main_print_symbol_summary",
@@ -20086,10 +19740,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L30",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_30",
+      "source": "analyzer_main_rationale_22",
       "target": "analyzer_main_format_field",
       "confidence_score": 1.0
     },
@@ -20098,7 +19752,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L88",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main_print_symbol_summary",
@@ -20109,10 +19763,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L44",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_44",
+      "source": "analyzer_main_rationale_36",
       "target": "analyzer_main_format_field_int",
       "confidence_score": 1.0
     },
@@ -20121,7 +19775,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L105",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main_print_symbol_summary",
@@ -20132,10 +19786,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L59",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_59",
+      "source": "analyzer_main_rationale_51",
       "target": "analyzer_main_get_decision_field",
       "confidence_score": 1.0
     },
@@ -20144,10 +19798,10 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L386",
+      "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_print_summary",
+      "source": "analyzer_main_main",
       "target": "analyzer_main_print_symbol_summary",
       "confidence_score": 1.0
     },
@@ -20156,7 +19810,7 @@
       "context": "generic_arg",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L69",
+      "source_location": "L61",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main_print_symbol_summary",
@@ -20167,10 +19821,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L70",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_70",
+      "source": "analyzer_main_rationale_62",
       "target": "analyzer_main_print_symbol_summary",
       "confidence_score": 1.0
     },
@@ -20179,79 +19833,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L174",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L215",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L370",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_print_summary",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L333",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_single_symbol",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L283",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_send_telegram_notification",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L252",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_write_result",
-      "target": "analyzer_main_py_any",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "return_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L125",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_main_build_parser",
@@ -20263,57 +19845,22 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L422",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_main",
-      "target": "analyzer_main_build_parser",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L126",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_126",
-      "target": "analyzer_main_build_parser",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L424",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_main",
-      "target": "analyzer_main_parse_and_configure_settings",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
       "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_parse_and_configure_settings",
-      "target": "namespace",
+      "source": "analyzer_main_main",
+      "target": "analyzer_main_build_parser",
       "confidence_score": 1.0
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L148",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_148",
-      "target": "analyzer_main_parse_and_configure_settings",
+      "source": "analyzer_main_rationale_119",
+      "target": "analyzer_main_build_parser",
       "confidence_score": 1.0
     },
     {
@@ -20322,81 +19869,10 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/main.py",
-      "source_location": "L198",
+      "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_src_decision_agents_decideragent"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "analyzer/main.py",
-      "source_location": "L205",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_src_decision_agents_revieweragent"
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "analyzer/main.py",
-      "source_location": "L191",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_src_decision_agents_synthesizeragent"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L174",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_create_agents",
-      "target": "analyzer_src_decision_cost_tracker_costtracker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L237",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
-      "target": "analyzer_main_create_agents",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L178",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_178",
-      "target": "analyzer_main_create_agents",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "analyzer/main.py",
-      "source_location": "L234",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
+      "source": "analyzer_main_main",
       "target": "analyzer_src_analysis_structure_analyzer_marketstructureengine"
     },
     {
@@ -20405,23 +19881,11 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/main.py",
-      "source_location": "L235",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
+      "source": "analyzer_main_main",
       "target": "analyzer_src_calendar_forexfactory_forexfactorycalendar"
-    },
-    {
-      "relation": "references",
-      "context": "parameter_type",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L215",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
-      "target": "analyzer_src_decision_cost_tracker_costtracker",
-      "confidence_score": 1.0
     },
     {
       "relation": "calls",
@@ -20429,10 +19893,82 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/main.py",
-      "source_location": "L239",
+      "source_location": "L195",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_decision_agents_decideragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L202",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_decision_agents_revieweragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L188",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_decision_agents_synthesizeragent"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L174",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_decision_cost_tracker_costtracker"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_logging_config_setup_logging"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L272",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
+      "target": "analyzer_src_notification_telegram_sender_send_trade_notification"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "analyzer/main.py",
+      "source_location": "L210",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "analyzer_main_main",
       "target": "analyzer_src_orchestrator_graph_tradinggraph"
     },
     {
@@ -20441,194 +19977,20 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/main.py",
-      "source_location": "L248",
+      "source_location": "L219",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_initialize_pipeline",
+      "source": "analyzer_main_main",
       "target": "analyzer_src_output_result_writer_resultwriter"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/main.py",
-      "source_location": "L220",
+      "source_location": "L141",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_main_rationale_220",
-      "target": "analyzer_main_initialize_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L406",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_pipeline",
-      "target": "analyzer_main_initialize_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L257",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_257",
-      "target": "analyzer_main_write_result",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L357",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_single_symbol",
-      "target": "analyzer_main_write_result",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L288",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_288",
-      "target": "analyzer_main_send_telegram_notification",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L360",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_single_symbol",
-      "target": "analyzer_main_send_telegram_notification",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "analyzer/main.py",
-      "source_location": "L322",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_send_telegram_notification",
-      "target": "analyzer_src_notification_telegram_sender_send_trade_notification"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L340",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_340",
-      "target": "analyzer_main_run_single_symbol",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L410",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_pipeline",
-      "target": "analyzer_main_run_single_symbol",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L371",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_371",
-      "target": "analyzer_main_print_summary",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L413",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_pipeline",
-      "target": "analyzer_main_print_summary",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L429",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_main",
-      "target": "analyzer_main_run_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L397",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_397",
-      "target": "analyzer_main_run_pipeline",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L405",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_run_pipeline",
-      "target": "analyzer_src_decision_cost_tracker_costtracker",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "analyzer/main.py",
-      "source_location": "L423",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_main",
-      "target": "analyzer_src_logging_config_setup_logging"
-    },
-    {
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "analyzer/main.py",
-      "source_location": "L417",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "analyzer_main_rationale_417",
+      "source": "analyzer_main_rationale_141",
       "target": "analyzer_main_main",
       "confidence_score": 1.0
     },
@@ -33259,10 +32621,10 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/tests/notification/test_telegram_sender.py",
-      "source_location": "L19",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_buy_message",
+      "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sellsend_message",
       "target": "analyzer_src_notification_telegram_sender_send_trade_notification"
     },
     {
@@ -33271,10 +32633,10 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "analyzer/tests/notification/test_telegram_sender.py",
-      "source_location": "L46",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_sell_message",
+      "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_buy_message",
       "target": "analyzer_src_notification_telegram_sender_send_trade_notification"
     },
     {
@@ -43109,22 +42471,22 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/tests/notification/test_telegram_sender.py",
-      "source_location": "L13",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification",
-      "target": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_buy_message",
+      "target": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sellsend_message",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "analyzer/tests/notification/test_telegram_sender.py",
-      "source_location": "L38",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification",
-      "target": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_sell_message",
+      "target": "analyzer_tests_notification_test_telegram_sender_testsendtradenotification_test_sends_buy_message",
       "confidence_score": 1.0
     },
     {
@@ -47944,7 +47306,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "server/tests/conftest.py",
-      "source_location": "L152",
+      "source_location": "L150",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_client",
@@ -47979,7 +47341,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L7",
+      "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth",
@@ -47990,7 +47352,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L11",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth",
@@ -48012,7 +47374,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L11",
+      "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware",
@@ -48023,7 +47385,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware",
@@ -48034,7 +47396,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L17",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware",
@@ -48045,10 +47407,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L12",
+      "source_location": "L10",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_src_middleware_auth_rationale_12",
+      "source": "server_src_middleware_auth_rationale_10",
       "target": "server_src_middleware_auth_authmiddleware",
       "confidence_score": 1.0
     },
@@ -48057,7 +47419,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware_dispatch",
@@ -48069,7 +47431,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware_dispatch",
@@ -48081,7 +47443,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "server/src/middleware/auth.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_src_middleware_auth_authmiddleware_dispatch",
@@ -48342,7 +47704,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L15",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -48456,7 +47818,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L16",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -48579,7 +47941,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L115",
+      "source_location": "L113",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_runner",
@@ -48942,7 +48304,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L17",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -49087,7 +48449,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L109",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_scanner",
@@ -50189,7 +49551,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L146",
+      "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50200,7 +49562,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L157",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50211,7 +49573,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L100",
+      "source_location": "L98",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50222,7 +49584,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L138",
+      "source_location": "L136",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50233,7 +49595,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L129",
+      "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50244,7 +49606,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L115",
+      "source_location": "L113",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50255,7 +49617,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L37",
+      "source_location": "L35",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50266,7 +49628,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50277,7 +49639,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L109",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest",
@@ -50299,10 +49661,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L22",
+      "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_22",
+      "source": "server_tests_conftest_rationale_20",
       "target": "server_tests_conftest_sample_run_summary",
       "confidence_score": 1.0
     },
@@ -50311,7 +49673,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L21",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_sample_run_summary",
@@ -50322,23 +49684,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L38",
+      "source_location": "L36",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_38",
+      "source": "server_tests_conftest_rationale_36",
       "target": "server_tests_conftest_sample_full_result",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "generic_arg",
-      "confidence": "EXTRACTED",
-      "source_file": "server/tests/conftest.py",
-      "source_location": "L37",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "server_tests_conftest_sample_full_result",
-      "target": "server_tests_conftest_py_any",
       "confidence_score": 1.0
     },
     {
@@ -50346,7 +49696,7 @@
       "context": "return_type",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L100",
+      "source_location": "L98",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_mock_data_dir",
@@ -50357,10 +49707,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L101",
+      "source_location": "L99",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_101",
+      "source": "server_tests_conftest_rationale_99",
       "target": "server_tests_conftest_mock_data_dir",
       "confidence_score": 1.0
     },
@@ -50369,7 +49719,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L109",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
       "source": "server_tests_conftest_scanner",
@@ -50380,10 +49730,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L110",
+      "source_location": "L108",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_110",
+      "source": "server_tests_conftest_rationale_108",
       "target": "server_tests_conftest_scanner",
       "confidence_score": 1.0
     },
@@ -50391,10 +49741,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L116",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_116",
+      "source": "server_tests_conftest_rationale_114",
       "target": "server_tests_conftest_runner",
       "confidence_score": 1.0
     },
@@ -50402,10 +49752,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L147",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_147",
+      "source": "server_tests_conftest_rationale_145",
       "target": "server_tests_conftest_client",
       "confidence_score": 1.0
     },
@@ -50413,10 +49763,10 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "server/tests/conftest.py",
-      "source_location": "L158",
+      "source_location": "L156",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "server_tests_conftest_rationale_158",
+      "source": "server_tests_conftest_rationale_156",
       "target": "server_tests_conftest_client_with_auth",
       "confidence_score": 1.0
     },

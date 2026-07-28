@@ -89,13 +89,13 @@ class TestMainMultiSymbolExecution:
     """Test that main() loops over all symbols correctly."""
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
     def test_processes_all_symbols(
         self,
         mock_graph_cls: MagicMock,
@@ -131,13 +131,13 @@ class TestMainMultiSymbolExecution:
         assert symbols_called == ["XAUUSD", "EURUSD", "GBPUSD"]
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
     def test_handles_one_symbol_failure(
         self,
         mock_graph_cls: MagicMock,
@@ -180,13 +180,13 @@ class TestMainMultiSymbolExecution:
         assert "EURUSD: FAILED" in captured.out
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
     def test_output_dir_is_used(
         self,
         mock_graph_cls: MagicMock,
@@ -231,13 +231,13 @@ class TestMainMultiSymbolExecution:
         assert expected.exists()
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
     def test_handles_broker_now_missing(
         self,
         mock_graph_cls: MagicMock,
@@ -284,14 +284,14 @@ class TestMainTelegramNotification:
     """Test that --telegram flag triggers notifications for approved setups."""
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
-    @patch("src.notification.telegram_sender.send_trade_notification")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
+    @patch("main.send_trade_notification")
     def test_telegram_sends_notification_on_approved_setup(
         self,
         mock_send: MagicMock,
@@ -339,14 +339,14 @@ class TestMainTelegramNotification:
         assert call_kwargs["review"]["approved"] is True
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
-    @patch("src.notification.telegram_sender.send_trade_notification")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
+    @patch("main.send_trade_notification")
     def test_no_telegram_flag_skips_notification(
         self,
         mock_send: MagicMock,
@@ -387,14 +387,14 @@ class TestMainTelegramNotification:
         mock_send.assert_not_called()
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
-    @patch("src.notification.telegram_sender.send_trade_notification")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
+    @patch("main.send_trade_notification")
     def test_telegram_skips_non_trade_action(
         self,
         mock_send: MagicMock,
@@ -437,14 +437,14 @@ class TestMainTelegramNotification:
         mock_send.assert_not_called()
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
-    @patch("src.notification.telegram_sender.send_trade_notification")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
+    @patch("main.send_trade_notification")
     def test_telegram_skips_unapproved_review(
         self,
         mock_send: MagicMock,
@@ -487,13 +487,13 @@ class TestMainTelegramNotification:
         mock_send.assert_not_called()
 
     @patch("main.Settings")
-    @patch("src.analysis.structure_analyzer.MarketStructureEngine")
-    @patch("src.calendar.forexfactory.ForexFactoryCalendar")
-    @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("src.decision.agents.SynthesizerAgent")
-    @patch("src.decision.agents.DeciderAgent")
-    @patch("src.decision.agents.ReviewerAgent")
-    @patch("src.orchestrator.graph.TradingGraph")
+    @patch("main.MarketStructureEngine")
+    @patch("main.ForexFactoryCalendar")
+    @patch("main.TerminalDataProvider")
+    @patch("main.SynthesizerAgent")
+    @patch("main.DeciderAgent")
+    @patch("main.ReviewerAgent")
+    @patch("main.TradingGraph")
     def test_telegram_warning_on_missing_credentials(
         self,
         mock_graph_cls: MagicMock,

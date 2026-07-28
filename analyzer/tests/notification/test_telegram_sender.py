@@ -1,10 +1,11 @@
 """Tests for telegram_sender module."""
 
+import logging
 from unittest.mock import MagicMock, patch
 
 import requests as req
 
-from src.notification.telegram_sender import send_trade_notification
+from src.notification.telegram_sender import _sanitize_url, send_trade_notification
 
 
 class TestSendTradeNotification:
@@ -33,7 +34,7 @@ class TestSendTradeNotification:
             assert "BUY" in body["text"]
             assert "2400" in body["text"]
 
-    def test_sellsend_message(self, sample_decision, sample_context, sample_review):
+    def test_sends_sell_message(self, sample_decision, sample_context, sample_review):
         decision = dict(sample_decision)
         decision["action"] = "sell_setup"
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
@@ -152,3 +153,116 @@ class TestSendTradeNotification:
                 chat_id="test-chat",
             )
             mock_post.assert_not_called()
+
+    # ------------------------------------------------------------------
+    # Token sanitisation tests
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _token_safe(pattern: str) -> bool:
+        """Return *True* when the token (``test-token``) does **not**
+        appear in *pattern*."""
+        return "test-token" not in pattern
+
+    def test_token_not_in_log_on_http_error(
+        self,
+        caplog,
+        sample_decision,
+        sample_context,
+        sample_review,
+    ):
+        caplog.set_level(logging.WARNING)
+        with patch("src.notification.telegram_sender.requests.post") as mock_post:
+            resp = MagicMock()
+            resp.raise_for_status.side_effect = req.exceptions.HTTPError("HTTP 500")
+            mock_post.return_value = resp
+
+            send_trade_notification(
+                symbol="XAUUSD",
+                decision=sample_decision,
+                context=sample_context,
+                review=sample_review,
+                web_ui_base_url="http://localhost:3000",
+                bot_token="test-token",
+                chat_id="test-chat",
+            )
+
+        for record in caplog.records:
+            msg = record.getMessage()
+            assert self._token_safe(msg), f"Raw token found in log message: {msg!r}"
+            assert "bot***" in msg or "***" in msg, f"Sanitised URL marker missing in: {msg!r}"
+
+    def test_token_not_in_log_on_timeout(
+        self,
+        caplog,
+        sample_decision,
+        sample_context,
+        sample_review,
+    ):
+        caplog.set_level(logging.WARNING)
+        with patch("src.notification.telegram_sender.requests.post") as mock_post:
+            mock_post.side_effect = req.exceptions.Timeout("connection timed out")
+
+            send_trade_notification(
+                symbol="XAUUSD",
+                decision=sample_decision,
+                context=sample_context,
+                review=sample_review,
+                web_ui_base_url="http://localhost:3000",
+                bot_token="test-token",
+                chat_id="test-chat",
+            )
+
+        for record in caplog.records:
+            msg = record.getMessage()
+            assert self._token_safe(msg), f"Raw token found in log message: {msg!r}"
+            assert "bot***" in msg or "***" in msg, f"Sanitised URL marker missing in: {msg!r}"
+
+    def test_token_not_in_log_on_connection_error(
+        self,
+        caplog,
+        sample_decision,
+        sample_context,
+        sample_review,
+    ):
+        caplog.set_level(logging.WARNING)
+        with patch("src.notification.telegram_sender.requests.post") as mock_post:
+            mock_post.side_effect = req.exceptions.ConnectionError("connection refused")
+
+            send_trade_notification(
+                symbol="XAUUSD",
+                decision=sample_decision,
+                context=sample_context,
+                review=sample_review,
+                web_ui_base_url="http://localhost:3000",
+                bot_token="test-token",
+                chat_id="test-chat",
+            )
+
+        for record in caplog.records:
+            msg = record.getMessage()
+            assert self._token_safe(msg), f"Raw token found in log message: {msg!r}"
+            assert "bot***" in msg or "***" in msg, f"Sanitised URL marker missing in: {msg!r}"
+
+
+class TestSanitizeUrl:
+    """Unit tests for the ``_sanitize_url`` helper."""
+
+    def test_replaces_token(self):
+        url = "https://api.telegram.org/bot123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11/sendMessage"
+        sanitized = _sanitize_url(url, "123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11")
+        assert sanitized == "https://api.telegram.org/bot***/sendMessage"
+
+    def test_no_token_returns_url_unchanged(self):
+        url = "https://api.telegram.org/bot/sendMessage"
+        sanitized = _sanitize_url(url, "")
+        assert sanitized == url
+
+    def test_empty_url(self):
+        sanitized = _sanitize_url("", "token")
+        assert sanitized == ""
+
+    def test_token_not_in_url(self):
+        url = "https://example.com/api"
+        sanitized = _sanitize_url(url, "any-token")
+        assert sanitized == url

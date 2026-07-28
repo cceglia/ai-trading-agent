@@ -21,11 +21,22 @@ class RunService:
         analyzer_dir: str,
         data_dir: str,
         timeout_ms: int = 600_000,
+        retry_max_attempts: int = 5,
+        retry_delay_ms: int = 100,
     ) -> None:
         self.python_cmd = python_cmd
         self.analyzer_dir = analyzer_dir
-        self.data_dir = data_dir
+        self._data_dir = data_dir
         self.timeout_ms = timeout_ms
+        self.retry_max_attempts = retry_max_attempts
+        self.retry_delay_ms = retry_delay_ms
+        self.__scanner: ResultScanner | None = None
+
+    @property
+    def _scanner(self) -> ResultScanner:
+        if self.__scanner is None:
+            self.__scanner = ResultScanner(self._data_dir, cache_ttl=60)
+        return self.__scanner
 
     async def run_analysis(
         self,
@@ -37,14 +48,17 @@ class RunService:
         Spawns: python main.py --output-dir <dir> [--model <m>] -- <symbols...>
         Returns list of full result dicts, one per symbol.
         """
-        args = ["main.py", "--output-dir", self.data_dir]
+        args = ["main.py", "--output-dir", self._data_dir]
         if model:
             args.extend(["--model", model])
         args.append("--")
         args.extend(symbols)
 
         await self._spawn_process(args)
-        return self._read_results(symbols)
+        await self._wait_for_results(symbols)
+        results = self._read_results(symbols)
+        self._scanner.invalidate_cache()
+        return results
 
     async def _spawn_process(self, args: list[str]) -> None:
         """Spawn the Python process and wait for completion.
@@ -84,21 +98,53 @@ class RunService:
                 f"Python process exited with code {process.returncode}: {stderr_text}"
             )
 
+    async def _wait_for_results(self, symbols: list[str]) -> None:
+        """Retry reading result files with backoff.
+
+        After a subprocess completes there may be a filesystem flush delay
+        before the output files are visible. This method polls the scanner,
+        retrying up to *retry_max_attempts* times with *retry_delay_ms*
+        sleep between attempts. If any symbol's result is still missing
+        after all retries, a TimeoutError is raised listing the missing
+        symbols.
+        """
+        missing = set(symbols)
+        for attempt in range(self.retry_max_attempts):
+            if not missing:
+                return
+            if attempt > 0:
+                await asyncio.sleep(self.retry_delay_ms / 1000)
+            # Invalidate cache before each check so we get fresh FS data
+            self._scanner.invalidate_cache()
+            missing = self._find_missing_symbols(symbols)
+
+        raise TimeoutError(
+            f"Results not available after retries: {', '.join(sorted(missing))}"
+        )
+
+    def _find_missing_symbols(self, symbols: list[str]) -> set[str]:
+        """Return the subset of *symbols* that have no run in the scanner."""
+        missing: set[str] = set()
+        for symbol in symbols:
+            runs = self._scanner.list_runs(symbol=symbol)
+            if not runs:
+                missing.add(symbol)
+        return missing
+
     def _read_results(self, symbols: list[str]) -> list[dict]:
         """Walk the data directory via ResultScanner and return the
         most recent result for each requested symbol."""
-        scanner = ResultScanner(self.data_dir)
         results: list[dict] = []
 
         for symbol in symbols:
-            runs = scanner.list_runs(symbol=symbol)
+            runs = self._scanner.list_runs(symbol=symbol)
             if not runs:
                 continue
 
             # list_runs returns newest-first
             newest = runs[0]
             year, month, day = newest.date.split("-")
-            full = scanner.get_run(
+            full = self._scanner.get_run(
                 symbol=newest.symbol,
                 year=year,
                 month=month,

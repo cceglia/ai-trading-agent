@@ -21,6 +21,12 @@ def _get_settings() -> Settings:
     return _settings
 
 
+def reload_settings() -> None:
+    """Force a fresh Settings() on the next _get_settings() call."""
+    global _settings
+    _settings = None
+
+
 def _cache_path(timeframe: str, symbol: str, cache_date: datetime) -> str:
     """Compute cache file path.
 

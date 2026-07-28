@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field, model_validator
+from pydantic import Field
 from pydantic_settings import BaseSettings, EnvSettingsSource
 
 
@@ -49,21 +49,29 @@ class WebSettings(BaseSettings):
     python_cmd: str = Field(default="python", alias="PYTHON_CMD")
     analysis_cache_dir: str = Field(default="data", alias="TRADING_ANALYSIS_CACHE_DIR")
 
-    @model_validator(mode="before")
-    @classmethod
-    def _normalize_cors(cls, data: dict[str, Any]) -> dict[str, Any]:
-        """Handle comma-separated CORS origins from constructor kwargs."""
-        if isinstance(data.get("cors_origins"), str):
-            data["cors_origins"] = [
-                origin.strip()
-                for origin in data["cors_origins"].split(",")
-                if origin.strip()
-            ]
-        return data
+    # Auth
+    api_key: str = Field(default="", alias="TRADING_API_KEY")
+
+    # Rate limiting
+    rate_limit_max: int = Field(default=20, alias="TRADING_RATE_LIMIT_MAX")
+    rate_limit_window: int = Field(default=60, alias="TRADING_RATE_LIMIT_WINDOW")
 
     @property
     def resolved_cache_dir(self) -> Path:
-        """Resolve analysis_cache_dir relative to analyzer/ if relative."""
+        """Resolve ``analysis_cache_dir`` to an absolute path.
+
+        The analyzer resolves its own ``analysis_cache_dir`` (a string from
+        ``config.settings.Settings``) relative to the current working directory,
+        which is the ``analyzer/`` package root.  To keep both packages writing
+        to the same directory tree, this property resolves relative paths
+        against ``<project_root>/analyzer/<path>`` rather than
+        ``<project_root>/server/<path>``.
+
+        .. code-block:: text
+
+            TRADING_ANALYSIS_CACHE_DIR=data  →  …/analyzer/data
+            TRADING_ANALYSIS_CACHE_DIR=/abs  →  /abs  (unchanged)
+        """
         path = Path(self.analysis_cache_dir)
         if path.is_absolute():
             return path
@@ -95,4 +103,4 @@ class WebSettings(BaseSettings):
         )
         return (init_settings, custom_env, dotenv_settings, file_secret_settings)
 
-    model_config = {"env_file_encoding": "utf-8"}
+    model_config = {"env_file_encoding": "utf-8", "populate_by_name": True}

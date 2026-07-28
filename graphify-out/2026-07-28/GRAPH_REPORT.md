@@ -1,12 +1,12 @@
 # Graph Report - Agent  (2026-07-28)
 
 ## Corpus Check
-- 119 files · ~57,492 words
+- 119 files · ~57,092 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1754 nodes · 3204 edges · 109 communities (93 shown, 16 thin omitted)
-- Extraction: 73% EXTRACTED · 27% INFERRED · 0% AMBIGUOUS · INFERRED: 856 edges (avg confidence: 0.69)
+- 1736 nodes · 3165 edges · 103 communities (88 shown, 15 thin omitted)
+- Extraction: 73% EXTRACTED · 27% INFERRED · 0% AMBIGUOUS · INFERRED: 858 edges (avg confidence: 0.69)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
@@ -88,15 +88,9 @@
 - test_result_pipeline_writes_json
 - send_trade_notification
 - trading-server
-- test_result_pipeline_writes_json
-- test_should_run_d1_without_cache
-- test_should_run_h1_different_period
-- test_load_returns_none_when_missing
-- test_save_h1_creates_hour_suffixed_file
-- test_save_h4_creates_hour_suffixed_file
-- test_load_handles_corrupt_json
 - server/tests/conftest.py
 - TestPostRun
+- test_cache_path_zero_padded_hour
 - test_d1_candle_period_before_close
 - create_app
 - TestListRuns
@@ -108,12 +102,12 @@
 1. `MarketContextSummary` - 83 edges
 2. `AgentState` - 68 edges
 3. `DecisionOutput` - 66 edges
-4. `CostTracker` - 60 edges
-5. `ReviewVerdict` - 60 edges
+4. `ReviewVerdict` - 60 edges
+5. `CostTracker` - 58 edges
 6. `TradingGraph` - 58 edges
 7. `ResultScanner` - 56 edges
 8. `SynthesizerAgent` - 49 edges
-9. `Settings` - 44 edges
+9. `Settings` - 39 edges
 10. `Evaluator` - 30 edges
 
 ## Surprising Connections (you probably didn't know these)
@@ -131,7 +125,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (109 total, 16 thin omitted)
+## Communities (103 total, 15 thin omitted)
 
 ### Community 0 - "TestFatalError"
 Cohesion: 0.05
@@ -142,8 +136,8 @@ Cohesion: 0.07
 Nodes (49): _cache_path(), _get_cache_date(), _get_settings(), load_cached_synthesis(), Any, datetime, Path, File-based cache for SynthesizerAgent output, keyed by (symbol, broker-day).  Mi (+41 more)
 
 ### Community 2 - "DataSource"
-Cohesion: 0.09
-Nodes (20): BaseSettings, Trading agent configuration., Parse JSON string env var and validate all prices are non-negative., Settings, test_settings_has_analysis_cache_dir(), test_settings_has_d1_close_time(), test_settings_has_h4_close_interval_hours(), test_settings_has_h4_close_time() (+12 more)
+Cohesion: 0.06
+Nodes (35): BaseSettings, Trading agent configuration., Parse JSON string env var and validate all prices are non-negative., Settings, test_settings_has_analysis_cache_dir(), test_settings_has_d1_close_time(), test_settings_has_h4_close_interval_hours(), test_settings_has_h4_close_time() (+27 more)
 
 ### Community 3 - "AgentState"
 Cohesion: 0.06
@@ -154,8 +148,8 @@ Cohesion: 0.07
 Nodes (19): Evaluator, Any, datetime, Check if an event falls within the time window from now.          Returns False, Evaluate events for symbol with timeframe-dependent window.          Args:, Evaluates calendar events for trading symbols., High-impact event outside the window should NOT block., High-impact event within the window SHOULD block. (+11 more)
 
 ### Community 5 - "Evaluator"
-Cohesion: 0.14
-Nodes (22): _cache_path(), _get_settings(), load_cached_analysis(), Any, datetime, Determine if analysis should run for this timeframe.      Args:         timefram, Save analysis result to disk.      Args:         timeframe: "D1", "H4", or "H1", Load cached analysis from disk if available.      Args:         timeframe: "D1", (+14 more)
+Cohesion: 0.11
+Nodes (26): _cache_path(), _get_settings(), load_cached_analysis(), Any, datetime, Determine if analysis should run for this timeframe.      Args:         timefram, Save analysis result to disk.      Args:         timeframe: "D1", "H4", or "H1", Load cached analysis from disk if available.      Args:         timeframe: "D1", (+18 more)
 
 ### Community 6 - "Trading AI Agent"
 Cohesion: 0.11
@@ -167,19 +161,19 @@ Nodes (19): CalendarProvider, DataSource, Any, datetime, Analyze market structur
 
 ### Community 8 - "TestCostTracking"
 Cohesion: 0.08
-Nodes (30): _canonical_structure_analysis(), _make_cached_summary(), datetime, Path, Cache hit → cost_tracker.call_count == 0 (no LLM call recorded)., Cache miss → cost_tracker.call_count == 1 (one LLM call recorded)., 5 sequential runs on same symbol/day → exactly 1 LLM call.          First run: c, Build a ``MarketContextSummary`` that looks like it came from the cache. (+22 more)
+Nodes (29): _canonical_structure_analysis(), _make_cached_summary(), datetime, Path, Cache hit → cost_tracker.call_count == 0 (no LLM call recorded)., Cache miss → cost_tracker.call_count == 1 (one LLM call recorded)., 5 sequential runs on same symbol/day → exactly 1 LLM call.          First run: c, Build a ``MarketContextSummary`` that looks like it came from the cache. (+21 more)
 
 ### Community 9 - "ForexFactoryCalendar"
 Cohesion: 0.06
-Nodes (21): CostTracker, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Record an LLM API call and return its cost.          Parameters         --------, Accumulated cost across all recorded calls., Number of calls recorded., Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d (+13 more)
+Nodes (22): CostTracker, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Record an LLM API call and return its cost.          Parameters         --------, Accumulated cost across all recorded calls., Number of calls recorded., Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d (+14 more)
 
 ### Community 10 - "TestProjectFiles"
-Cohesion: 0.22
-Nodes (7): _get_settings(), ohlc_cache_path(), datetime, Compute OHLC cache file path, parallel to analysis cache.      Cache path conven, Tests for OHLC bar cache., Full path follows analysis/YYYY/MM/DD/SYMBOL/ pattern., TestOhlcCachePath
+Cohesion: 0.18
+Nodes (10): _get_settings(), load_ohlc_cache(), ohlc_cache_path(), datetime, OHLCBar, Compute OHLC cache file path, parallel to analysis cache.      Cache path conven, Load cached OHLC bars from disk if available.      Args:         timeframe: "D1", Tests for OHLC bar cache. (+2 more)
 
 ### Community 11 - "Agent Instructions"
-Cohesion: 0.07
-Nodes (25): _build_parser(), main(), _parse_and_configure_settings(), Build the CLI argument parser.      Returns:         Configured ArgumentParser i, Parse CLI args into a configured Settings instance.      Applies CLI overrides (, Main entry point.      Parses CLI arguments, initialises the analysis pipeline,, CaptureFixture, Tests for multi-symbol support in main.py. (+17 more)
+Cohesion: 0.05
+Nodes (27): CaptureFixture, Tests for multi-symbol support in main.py., Test that argparse accepts multiple symbols via _build_parser., Verify main() calls graph.run() for each symbol., _build_parser accepts multiple symbols as nargs+., When one symbol fails, main() continues with remaining symbols., When --output-dir is given, ResultWriter is used., _build_parser is backward-compatible with single symbol. (+19 more)
 
 ### Community 12 - "config/__init__.py"
 Cohesion: 0.05
@@ -190,8 +184,8 @@ Cohesion: 0.09
 Nodes (19): MarketContextSummary, Summary of market context from synthesizer agent., _make_raw_response(), Tests for prompt usage in agents., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs., User prompt must render current_price and current_price_time values., Build a mock raw_response with a usable .usage attribute., When no price is supplied, the current-price line must state None. (+11 more)
 
 ### Community 14 - "src/calendar/__init__.py"
-Cohesion: 0.09
-Nodes (22): H4 should skip analysis when cache file exists for that period., H4 should run analysis when no cache file exists., D1 before close should always run analysis (candle not closed)., D1 after close with existing cache should skip analysis., D1 after close without cache should run analysis., Verify the path check uses the correct folder date, not a stale one., H1 should run analysis when no H1 cache file exists., H1 should skip analysis when cache file exists for that period. (+14 more)
+Cohesion: 0.05
+Nodes (38): D1 file path uses folder_date from get_cache_date, not raw broker_now., Before D1 close, cache date is yesterday's date (from period_start)., After D1 close, cache date is today's date (from period_start)., D1 should run analysis when no cache file exists., H4 should skip analysis when cache file exists for that period., H4 should run analysis when no cache file exists., D1 before close should always run analysis (candle not closed)., D1 after close with existing cache should skip analysis. (+30 more)
 
 ### Community 15 - "src/data/__init__.py"
 Cohesion: 0.07
@@ -214,16 +208,16 @@ Cohesion: 0.08
 Nodes (22): AgentState, Any, Select the canonical current price across timeframes.      The canonical current, Build a compact version of structure analysis suitable for LLM prompts.      The, State for the trading graph., Initialize trading graph with dependencies.          Args:             data_prov, Build the LangGraph StateGraph., Fetch market data from MT5. (+14 more)
 
 ### Community 20 - "tests/data/__init__.py"
-Cohesion: 0.33
-Nodes (3): Configure structured logging for the trading agent., setup_logging(), TestSetupLogging
+Cohesion: 0.11
+Nodes (16): _build_parser(), _format_field(), _format_field_int(), _get_decision_field(), _print_symbol_summary(), Any, Trading AI Agent - CLI Entry Point., Build the CLI argument parser.      Returns:         Configured ArgumentParser i (+8 more)
 
 ### Community 21 - "tests/decision/__init__.py"
-Cohesion: 0.13
-Nodes (24): _create_agents(), _format_field(), _format_field_int(), _get_decision_field(), _initialize_pipeline(), _print_summary(), _print_symbol_summary(), Any (+16 more)
+Cohesion: 0.22
+Nodes (6): Path, RunSummary, Full directory walk (fallback when no symbol is specified)., Walk only directories that match *symbol_upper*.          Directory layout:  dat, Parse a result JSON file into a RunSummary.          Path convention: data/YYYY/, List all runs, optionally filtered by symbol and date range.          Returns so
 
 ### Community 22 - "tests/__init__.py"
-Cohesion: 0.12
-Nodes (15): Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., Empty string → None conversion in main.py (same pattern as api_key/base_url)., Agent must accept None reasoning_effort without error., Agent must accept empty string reasoning_effort (though main.py converts it). (+7 more)
+Cohesion: 0.09
+Nodes (18): Synthesizes market context from structure analysis and calendar., SynthesizerAgent, Tests for API key and base_url passthrough in agents., When a pre-built client is provided, base_url must be ignored., SynthesizerAgent must pass both api_key and base_url when provided., SynthesizerAgent must accept reasoning_effort param., Empty string → None conversion in main.py (same pattern as api_key/base_url)., Agent must accept None reasoning_effort without error. (+10 more)
 
 ### Community 23 - "tests/orchestrator/__init__.py"
 Cohesion: 0.12
@@ -234,24 +228,20 @@ Cohesion: 0.09
 Nodes (22): DOM, DOM.Iterable, env.d.ts, ES2022, src/**/*.ts, src/**/*.vue, compilerOptions, baseUrl (+14 more)
 
 ### Community 25 - "TerminalApiError"
-Cohesion: 0.06
-Nodes (35): Any, Path, RunSummary, ResultScanner — port of the TypeScript scanner service., Full directory walk (fallback when no symbol is specified)., Walk only directories that match *symbol_upper*.          Directory layout:  dat, Walk the data directory tree, read/parse JSON result files,     filter/sort into, Parse a result JSON file into a RunSummary.          Path convention: data/YYYY/ (+27 more)
+Cohesion: 0.09
+Nodes (25): Walk the data directory tree, read/parse JSON result files,     filter/sort into, ResultScanner, Path, Unit tests for ResultScanner., Helper to write a result JSON file., Files not in YYYY/MM/DD/SYMBOL/ pattern are skipped., When JSON has a 'symbol' field, it overrides the path-derived symbol., Tests for ResultScanner.get_run(). (+17 more)
 
 ### Community 26 - "test_terminal_data_provider.py"
-Cohesion: 0.08
-Nodes (24): get_cache_date(), Return the cache date for the given timeframes.      Returns a datetime whose da, D1 file path uses folder_date from get_cache_date, not raw broker_now., Before D1 close, cache date is yesterday's date (from period_start)., After D1 close, cache date is today's date (from period_start)., H4 cache date includes the closing hour in cache_date.hour., D1 cache filename has no hour suffix — always d1-analysis.json., H4 filename includes the closing hour (e.g. h4-16-analysis.json). (+16 more)
+Cohesion: 0.11
+Nodes (20): get_cache_date(), Return the cache date for the given timeframes.      Returns a datetime whose da, Save OHLC bars to cache, same directory structure as analysis cache.      Args:, save_ohlc_cache(), H4 cache date includes the closing hour in cache_date.hour., D1 cache filename has no hour suffix — always d1-analysis.json., MTF cache path must end with mtf-analysis.json., MTF cache path must use the same date as D1 cache path. (+12 more)
 
 ### Community 27 - "TestGetCandlesBrokerNow"
-Cohesion: 0.18
-Nodes (10): Writes analysis results to JSON files in the data/ directory tree., ResultWriter, Path, Tests for ResultWriter., When there are errors but no fatal_error, status should be 'partial'., OHLC bars appear in the output JSON under 'ohlc'., SL/TP overlay is populated from decision when available., SL/TP overlay fields are None when there is no decision. (+2 more)
-
-### Community 28 - "TestGetPositions"
-Cohesion: 0.10
-Nodes (15): MonkeyPatch, Tests for the new synthesizer_cache_enabled Settings field.      RED phase: thes, synthesizer_cache_enabled defaults to True when no env var is set., TRADING_SYNTHESIZER_CACHE_ENABLED=true yields True., TRADING_SYNTHESIZER_CACHE_ENABLED=false yields False., TRADING_SYNTHESIZER_CACHE_ENABLED=0 yields False (bool coercion)., Invalid TRADING_SYNTHESIZER_CACHE_ENABLED value either raises or falls back to d, Tests for the new terminal_server_url and terminal_api_key Settings fields. (+7 more)
+Cohesion: 0.06
+Nodes (39): AnalysisResult, OHLCBar, OHLCData, BaseModel, Single OHLC bar for chart rendering., OHLC data keyed by timeframe., Entry, stop-loss and take-profit overlay for charts., Top-level pipeline output serialized to JSON for the web viewer. (+31 more)
 
 ### Community 29 - "._run_async"
-Cohesion: 0.06
-Nodes (30): EnvSettingsSource, _CommaDelimitedEnvSource, Any, BaseSettings, Path, Server-specific settings using Pydantic BaseSettings., Env source that parses comma-separated values for list fields.      pydantic-set, Split comma-separated env values for known list fields. (+22 more)
+Cohesion: 0.14
+Nodes (12): BaseSettings, Server configuration loaded from environment variables.      Uses Field(alias=.., Replace the default EnvSettingsSource with our comma-aware variant., WebSettings, CORS_ORIGINS env-var and constructor behaviour., Given CORS_ORIGINS=http://a.com,http://b.com, settings must         produce ["ht, Passing a list[str] directly must be accepted as-is., With no env var, the default must be used. (+4 more)
 
 ### Community 30 - "TestGetPendingOrders"
 Cohesion: 0.10
@@ -262,8 +252,8 @@ Cohesion: 0.12
 Nodes (15): Detected Test Engine and Commands, Excluded Scope, Existing Architecture and Responsibility Boundaries, Existing .opencode/plans/ Naming Pattern, External Dependencies and I/O Boundaries, Included Scope, Likely Acceptance Criteria, Likely Production Files to Modify (+7 more)
 
 ### Community 32 - "setup_logging"
-Cohesion: 0.19
-Nodes (12): OHLCBar, OHLCData, BaseModel, Single OHLC bar for chart rendering., OHLC data keyed by timeframe., Entry, stop-loss and take-profit overlay for charts., SLTPOverlay, Tests for output result models. (+4 more)
+Cohesion: 0.20
+Nodes (7): EnvSettingsSource, _CommaDelimitedEnvSource, Any, Server-specific settings using Pydantic BaseSettings., Env source that parses comma-separated values for list fields.      pydantic-set, Split comma-separated env values for known list fields., Tests for WebSettings environment-variable loading.  The _CommaDelimitedEnvSourc
 
 ### Community 33 - "MarketContextSummary"
 Cohesion: 0.16
@@ -278,8 +268,8 @@ Cohesion: 0.17
 Nodes (5): useRun(), FullResult, { result, loading, error }, route, router
 
 ### Community 36 - "TestRepeatedRuns"
-Cohesion: 0.17
-Nodes (7): Tests for RunService._wait_for_results()., RunService with minimal retry delays for fast tests., Scanner always returns empty → TimeoutError after max retries., Files available immediately — happy path, no retries needed., Verify retry_max_attempts parameter is honoured., retry_max_attempts is 5 by default., TestWaitForResults
+Cohesion: 0.12
+Nodes (10): _make_run_summary(), Tests for RunService._wait_for_results()., RunService with minimal retry delays for fast tests., Scanner returns empty on first N-1 calls, then succeeds., Scanner always returns empty → TimeoutError after max retries., Files available immediately — happy path, no retries needed., Verify retry_max_attempts parameter is honoured., retry_max_attempts is 5 by default. (+2 more)
 
 ### Community 37 - "_select_canonical_current_price"
 Cohesion: 0.26
@@ -290,8 +280,8 @@ Cohesion: 0.17
 Nodes (7): reasoning_effort is a create()-level kwarg, not an OpenAI() constructor arg., When reasoning_effort is set, it must appear in client.create() kwargs., When reasoning_effort is None, the key must be absent from create() kwargs., When reasoning_effort is explicitly None, key absent from create() kwargs., DeciderAgent passes reasoning_effort to create()., ReviewerAgent passes reasoning_effort to create()., TestReasoningEffortPassthrough
 
 ### Community 39 - "test_should_run_h1_different_period"
-Cohesion: 0.11
-Nodes (10): Test that argparse accepts multiple symbols via _build_parser., _build_parser accepts multiple symbols as nargs+., _build_parser is backward-compatible with single symbol., --output-dir option is accepted., --output-dir defaults to None., --model option is accepted., --base-url option is accepted., --log-level option defaults to INFO. (+2 more)
+Cohesion: 0.18
+Nodes (9): Path, ``resolved_cache_dir`` must behave consistently with the analyzer.      The anal, Compute the project root from the test file location.          Mirror the same t, Given ``analysis_cache_dir="data"``, the resolved path must be         ``<projec, Given an absolute path, ``resolved_cache_dir`` must return it         unchanged., The default ``analysis_cache_dir`` is ``"data"``, which must         resolve to, Setting ``TRADING_ANALYSIS_CACHE_DIR`` to a relative value must         resolve, Setting ``TRADING_ANALYSIS_CACHE_DIR`` to an absolute value must         be retu (+1 more)
 
 ### Community 40 - "graph.py"
 Cohesion: 0.17
@@ -306,8 +296,8 @@ Cohesion: 0.18
 Nodes (8): CaptureFixture, Tests for main.py entry point — Issue #13 error duplication., Duplicate error-printing blocks in main.py (Issue #13).      The first block (li, main.py should not log 'Total LLM cost' — graph.run() already does., Verify errors are printed exactly once, not twice.          mocks:         - Set, main.py must not log 'Total LLM cost' — that's graph.run()'s job., TestMainCostLogging, TestMainErrorDuplication
 
 ### Community 44 - "test_analyze_structure_fresh_saves_mtf_cache"
-Cohesion: 0.12
-Nodes (10): integration_client(), integration_data(), Path, Integration tests with real file I/O., Create a temporary data directory with fixture JSON files., Create app pointing at the mock data directory., Integration tests for GET /api/runs with real file I/O., Integration tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}. (+2 more)
+Cohesion: 0.18
+Nodes (8): integration_client(), integration_data(), Path, Integration tests with real file I/O., Create a temporary data directory with fixture JSON files., Create app pointing at the mock data directory., Integration tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}., TestGetRunIntegration
 
 ### Community 45 - "TestSettingsDescriptions"
 Cohesion: 0.22
@@ -330,12 +320,12 @@ Cohesion: 0.22
 Nodes (6): biasArrow, biasColor, emit, props, useRuns(), RunSummary
 
 ### Community 50 - "main.py"
-Cohesion: 0.10
-Nodes (14): DeciderAgent, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., ReviewerAgent, SynthesizerAgent must accept reasoning_effort param., When not specified, reasoning_effort defaults to None., DeciderAgent must accept reasoning_effort param., ReviewerAgent must accept reasoning_effort param. (+6 more)
+Cohesion: 0.14
+Nodes (12): main(), Main entry point.      Accepts one or more trading symbols, runs the analysis pi, DeciderAgent, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., ReviewerAgent, When not specified, reasoning_effort defaults to None., DeciderAgent must accept reasoning_effort param. (+4 more)
 
 ### Community 54 - "main.py"
-Cohesion: 0.13
-Nodes (12): Spawn Python subprocess to run analysis, enforce timeout,     capture stderr, an, RunService, Verify --model flag is absent when model is None., Process should be killed on timeout., Non-existent Python command should raise RuntimeError., Verify _read_results is called with the requested symbols., ResultScanner constructor is called at most once across         multiple run_ana, invalidate_cache is called after a successful run. (+4 more)
+Cohesion: 0.08
+Nodes (18): Retry reading result files with backoff.          After a subprocess completes t, Return the subset of *symbols* that have no run in the scanner., Walk the data directory via ResultScanner and return the         most recent res, Spawn Python subprocess to run analysis, enforce timeout,     capture stderr, an, Run analysis for the given symbols.          Spawns: python main.py --output-dir, Spawn the Python process and wait for completion.          On timeout the proces, RunService, Verify --model flag is absent when model is None. (+10 more)
 
 ### Community 55 - "test_result_pipeline_writes_json"
 Cohesion: 0.23
@@ -346,8 +336,8 @@ Cohesion: 0.17
 Nodes (7): End-to-end: reasoning_effort flows from constructor → create() kwargs., synthesize() must include reasoning_effort in create_with_completion kwargs when, Must NOT include reasoning_effort in create_with_completion kwargs when None., decide() must include reasoning_effort in create_with_completion() kwargs when s, review() must include reasoning_effort in create_with_completion() kwargs when s, Pre-built client: reasoning_effort still flows to create_with_completion()., TestReasoningEffortIntegration
 
 ### Community 57 - "TestOhlcCachePath"
-Cohesion: 0.11
-Nodes (12): mock_reviewer(), RED-first tests for orchestrator-level synthesizer cache integration.  Tests ver, Reset the ``_settings`` sentinel in ``synthesizer_cache`` before each test., When no cache file exists for (symbol, day).      The orchestrator must call ``s, Cache miss \u2192 the result is persisted via ``save_synthesis``.          RED:, When ``state.fatal_error`` is set, ``_synthesize_context`` short-circuits., fatal_error set \u2192 returns {} without checking cache or calling LLM., fatal_error set \u2192 cache is NOT written even if synthesizer runs.          N (+4 more)
+Cohesion: 0.13
+Nodes (9): mock_reviewer(), RED-first tests for orchestrator-level synthesizer cache integration.  Tests ver, Reset the ``_settings`` sentinel in ``synthesizer_cache`` before each test., When ``state.fatal_error`` is set, ``_synthesize_context`` short-circuits., fatal_error set \u2192 returns {} without checking cache or calling LLM., fatal_error set \u2192 cache is NOT written even if synthesizer runs.          N, reset_synthesizer_cache_settings(), TestFatalError (+1 more)
 
 ### Community 58 - "test_h4_candle_period_at_boundary"
 Cohesion: 0.29
@@ -370,48 +360,32 @@ Cohesion: 0.18
 Nodes (9): BaseModel, Server-specific Pydantic models., Request body for POST /api/run., Summary of a single analysis run, matching Node.js RunSummary shape., RunRequest, RunSummary, Route-level tests with mocked scanner/runner., Sample RunSummary for route tests. (+1 more)
 
 ### Community 81 - ".write"
-Cohesion: 0.24
-Nodes (9): load_ohlc_cache(), OHLCBar, Save OHLC bars to cache, same directory structure as analysis cache.      Args:, Load cached OHLC bars from disk if available.      Args:         timeframe: "D1", save_ohlc_cache(), Path, Saved JSON file contains exactly the expected data., Saving an empty bar list should produce an empty JSON array. (+1 more)
-
-### Community 82 - "test_should_run_d1_after_close_with_cache"
-Cohesion: 0.23
-Nodes (5): AnalysisResult, Top-level pipeline output serialized to JSON for the web viewer., Critical invariant: entry_authorized must always be False., Full-featured AnalysisResult with all optional fields set., TestAnalysisResult
+Cohesion: 0.33
+Nodes (4): When no cache file exists for (symbol, day).      The orchestrator must call ``s, Cache miss \u2192 ``synthesizer.synthesize`` is called., Cache miss \u2192 the result is persisted via ``save_synthesis``.          RED:, TestCacheMiss
 
 ### Community 84 - "setup_logging"
-Cohesion: 0.14
-Nodes (10): RunService — port of the TypeScript runner service.  Spawns the Python analyzer, _make_run_summary(), _mock_process(), Unit tests for RunService., Non-zero exit code should raise RuntimeError with stderr., Create a RunService with test defaults., Create a mock asyncio subprocess., Scanner returns empty on first N-1 calls, then succeeds. (+2 more)
+Cohesion: 0.50
+Nodes (3): Request, RequestResponseEndpoint, Response
 
 ### Community 85 - "test_h1_candle_period"
 Cohesion: 0.12
 Nodes (15): BiasLevel, DecisionAction, Structural bias levels., Review verdict from reviewer agent., ReviewVerdict, TestReviewVerdict, mock_reviewer(), TestMaxReviewAttempts (+7 more)
 
-### Community 86 - "TestAgentApiKey"
-Cohesion: 0.24
-Nodes (6): Any, datetime, OHLCBar, Path, Write result JSON to disk. Returns the file path written.          Args:, Compute data/YYYY/MM/DD/SYMBOL/result-HH-MM.json path.
-
-### Community 87 - "test_result_pipeline_writes_json"
-Cohesion: 0.20
-Nodes (5): Retry reading result files with backoff.          After a subprocess completes t, Return the subset of *symbols* that have no run in the scanner., Walk the data directory via ResultScanner and return the         most recent res, Run analysis for the given symbols.          Spawns: python main.py --output-dir, Spawn the Python process and wait for completion.          On timeout the proces
-
 ### Community 88 - "send_trade_notification"
 Cohesion: 0.11
 Nodes (11): Any, Telegram notification sender — best-effort, never blocks the pipeline., Replace the bot token in a Telegram API URL with ``***``., Send a compact trade notification to Telegram.      Best-effort: logs warning on, _sanitize_url(), send_trade_notification(), Tests for telegram_sender module., Return *True* when the token (``test-token``) does **not**         appear in *pa (+3 more)
 
-### Community 91 - "test_result_pipeline_writes_json"
-Cohesion: 0.33
-Nodes (6): Path, End-to-end integration test for the result JSON pipeline., Pipeline with fatal error produces valid error result., Full pipeline simulation writes valid JSON result., test_result_pipeline_writes_json(), test_result_with_fatal_error()
-
 ### Community 98 - "server/tests/conftest.py"
-Cohesion: 0.10
-Nodes (18): client(), client_with_auth(), mock_data_dir(), Any, Path, RunSummary, Shared fixtures for server tests., Create a temporary data directory with fixture JSON files. (+10 more)
+Cohesion: 0.08
+Nodes (22): RunService — port of the TypeScript runner service.  Spawns the Python analyzer, ResultScanner — port of the TypeScript scanner service., client_with_auth(), mock_data_dir(), Path, RunSummary, Shared fixtures for server tests., Create a ResultScanner pointing at the mock data directory. (+14 more)
 
 ### Community 103 - "test_d1_candle_period_before_close"
 Cohesion: 0.17
 Nodes (3): Tests for POST /api/run., Symbols must be 1-20 alphanumeric characters., TestPostRun
 
 ### Community 105 - "create_app"
-Cohesion: 0.13
-Nodes (13): BaseHTTPMiddleware, FastAPI, Request, RequestResponseEndpoint, Response, create_app(), FastAPI application entry point — port of the TypeScript Express server., Create and configure the FastAPI application. (+5 more)
+Cohesion: 0.15
+Nodes (12): BaseHTTPMiddleware, FastAPI, create_app(), FastAPI application entry point — port of the TypeScript Express server., Create and configure the FastAPI application., AuthMiddleware, Authentication middleware — validates X-API-Key header., Validates the ``X-API-Key`` header against a configured API key.      When ``api (+4 more)
 
 ### Community 107 - "TestListRunsIntegration"
 Cohesion: 0.50
@@ -424,22 +398,22 @@ Nodes (7): _canonical_structure_analysis(), Build a structure_analysis fixture w
 ## Knowledge Gaps
 - **136 isolated node(s):** `trading-ai-agent`, `trading-server`, `*.vue`, `name`, `version` (+131 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **16 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **15 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `SlidingWindowRateLimiter` connect `src/data/__init__.py` to `create_app`, `BiasLevel`?**
-  _High betweenness centrality (0.209) - this node is a cross-community bridge._
 - **Why does `TestErrorLogging` connect `BiasLevel` to `src/data/__init__.py`?**
-  _High betweenness centrality (0.203) - this node is a cross-community bridge._
-- **Why does `AgentState` connect `tests/calendar/__init__.py` to `setup_logging`, `DataSource`, `AgentState`, `Evaluator`, `TestCostTracking`, `DecisionOutput`, `trading-ai-agent`, `TestFatalError`, `test_h1_candle_period`, `TestOhlcCachePath`, `test_h4_candle_period_at_boundary`?**
-  _High betweenness centrality (0.202) - this node is a cross-community bridge._
+  _High betweenness centrality (0.195) - this node is a cross-community bridge._
+- **Why does `SlidingWindowRateLimiter` connect `src/data/__init__.py` to `create_app`, `BiasLevel`?**
+  _High betweenness centrality (0.194) - this node is a cross-community bridge._
+- **Why does `create_app()` connect `create_app` to `test_analyze_structure_fresh_saves_mtf_cache`, `src/data/__init__.py`, `main.py`, `TerminalApiError`, `._run_async`?**
+  _High betweenness centrality (0.193) - this node is a cross-community bridge._
 - **Are the 72 inferred relationships involving `MarketContextSummary` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
   _`MarketContextSummary` has 72 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 56 inferred relationships involving `AgentState` (e.g. with `Settings` and `DecisionOutput`) actually correct?**
   _`AgentState` has 56 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 60 inferred relationships involving `DecisionOutput` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
   _`DecisionOutput` has 60 INFERRED edges - model-reasoned connections that need verification._
-- **Are the 43 inferred relationships involving `CostTracker` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
-  _`CostTracker` has 43 INFERRED edges - model-reasoned connections that need verification._
+- **Are the 56 inferred relationships involving `ReviewVerdict` (e.g. with `DeciderAgent` and `ReviewerAgent`) actually correct?**
+  _`ReviewVerdict` has 56 INFERRED edges - model-reasoned connections that need verification._

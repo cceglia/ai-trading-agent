@@ -2,11 +2,16 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import json
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from fastapi.testclient import TestClient
 
+from src.main import create_app
 from src.models import RunSummary
 from src.runner import RunService
 from src.scanner import ResultScanner
@@ -29,7 +34,7 @@ def sample_run_summary() -> RunSummary:
 
 
 @pytest.fixture
-def sample_full_result() -> dict:
+def sample_full_result() -> dict[str, Any]:
     """Sample FullResult matching AnalysisResult.model_dump(mode='json') shape."""
     return {
         "symbol": "XAUUSD",
@@ -115,3 +120,51 @@ def runner() -> RunService:
         data_dir="/app/data",
         timeout_ms=600_000,
     )
+
+
+# --- Auth & rate-limit test helpers ---
+
+
+@pytest.fixture
+def mock_scanner():
+    """Mock ResultScanner."""
+    mock = MagicMock()
+    mock.list_runs = MagicMock(return_value=[])
+    mock.get_run = MagicMock(return_value=None)
+    return mock
+
+
+@pytest.fixture
+def mock_runner():
+    """Mock RunService."""
+    mock = MagicMock()
+    mock.run_analysis = AsyncMock(return_value=[])
+    return mock
+
+
+@pytest.fixture
+def client(mock_scanner, mock_runner):
+    """Create a test client with mocked scanner and runner (no API key)."""
+    with (
+        patch("src.main.ResultScanner", return_value=mock_scanner),
+        patch("src.main.RunService", return_value=mock_runner),
+    ):
+        app = create_app()
+    return TestClient(app), mock_scanner, mock_runner
+
+
+@pytest.fixture
+def client_with_auth(mock_scanner, mock_runner, monkeypatch):
+    """Create a test client with an API key configured.
+
+    The key is set via monkeypatch so ``WebSettings()`` reads it.
+    """
+    monkeypatch.setenv("TRADING_API_KEY", "test-secret-key")
+    from src.main import create_app as _create_app
+
+    with (
+        patch("src.main.ResultScanner", return_value=mock_scanner),
+        patch("src.main.RunService", return_value=mock_runner),
+    ):
+        app = _create_app()
+    return TestClient(app), mock_scanner, mock_runner

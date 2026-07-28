@@ -2,19 +2,24 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.middleware.auth import AuthMiddleware
+from src.middleware.ratelimit import SlidingWindowRateLimiter
 from src.models import RunRequest, RunSummary
 from src.runner import RunService
 from src.scanner import ResultScanner
 from src.settings import WebSettings
+
+logger = logging.getLogger(__name__)
 
 # Symbol validation regex — matches Node.js behavior
 _SYMBOL_RE = re.compile(r"^[A-Z0-9]{1,20}$", re.IGNORECASE)
@@ -32,14 +37,23 @@ def create_app() -> FastAPI:
 
     app = FastAPI(title="Trading Analysis Server", lifespan=lifespan)
 
+    # Rate limiter instance (shared across requests)
+    rate_limiter = SlidingWindowRateLimiter(
+        max_requests=settings.rate_limit_max,
+        window_seconds=settings.rate_limit_window,
+    )
+
     # CORS middleware
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-API-Key"],
     )
+
+    # Auth middleware (conditional — no-op when api_key is empty)
+    app.add_middleware(AuthMiddleware, api_key=settings.api_key)  # type: ignore[arg-type]
 
     # Create scanner and runner instances
     scanner = ResultScanner(settings.resolved_cache_dir)
@@ -62,7 +76,7 @@ def create_app() -> FastAPI:
                 symbol=symbol, from_date=from_date, to_date=to_date
             )
         except Exception as e:
-            # Matching Node.js: generic error message
+            logger.exception("Failed to list runs")
             raise RuntimeError("Failed to list runs") from e
 
     @app.get("/api/runs/{symbol}/{year}/{month}/{day}/{file}")
@@ -81,10 +95,16 @@ def create_app() -> FastAPI:
         except HTTPException:
             raise
         except Exception as e:
+            logger.exception("Failed to get run")
             raise RuntimeError("Failed to get run") from e
 
     @app.post("/api/run")
-    async def run_analysis(body: RunRequest) -> list[dict]:
+    async def run_analysis(body: RunRequest, request: Request) -> list[dict]:
+        # Rate limiting check (keyed by client IP)
+        client_key = request.client.host if request.client else "unknown"
+        if not rate_limiter.is_allowed(client_key):
+            raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
         # Validate symbols
         if not body.symbols:
             raise HTTPException(
@@ -103,11 +123,8 @@ def create_app() -> FastAPI:
 
         try:
             return await runner.run_analysis(symbols=body.symbols, model=body.model)
-        except TimeoutError as e:
-            raise RuntimeError(str(e)) from e
-        except RuntimeError:
-            raise
         except Exception as e:
+            logger.exception("Analysis failed for symbols: %s", body.symbols)
             raise RuntimeError(str(e)) from e
 
     # --- Error handlers ---
@@ -116,7 +133,7 @@ def create_app() -> FastAPI:
         return JSONResponse(status_code=500, content={"error": str(exc)})
 
     @app.exception_handler(HTTPException)
-    async def http_exception_handler(request, exc):
+    async def http_exception_handler(_request, exc):
         return JSONResponse(status_code=exc.status_code, content={"error": exc.detail})
 
     # --- Static files (production) ---

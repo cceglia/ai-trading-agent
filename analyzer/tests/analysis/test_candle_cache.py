@@ -562,3 +562,33 @@ def test_get_settings_respects_monkeypatch(monkeypatch):
     # Re-get settings — must pick up the new env var
     s2 = _get_settings()
     assert s2.d1_close_time == "19:00"
+
+
+# =============================================================================
+# RED Tests for reload_settings (Task: TASK-SINGLETON)
+# =============================================================================
+
+
+def test_reload_settings_creates_new_instance():
+    """reload_settings causes _get_settings to return a different object."""
+    from src.analysis.candle_cache import _get_settings, reload_settings
+
+    s1 = _get_settings()
+    reload_settings()
+    s2 = _get_settings()
+    assert s1 is not s2
+
+
+def test_reload_settings_updates_values(monkeypatch):
+    """After reload_settings, _get_settings picks up new env var values."""
+    from src.analysis.candle_cache import _get_settings, reload_settings
+
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "17:00")
+    s1 = _get_settings()
+    assert s1.d1_close_time == "17:00"
+
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "19:00")
+    reload_settings()
+
+    s2 = _get_settings()
+    assert s2.d1_close_time == "19:00"

@@ -5,11 +5,19 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from datetime import datetime
 from typing import Any
 
 from config.settings import Settings
+from src.analysis.structure_analyzer import MarketStructureEngine
+from src.calendar.forexfactory import ForexFactoryCalendar
+from src.data.terminal_data_provider import TerminalDataProvider
+from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
 from src.decision.cost_tracker import CostTracker
 from src.logging_config import setup_logging
+from src.notification.telegram_sender import send_trade_notification
+from src.orchestrator.graph import TradingGraph
+from src.output.result_writer import ResultWriter
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +118,6 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     # Show reasoning snippets
     ctx_reasoning = _format_field(context, "reasoning") if context else None
     if ctx_reasoning and ctx_reasoning != "N/A":
-        # Truncate long reasoning to first 120 chars
         short = ctx_reasoning[:120] + "…" if len(ctx_reasoning) > 120 else ctx_reasoning
         print(f"    Reasoning  : {short}")
 
@@ -137,18 +144,18 @@ def _build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main() -> None:
-    """Main entry point.
+def _parse_and_configure_settings(args: argparse.Namespace) -> Settings:
+    """Parse CLI args into a configured Settings instance.
 
-    Accepts one or more trading symbols, runs the analysis pipeline for each,
-    and prints a compact summary to stdout. When ``--output-dir`` is provided,
-    also writes full JSON results to disk via :class:`ResultWriter`.
+    Applies CLI overrides (model, base_url) and warns about missing
+    Telegram credentials when ``--telegram`` is set.
+
+    Args:
+        args: Parsed CLI arguments.
+
+    Returns:
+        Configured Settings instance.
     """
-    parser = _build_parser()
-    args = parser.parse_args()
-
-    setup_logging(args.log_level)
-
     settings = Settings()
     if args.model:
         settings.openai_model = args.model
@@ -161,144 +168,257 @@ def main() -> None:
             "TRADING_TELEGRAM_CHAT_ID is empty"
         )
 
+    return settings
+
+
+def _create_agents(
+    settings: Settings,
+    cost_tracker: CostTracker,
+) -> Any:
+    """Create the three LLM agents used in the pipeline.
+
+    Args:
+        settings: Application settings.
+        cost_tracker: Cost tracker instance.
+
+    Returns:
+        Tuple of (synthesizer, decider, reviewer).
+    """
+    api_key = settings.openai_api_key or None
+    base_url = settings.openai_base_url or None
+    reasoning_effort = settings.openai_reasoning_effort or None
+
+    synthesizer = SynthesizerAgent(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=base_url,
+        reasoning_effort=reasoning_effort,
+        cost_tracker=cost_tracker,
+    )
+    decider = DeciderAgent(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=base_url,
+        reasoning_effort=reasoning_effort,
+        cost_tracker=cost_tracker,
+    )
+    reviewer = ReviewerAgent(
+        model=settings.openai_model,
+        api_key=api_key,
+        base_url=base_url,
+        reasoning_effort=reasoning_effort,
+        cost_tracker=cost_tracker,
+    )
+    return synthesizer, decider, reviewer
+
+
+def _initialize_pipeline(
+    settings: Settings,
+    cost_tracker: CostTracker,
+    output_dir: str | None = None,
+) -> Any:
+    """Create the full analysis pipeline (data providers, agents, graph).
+
+    Args:
+        settings: Application settings.
+        cost_tracker: Cost tracker instance.
+        output_dir: Optional output directory for JSON results.
+
+    Returns:
+        Tuple of (compiled TradingGraph, optional ResultWriter).
+    """
+    data_provider = TerminalDataProvider(
+        server_url=settings.terminal_server_url,
+        api_key=settings.terminal_api_key,
+    )
+    structure_analyzer = MarketStructureEngine()
+    calendar_provider = ForexFactoryCalendar()
+
+    synthesizer, decider, reviewer = _create_agents(settings, cost_tracker)
+
+    graph = TradingGraph(
+        data_provider=data_provider,
+        structure_analyzer=structure_analyzer,
+        calendar_provider=calendar_provider,
+        synthesizer=synthesizer,
+        decider=decider,
+        reviewer=reviewer,
+    )
+
+    writer = ResultWriter(output_dir) if output_dir else None
+    return graph, writer
+
+
+def _write_result(
+    symbol: str,
+    result: dict[str, Any],
+    writer: Any,
+) -> None:
+    """Write analysis result to disk via the ResultWriter.
+
+    Falls back to ``datetime.now()`` when ``broker_now`` is missing
+    from the result dict.
+
+    Args:
+        symbol: Trading symbol.
+        result: Analysis result dict.
+        writer: ResultWriter instance, or ``None`` to skip writing.
+    """
+    if writer is None:
+        return
+
+    broker_now = result.get("broker_now")
+    if broker_now is None:
+        logger.warning(
+            "No broker_now in result for %s — using current time",
+            symbol,
+        )
+        broker_now = datetime.now()
+
+    structure = result.get("structure_analysis") or {}
+    ohlc = structure.get("_ohlc_bars") or {}
+    writer.write(symbol, result, ohlc, broker_now)
+
+
+def _send_telegram_notification(
+    symbol: str,
+    result: dict[str, Any],
+    settings: Settings,
+) -> None:
+    """Send a Telegram notification for an approved trade setup.
+
+    Only sends when the decision is ``buy_setup`` or ``sell_setup``
+    **and** the review has been approved.
+
+    Args:
+        symbol: Trading symbol.
+        result: Analysis result dict.
+        settings: Application settings (for Telegram credentials).
+    """
+    decision_raw = result.get("decision")
+    context_raw = result.get("market_context", result.get("context"))
+    review_raw = result.get("review")
+
+    decision = (
+        decision_raw.model_dump() if hasattr(decision_raw, "model_dump") else (decision_raw or {})
+    )
+    context = (
+        context_raw.model_dump() if hasattr(context_raw, "model_dump") else (context_raw or {})
+    )
+    review = review_raw.model_dump() if hasattr(review_raw, "model_dump") else (review_raw or {})
+
+    if review.get("approved") and decision.get("action") in (
+        "buy_setup",
+        "sell_setup",
+    ):
+        send_trade_notification(
+            symbol=symbol,
+            decision=decision,
+            context=context,
+            review=review,
+            web_ui_base_url=settings.web_ui_base_url,
+            bot_token=settings.telegram_bot_token,
+            chat_id=settings.telegram_chat_id,
+        )
+
+
+def _run_single_symbol(
+    graph: Any,
+    symbol: str,
+    settings: Settings,
+    writer: Any,
+    telegram_enabled: bool,
+) -> tuple[str, str, dict[str, Any]]:
+    """Run the full analysis pipeline for a single symbol.
+
+    Args:
+        graph: Compiled TradingGraph instance.
+        symbol: Trading symbol to analyse.
+        settings: Application settings.
+        writer: Optional ResultWriter for persisting results.
+        telegram_enabled: Whether ``--telegram`` was set on CLI.
+
+    Returns:
+        Tuple of ``(symbol, status, data)`` where status is ``"success"``
+        or ``"error"``.
+    """
+    try:
+        logger.info("Running analysis for %s", symbol)
+        result = graph.run(symbol)
+
+        _write_result(symbol, result, writer)
+
+        if telegram_enabled:
+            _send_telegram_notification(symbol, result, settings)
+
+        logger.info("Analysis complete for %s", symbol)
+        return symbol, "success", result
+
+    except Exception as e:
+        logger.error("Failed for %s: %s", symbol, e)
+        return symbol, "error", {"fatal_error": str(e)}
+
+
+def _print_summary(results: list[tuple[str, str, dict[str, Any]]]) -> None:
+    """Print the formatted analysis summary for all symbols.
+
+    Args:
+        results: List of ``(symbol, status, data)`` tuples.
+    """
+    print(f"\n{'=' * 60}")
+    print(f"  ANALYSIS SUMMARY — {len(results)} symbol(s)")
+    print(f"{'=' * 60}")
+
+    for symbol, status, data in results:
+        if status == "error":
+            err_msg = data.get("fatal_error", "Unknown error")
+            print(f"\n  ❌ {symbol}: FAILED — {err_msg}")
+            continue
+
+        _print_symbol_summary(symbol, data)
+
+    print(f"\n{'=' * 60}\n")
+
+
+def _run_pipeline(
+    settings: Settings,
+    symbols: list[str],
+    output_dir: str | None,
+    telegram_enabled: bool,
+) -> None:
+    """Run the full analysis pipeline for all symbols.
+
+    Args:
+        settings: Application settings.
+        symbols: Trading symbols to analyse.
+        output_dir: Optional output directory for JSON results.
+        telegram_enabled: Whether ``--telegram`` was set on CLI.
+    """
+    cost_tracker = CostTracker(pricing=settings.model_pricing)
+    graph, writer = _initialize_pipeline(settings, cost_tracker, output_dir)
+
+    results: list[tuple[str, str, dict[str, Any]]] = []
+    for symbol in symbols:
+        result = _run_single_symbol(graph, symbol, settings, writer, telegram_enabled)
+        results.append(result)
+
+    _print_summary(results)
+
+
+def main() -> None:
+    """Main entry point.
+
+    Parses CLI arguments, initialises the analysis pipeline, runs
+    analysis for each requested symbol, and prints a compact summary.
+    """
+    args = _build_parser().parse_args()
+    setup_logging(args.log_level)
+    settings = _parse_and_configure_settings(args)
+
     logger.info("Starting Trading AI Agent for symbols: %s", ", ".join(args.symbols))
 
     try:
-        from src.analysis.structure_analyzer import MarketStructureEngine
-        from src.calendar.forexfactory import ForexFactoryCalendar
-        from src.data.terminal_data_provider import TerminalDataProvider
-        from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
-        from src.orchestrator.graph import TradingGraph
-        from src.output.result_writer import ResultWriter
-
-        cost_tracker = CostTracker(pricing=settings.model_pricing)
-
-        data_provider = TerminalDataProvider(
-            server_url=settings.terminal_server_url,
-            api_key=settings.terminal_api_key,
-        )
-        structure_analyzer = MarketStructureEngine()
-        calendar_provider = ForexFactoryCalendar()
-
-        # Convert empty strings to None (agents expect str | None)
-        api_key = settings.openai_api_key or None
-        base_url = settings.openai_base_url or None
-        reasoning_effort = settings.openai_reasoning_effort or None
-
-        synthesizer = SynthesizerAgent(
-            model=settings.openai_model,
-            api_key=api_key,
-            base_url=base_url,
-            reasoning_effort=reasoning_effort,
-            cost_tracker=cost_tracker,
-        )
-        decider = DeciderAgent(
-            model=settings.openai_model,
-            api_key=api_key,
-            base_url=base_url,
-            reasoning_effort=reasoning_effort,
-            cost_tracker=cost_tracker,
-        )
-        reviewer = ReviewerAgent(
-            model=settings.openai_model,
-            api_key=api_key,
-            base_url=base_url,
-            reasoning_effort=reasoning_effort,
-            cost_tracker=cost_tracker,
-        )
-
-        graph = TradingGraph(
-            data_provider=data_provider,
-            structure_analyzer=structure_analyzer,
-            calendar_provider=calendar_provider,
-            synthesizer=synthesizer,
-            decider=decider,
-            reviewer=reviewer,
-        )
-
-        writer = ResultWriter(args.output_dir) if args.output_dir else None
-        results: list[tuple[str, str, dict[str, Any]]] = []
-
-        for symbol in args.symbols:
-            try:
-                logger.info("Running analysis for %s", symbol)
-                result = graph.run(symbol)
-
-                if writer:
-                    broker_now = result.get("broker_now")
-                    if broker_now is None:
-                        logger.warning(
-                            "No broker_now in result for %s — using current time",
-                            symbol,
-                        )
-                        from datetime import datetime
-
-                        broker_now = datetime.now()
-
-                    structure = result.get("structure_analysis") or {}
-                    ohlc = structure.get("_ohlc_bars") or {}
-                    writer.write(symbol, result, ohlc, broker_now)
-
-                results.append((symbol, "success", result))
-                logger.info("Analysis complete for %s", symbol)
-
-                if args.telegram:
-                    from src.notification.telegram_sender import send_trade_notification
-
-                    decision_raw = result.get("decision")
-                    context_raw = result.get("market_context", result.get("context"))
-                    review_raw = result.get("review")
-
-                    decision = (
-                        decision_raw.model_dump()
-                        if hasattr(decision_raw, "model_dump")
-                        else (decision_raw or {})
-                    )
-                    context = (
-                        context_raw.model_dump()
-                        if hasattr(context_raw, "model_dump")
-                        else (context_raw or {})
-                    )
-                    review = (
-                        review_raw.model_dump()
-                        if hasattr(review_raw, "model_dump")
-                        else (review_raw or {})
-                    )
-
-                    if review.get("approved") and decision.get("action") in (
-                        "buy_setup",
-                        "sell_setup",
-                    ):
-                        send_trade_notification(
-                            symbol=symbol,
-                            decision=decision,
-                            context=context,
-                            review=review,
-                            web_ui_base_url=settings.web_ui_base_url,
-                            bot_token=settings.telegram_bot_token,
-                            chat_id=settings.telegram_chat_id,
-                        )
-
-            except Exception as e:
-                logger.error("Failed for %s: %s", symbol, e)
-                results.append((symbol, "error", {"fatal_error": str(e)}))
-                continue
-
-        # ── Print compact summary ──────────────────────────────────────
-        print(f"\n{'=' * 60}")
-        print(f"  ANALYSIS SUMMARY — {len(results)} symbol(s)")
-        print(f"{'=' * 60}")
-
-        for symbol, status, data in results:
-            if status == "error":
-                err_msg = data.get("fatal_error", "Unknown error")
-                print(f"\n  ❌ {symbol}: FAILED — {err_msg}")
-                continue
-
-            _print_symbol_summary(symbol, data)
-
-        print(f"\n{'=' * 60}\n")
-
+        _run_pipeline(settings, args.symbols, args.output_dir, args.telegram)
     except Exception as e:
         logger.error("Analysis failed: %s", e)
         print(f"Error: {e}")

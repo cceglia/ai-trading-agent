@@ -8,6 +8,13 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def _sanitize_url(url: str, token: str) -> str:
+    """Replace the bot token in a Telegram API URL with ``***``."""
+    if token:
+        return url.replace(token, "***")
+    return url
+
+
 def send_trade_notification(
     symbol: str,
     decision: dict[str, Any],
@@ -54,6 +61,7 @@ def send_trade_notification(
     )
 
     url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    safe_url = _sanitize_url(url, bot_token)
     payload = {"chat_id": chat_id, "text": message}
 
     try:
@@ -61,4 +69,9 @@ def send_trade_notification(
         resp.raise_for_status()
         logger.info("Telegram notification sent for %s", symbol)
     except Exception as e:
-        logger.warning("Failed to send Telegram notification for %s: %s", symbol, type(e).__name__)
+        logger.warning(
+            "Failed to send Telegram notification for %s: %s | URL: %s",
+            symbol,
+            type(e).__name__,
+            safe_url,
+        )
