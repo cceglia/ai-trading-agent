@@ -609,6 +609,90 @@ The test suite contains **356 tests** covering:
 
 All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked in tests.
 
+## Code Review Analysis
+
+A comprehensive code review identified **17 issues** across the two-package monorepo —
+`analyzer/` (trading pipeline) and `server/` (FastAPI web API) — plus Dockerfile.prod and
+test files. Issues span security, performance, correctness, and maintainability. No feature
+additions.
+
+### Issues Summary
+
+| # | Severity | Issue |
+|---|---|---|
+| 1 | Critical | **Missing Server Dependencies** — `server/pyproject.toml` lists only fastapi and uvicorn; pydantic imports fail without analyzer's transitive install |
+| 2 | Critical | **No Authentication or Rate Limiting on POST /api/run** — open spending endpoint; each invocation triggers up to 6 LLM calls per symbol |
+| 3 | Critical | **Token Leakage Risk in Telegram URL** — bot token embedded in URL string passed to `requests.post`; could appear in debug logs |
+| 4 | High | **Post-Analysis Race Condition on File Read** — `_read_results` immediately reads result files after subprocess exits; no filesystem flush guarantee |
+| 5 | High | **os.walk Scans Entire Directory on Every Request** — `list_runs()` traverses full data tree and parses every `.json` before applying filters |
+| 6 | High | **Broad Exception Catching Obscures Real Errors** — bare `except Exception` raises generic `RuntimeError` with no diagnostic detail |
+| 7 | Medium | **CORS Configuration Too Permissive** — allows all methods (`["*"]`) and headers (`["*"]`) |
+| 8 | Medium | **Runner Creates Scanner Instance on Every Call** — `_read_results` allocates a new `ResultScanner` each time, triggering a full directory walk |
+| 9 | Medium | **Settings Duplication Between Analyzer and Server** — `analysis_cache_dir` defined in both packages with different path-resolution behavior |
+| 10 | Medium | **_normalize_cors Validator Duplicates _CommaDelimitedEnvSource Logic** — comma-splitting implemented in both places; validator is redundant |
+| 11 | Medium | **Permanent Settings() Singleton in candle_cache** — module-level `_settings` singleton must be manually invalidated in tests; no refresh mechanism |
+| 12 | Medium | **Inconsistent Exception Chaining in POST /api/run** — three overlapping branches all produce `RuntimeError`; needlessly complex |
+| 13 | Low | **Long main() Function** — 165 lines handling argument parsing, initialization, per-symbol orchestration, output writing, Telegram notifications |
+| 14 | Low | **Unused request Parameter in Exception Handler** — `request` parameter unused in `http_exception_handler` |
+| 15 | Low | **Deferred Imports Make Dependency Errors Opaque** — imports inside try block cause `ImportError` to be caught by same handler as runtime failures |
+| 16 | Low | **Type Hint: sample_full_result Fixture Returns dict Without Generic** — should be `dict[str, Any]` |
+| 17 | Low | **Test Naming Inconsistency** — `test_sellsend_message` missing underscore vs `test_sends_buy_message` |
+
+### Project Facts and Conventions
+
+- **Two-package monorepo**: `analyzer/` (trading-ai-agent, pip-installable) + `server/` (trading-server, pip-installable)
+- **Advisory-only**: `entry_authorized` must always be `False` — never executes trades
+- **TRADING_ env prefix**: All settings use `TRADING_` prefix via `pydantic-settings`
+- **Protocol DI**: Dependencies injected via protocols in `analyzer/src/decision/protocols.py`
+- **pytest** with `asyncio_mode = "auto"` (both packages)
+- **mypy strict mode** for analyzer, **ruff** lint+format (line-length 100, target py311)
+- **Python 3.11+ required**
+- **Module-level `_settings` singleton pattern** in `candle_cache.py` and `synthesizer_cache.py` — requires manual reset in tests
+
+### Architecture Diagram
+
+```
+┌──────────────────────────────────────────────────────────────────────┐
+│                          Project Root                                │
+│                                                                      │
+│  ┌─────────────────────────┐     ┌───────────────────────────────┐   │
+│  │       analyzer/          │     │         server/                │   │
+│  │  (trading-ai-agent)      │     │  (trading-server, FastAPI)     │   │
+│  │                         │     │                               │   │
+│  │  main.py — CLI entry    │     │  src/main.py — FastAPI app    │   │
+│  │  src/decision/agents.py │ ◄── │  src/runner.py — spawns       │   │
+│  │  src/orchestrator/      │subpr │  analyzer as subprocess       │   │
+│  │  src/analysis/          │cess  │  src/scanner.py — reads       │   │
+│  │  src/calendar/          │     │  result files from disk        │   │
+│  │  src/data/              │     │  src/settings.py — WebSettings │   │
+│  │  src/notification/      │     │  src/models.py — Pydantic dtos │   │
+│  │  config/settings.py ◄───┼─────┤  tests/                       │   │
+│  │  tests/                 │shared│                               │   │
+│  └─────────────────────────┘ env  └───────────────────────────────┘   │
+│                                   var                                │
+│  ┌──────────────────────┐     ┌──────────────────────────────┐      │
+│  │    Dockerfile.prod   │─────│  ui/ (Vue 3 SPA, static)     │      │
+│  └──────────────────────┘     └──────────────────────────────┘      │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+- **Dependency direction**: `server/` depends on `analyzer/` at runtime (spawns subprocess, reads its output). No import dependency.
+- **Shared config surface**: `TRADING_ANALYSIS_CACHE_DIR` is the single shared env var between both packages.
+- **Runner is the bridge**: `RunService._spawn_process` → analyzer subprocess → `_read_results` → `ResultScanner` to return results to API caller.
+
+### External Dependencies and I/O Boundaries
+
+| Dependency | Used By | Type |
+|---|---|---|
+| OpenAI API | `analyzer/src/decision/agents.py` | Network (HTTPS) |
+| MetaTrader 5 MCP server | `analyzer/src/data/terminal_data_provider.py` | Local network (MCP over HTTP) |
+| ForexFactory (BeautifulSoup) | `analyzer/src/calendar/forexfactory.py` | Network (HTTPS, web scraping) |
+| Telegram Bot API | `analyzer/src/notification/telegram_sender.py` | Network (HTTPS) |
+| Filesystem (result cache) | `analyzer/src/output/result_writer.py`, `analyzer/src/analysis/candle_cache.py`, `server/src/scanner.py` | Local disk |
+| Python subprocess | `server/src/runner.py` | OS process spawn |
+| FastAPI / Uvicorn | `server/src/main.py` | Web server |
+| LLM (instructor + openai) | `analyzer/src/decision/agents.py` | Network (HTTPS) |
+
 ## Development
 
 ### Commands
