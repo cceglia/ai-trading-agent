@@ -31,24 +31,6 @@ class TestArgparseMultiSymbol:
             args = parser.parse_args()
             assert args.symbols == ["XAUUSD"]
 
-    def test_has_output_dir_option(self):
-        """--output-dir option is accepted."""
-        import main
-
-        parser = main._build_parser()
-        with patch.object(sys, "argv", ["main.py", "XAUUSD", "--output-dir", "data"]):
-            args = parser.parse_args()
-            assert args.output_dir == "data"
-
-    def test_output_dir_default_none(self):
-        """--output-dir defaults to None."""
-        import main
-
-        parser = main._build_parser()
-        with patch.object(sys, "argv", ["main.py", "XAUUSD"]):
-            args = parser.parse_args()
-            assert args.output_dir is None
-
     def test_model_option(self):
         """--model option is accepted."""
         import main
@@ -192,7 +174,7 @@ class TestMainMultiSymbolExecution:
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
-    def test_output_dir_is_used(
+    def test_result_always_written(
         self,
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
@@ -204,7 +186,7 @@ class TestMainMultiSymbolExecution:
         mock_settings_cls: MagicMock,
         tmp_path: pytest.TempPathFactory,
     ) -> None:
-        """When --output-dir is given, ResultWriter is used."""
+        """Result file is always written to settings.analysis_cache_dir."""
         mock_settings = mock_settings_cls.return_value
         mock_settings.openai_api_key = ""
         mock_settings.openai_base_url = ""
@@ -213,6 +195,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
         mock_settings.cost_per_symbol_limit = 0.05
+        mock_settings.analysis_cache_dir = str(tmp_path / "data")
 
         mock_graph = MagicMock()
         from datetime import datetime
@@ -225,15 +208,14 @@ class TestMainMultiSymbolExecution:
         }
         mock_graph_cls.return_value = mock_graph
 
-        output_dir = str(tmp_path / "runs")
-        test_args = ["main.py", "XAUUSD", "--output-dir", output_dir]
+        test_args = ["main.py", "XAUUSD"]
         with patch.object(sys, "argv", test_args):
             from main import main
 
             main()
 
-        # Verify output file was created
-        expected = tmp_path / "runs" / "2026" / "07" / "26" / "XAUUSD" / "result-08-30.json"
+        # Verify output file was created in the default data dir
+        expected = tmp_path / "data" / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
         assert expected.exists()
 
     @patch("main.Settings")
@@ -265,6 +247,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
         mock_settings.cost_per_symbol_limit = 0.05
+        mock_settings.analysis_cache_dir = str(tmp_path / "data")
 
         mock_graph = MagicMock()
         # No broker_now in result
@@ -275,15 +258,14 @@ class TestMainMultiSymbolExecution:
         }
         mock_graph_cls.return_value = mock_graph
 
-        output_dir = str(tmp_path / "runs")
-        test_args = ["main.py", "XAUUSD", "--output-dir", output_dir]
+        test_args = ["main.py", "XAUUSD"]
         with patch.object(sys, "argv", test_args):
             from main import main
 
             main()
 
         # Should create a result file (with some timestamp)
-        run_files = list((tmp_path / "runs").rglob("*.json"))
+        run_files = list((tmp_path / "data").rglob("*.json"))
         assert len(run_files) == 1
 
 
@@ -465,7 +447,7 @@ class TestMainCostLimit:
 
         from main import _run_pipeline
 
-        _run_pipeline(settings, ["XAUUSD", "EURUSD"], None, False)
+        _run_pipeline(settings, ["XAUUSD", "EURUSD"], False)
 
         # reset() should be called once per symbol (2 symbols)
         assert mock_ct.reset.call_count == 2, (
@@ -519,7 +501,7 @@ class TestMainCostLimit:
 
         from main import _run_pipeline
 
-        _run_pipeline(settings, ["XAUUSD", "EURUSD"], None, False)
+        _run_pipeline(settings, ["XAUUSD", "EURUSD"], False)
 
         mock_ct.set_limit.assert_called_once_with(0.05)
 
@@ -785,7 +767,7 @@ class TestMainIntegrationCostLimit:
         from main import _run_pipeline
 
         with pytest.raises(CostLimitExceeded):
-            _run_pipeline(settings, ["XAUUSD", "EURUSD"], None, False)
+            _run_pipeline(settings, ["XAUUSD", "EURUSD"], False)
 
         # Only XAUUSD ran (the one that triggered the limit). EURUSD never ran.
         assert call_count == 1, (

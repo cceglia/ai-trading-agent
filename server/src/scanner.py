@@ -262,20 +262,25 @@ class ResultScanner:
     def _to_summary(self, fpath: Path) -> RunSummary | None:
         """Parse a result JSON file into a RunSummary.
 
-        Path convention: data/YYYY/MM/DD/SYMBOL/result-HH-MM.json
+        Path convention: data/YYYY/MM/DD/SYMBOL/result-HH.json
         Returns None on any parse error (malformed JSON, missing fields, bad path).
+        Only result-*.json files are recognized — synthesizer files are ignored.
         """
         try:
             # Extract path components relative to data_dir
             rel = fpath.relative_to(self.data_dir)
-            parts = rel.parts  # (YYYY, MM, DD, SYMBOL, result-HH-MM.json)
+            parts = rel.parts  # (YYYY, MM, DD, SYMBOL, filename)
             if len(parts) != 5:
                 return None
 
             year, month, day, _symbol_from_path, filename = parts
             date = f"{year}-{month}-{day}"
 
-            # Parse time from filename: result-HH-MM.json -> HH-MM
+            # Only accept result-*.json files
+            if not filename.startswith("result-"):
+                return None
+
+            # Parse time from filename: result-HH.json -> HH
             time_str = filename.removeprefix("result-").removesuffix(".json")
 
             # Read and parse JSON
@@ -285,9 +290,6 @@ class ResultScanner:
             if not isinstance(data, dict):
                 return None
 
-            # Extract summary fields — mirrors the TypeScript FullResult shape:
-            #   result.symbol, result.market_context.{bias,confidence,current_price},
-            #   result.decision.action, result.review.approved
             symbol = data.get("symbol", _symbol_from_path)
             market_ctx = data.get("market_context", {})
             decision = data.get("decision", {})
@@ -302,7 +304,7 @@ class ResultScanner:
                 action=decision.get("action", "unknown"),
                 review_approved=review.get("approved", False),
                 current_price=market_ctx.get("current_price"),
-                file_path=str(rel),  # includes .json, matching TS
+                file_path=str(rel),
             )
         except (json.JSONDecodeError, OSError, ValueError, KeyError):
             logger.debug("Skipping unparseable file: %s", fpath)

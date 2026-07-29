@@ -15,7 +15,7 @@ from src.main import create_app
 @pytest.fixture
 def integration_data(tmp_path: Path, sample_full_result: dict):
     """Create a temporary data directory with fixture JSON files."""
-    fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08-30.json"
+    fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
     fpath.parent.mkdir(parents=True)
     fpath.write_text(json.dumps(sample_full_result))
     return tmp_path
@@ -62,7 +62,7 @@ class TestGetRunIntegration:
     """Integration tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}."""
 
     def test_returns_full_result(self, integration_client):
-        resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-08-30")
+        resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 200
         data = resp.json()
@@ -76,6 +76,6 @@ class TestGetRunIntegration:
         assert resp.status_code == 404
 
     def test_returns_404_for_wrong_symbol(self, integration_client):
-        resp = integration_client.get("/api/runs/EURUSD/2026/07/26/result-08-30")
+        resp = integration_client.get("/api/runs/EURUSD/2026/07/26/result-08")
 
         assert resp.status_code == 404

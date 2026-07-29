@@ -93,12 +93,12 @@ class ResultWriter:
         return path
 
     def _build_path(self, symbol: str, broker_now: datetime) -> Path:
-        """Compute data/YYYY/MM/DD/SYMBOL/result-HH-MM.json path."""
+        """Compute data/YYYY/MM/DD/SYMBOL/result-HH.json path."""
         return (
             self.base_dir
             / f"{broker_now:%Y}"
             / f"{broker_now:%m}"
             / f"{broker_now:%d}"
             / symbol
-            / f"result-{broker_now:%H-%M}.json"
+            / f"result-{broker_now:%H}.json"
         )

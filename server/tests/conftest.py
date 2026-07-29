@@ -29,7 +29,7 @@ def sample_run_summary() -> RunSummary:
         action="buy_setup",
         review_approved=True,
         current_price=2400.0,
-        file_path="2026/07/26/XAUUSD/result-08-30.json",
+        file_path="2026/07/26/XAUUSD/result-08.json",
     )
 
 
@@ -99,7 +99,7 @@ def sample_full_result() -> dict[str, Any]:
 @pytest.fixture
 def mock_data_dir(tmp_path: Path, sample_full_result: dict) -> Path:
     """Create a temporary data directory with fixture JSON files."""
-    fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08-30.json"
+    fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
     fpath.parent.mkdir(parents=True)
     fpath.write_text(json.dumps(sample_full_result))
     return tmp_path

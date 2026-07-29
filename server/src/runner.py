@@ -45,10 +45,10 @@ class RunService:
     ) -> list[dict]:
         """Run analysis for the given symbols.
 
-        Spawns: python main.py --output-dir <dir> [--model <m>] -- <symbols...>
+        Spawns: python main.py [--model <m>] -- <symbols...>
         Returns list of full result dicts, one per symbol.
         """
-        args = ["main.py", "--output-dir", self._data_dir]
+        args = ["main.py"]
         if model:
             args.extend(["--model", model])
         args.append("--")

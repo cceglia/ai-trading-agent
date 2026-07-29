@@ -130,7 +130,6 @@ def _build_parser() -> argparse.ArgumentParser:
     """
     parser = argparse.ArgumentParser(description="Trading AI Agent")
     parser.add_argument("symbols", nargs="+", help="Trading symbol(s) (e.g., XAUUSD EURUSD)")
-    parser.add_argument("--output-dir", default=None, help="Output dir for JSON results")
     parser.add_argument("--model", default=None, help="LLM model")
     parser.add_argument(
         "--base-url", help="OpenAI-compatible base URL (e.g., http://localhost:11434/v1)"
@@ -215,17 +214,15 @@ def _create_agents(
 def _initialize_pipeline(
     settings: Settings,
     cost_tracker: CostTracker,
-    output_dir: str | None = None,
 ) -> Any:
     """Create the full analysis pipeline (data providers, agents, graph).
 
     Args:
         settings: Application settings.
         cost_tracker: Cost tracker instance.
-        output_dir: Optional output directory for JSON results.
 
     Returns:
-        Tuple of (compiled TradingGraph, optional ResultWriter).
+        Tuple of (compiled TradingGraph, ResultWriter).
     """
     data_provider = TerminalDataProvider(
         server_url=settings.terminal_server_url,
@@ -245,7 +242,7 @@ def _initialize_pipeline(
         reviewer=reviewer,
     )
 
-    writer = ResultWriter(output_dir) if output_dir else None
+    writer = ResultWriter(settings.analysis_cache_dir)
     return graph, writer
 
 
@@ -385,7 +382,6 @@ def _print_summary(results: list[tuple[str, str, dict[str, Any]]]) -> None:
 def _run_pipeline(
     settings: Settings,
     symbols: list[str],
-    output_dir: str | None,
     telegram_enabled: bool,
 ) -> None:
     """Run the full analysis pipeline for all symbols.
@@ -393,12 +389,11 @@ def _run_pipeline(
     Args:
         settings: Application settings.
         symbols: Trading symbols to analyse.
-        output_dir: Optional output directory for JSON results.
         telegram_enabled: Whether ``--telegram`` was set on CLI.
     """
     cost_tracker = CostTracker(pricing=settings.model_pricing)
     cost_tracker.set_limit(settings.cost_per_symbol_limit)
-    graph, writer = _initialize_pipeline(settings, cost_tracker, output_dir)
+    graph, writer = _initialize_pipeline(settings, cost_tracker)
 
     results: list[tuple[str, str, dict[str, Any]]] = []
     for symbol in symbols:
@@ -423,7 +418,7 @@ def main() -> None:
     logger.info("Starting Trading AI Agent for symbols: %s", ", ".join(args.symbols))
 
     try:
-        _run_pipeline(settings, args.symbols, args.output_dir, args.telegram)
+        _run_pipeline(settings, args.symbols, args.telegram)
     except Exception as e:
         logger.error("Analysis failed: %s", e)
         print(f"Error: {e}")

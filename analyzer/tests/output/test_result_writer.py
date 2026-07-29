@@ -20,7 +20,7 @@ class TestResultWriter:
         writer = ResultWriter(tmp_path)
         path = writer._build_path("XAUUSD", datetime(2026, 7, 26, 8, 30))
         assert "XAUUSD" in str(path)
-        assert "result-08-30.json" in str(path)
+        assert "result-08.json" in str(path)
 
     def test_path_construction_has_dated_hierarchy(self, tmp_path: Path):
         writer = ResultWriter(tmp_path)
@@ -31,7 +31,7 @@ class TestResultWriter:
         assert parts[1] == "07"
         assert parts[2] == "26"
         assert parts[3] == "XAUUSD"
-        assert parts[4] == "result-08-30.json"
+        assert parts[4] == "result-08.json"
 
     def test_write_creates_directory_tree(self, tmp_path: Path):
         writer = ResultWriter(tmp_path)

@@ -73,7 +73,6 @@ class TestRunAnalysis:
 
         assert captured["cmd"] == "python3"
         assert "main.py" in captured["args"]
-        assert "--output-dir" in captured["args"]
         assert "--" in captured["args"]
         dd_idx = captured["args"].index("--")
         assert captured["args"][dd_idx + 1] == "XAUUSD"

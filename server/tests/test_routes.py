@@ -23,7 +23,7 @@ def sample_summary():
         action="buy_setup",
         review_approved=True,
         current_price=2400.0,
-        file_path="2026/07/26/XAUUSD/result-08-30.json",
+        file_path="2026/07/26/XAUUSD/result-08.json",
     )
 
 
@@ -115,7 +115,7 @@ class TestGetRun:
         test_client, mock_scanner, _ = client
         mock_scanner.get_run.return_value = {"symbol": "XAUUSD", "decision": {}}
 
-        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08-30")
+        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 200
         assert resp.json()["symbol"] == "XAUUSD"
@@ -124,7 +124,7 @@ class TestGetRun:
         test_client, mock_scanner, _ = client
         mock_scanner.get_run.return_value = None
 
-        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08-30")
+        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 404
 
@@ -132,7 +132,7 @@ class TestGetRun:
         test_client, mock_scanner, _ = client
         mock_scanner.get_run.side_effect = Exception("disk error")
 
-        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08-30")
+        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 500
 
