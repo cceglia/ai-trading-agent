@@ -2,8 +2,9 @@
 
 Tests verify that ``_synthesize_context`` in ``src/orchestrator/graph.py``
 consults the synthesizer cache (``should_run_synthesis`` /
-``load_cached_synthesis`` / ``save_synthesis``). The method does NOT yet
-consult the cache, so all cache-hit and cache-fill assertions fail RED.
+``load_cached_synthesis`` / ``save_synthesis``). The cache is keyed by
+(symbol, day, H1-closing-hour) — different H1 periods within the same day
+produce distinct cache entries.
 
 Categories (12 tests):
   Cache hit paths   (4) — cached summary returned, synth skipped, decide/review run
@@ -191,7 +192,9 @@ def _write_cache_file(
         tmp_path / "analysis" / f"{dt.year:04d}" / f"{dt.month:02d}" / f"{dt.day:02d}" / symbol
     )
     cache_dir.mkdir(parents=True, exist_ok=True)
-    cache_file = cache_dir / "synthesizer.json"
+    # H1 closing hour = dt.hour + 1 (mod 24) — matches candle_cache.get_cache_date("H1", …)
+    closing_hour = (dt.hour + 1) % 24
+    cache_file = cache_dir / f"synthesizer-h1-{closing_hour:02d}.json"
     cache_file.write_text(content)
     return cache_file
 
@@ -200,7 +203,7 @@ def _write_cache_file(
 # Cache hit paths (4 tests)
 # ===================================================================
 class TestCacheHit:
-    """When the cache has a valid ``MarketContextSummary`` for (symbol, day).
+    """When the cache has a valid ``MarketContextSummary`` for (symbol, day, H1-hour).
 
     The orchestrator must return the cached summary and skip the LLM call.
     Downstream nodes (decide, review) must still execute.
@@ -541,7 +544,10 @@ class TestCacheMiss:
         trading_graph._synthesize_context(state)
 
         # After a cache miss, the cache file should exist.
-        cache_file = tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer.json"
+        # broker_now=14:00 → H1 closing hour 15
+        cache_file = (
+            tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer-h1-15.json"
+        )
         assert cache_file.exists(), (
             f"Expected cache file at {cache_file} after synthesizer ran, "
             f"but it does not exist.  _synthesize_context did not call "
@@ -797,7 +803,12 @@ class TestFatalError:
         trading_graph._synthesize_context(state)
 
         # Cache should NOT have been written
-        cache_file = tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer.json"
+        # Use the same H1 closing hour that broker_now would produce if set.
+        # Since fatal_error short-circuits before broker_now is fetched,
+        # we just need any valid filename that would NOT exist.
+        cache_file = (
+            tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer-h1-15.json"
+        )
         assert not cache_file.exists(), (
             f"Cache file should NOT exist when fatal_error is set, but found at {cache_file}"
         )
@@ -809,8 +820,8 @@ class TestFatalError:
 # Cache key isolation (4 tests)
 # ===================================================================
 class TestCacheKeyIsolation:
-    """Cache key is based on (symbol, broker-day) — not on calendar events,
-    model version, or other dimensions.
+    """Cache key is based on (symbol, day, H1-closing-hour) — not on calendar
+    events, model version, or other dimensions.
 
     These tests verify that the orchestrator's cache consultation logic
     matches the unit-level semantics of ``should_run_synthesis``.
@@ -898,22 +909,29 @@ class TestCacheKeyIsolation:
         # Cache miss for the new day — synthesizer must be called
         mock_synthesizer.synthesize.assert_called_once()
 
-    def test_calendar_drift_within_day_uses_cache(
+    def test_same_h1_hour_uses_cache(
         self,
         trading_graph,
         mock_synthesizer,
         tmp_path,
         monkeypatch,
     ):
-        """Different calendar events on same day → cache hit (key is symbol+day only)."""
+        """Same H1 hour, different calendar events → cache hit.
+
+        Cache key is (symbol, day, H1-closing-hour).  Two runs within the
+        same H1 period map to the same closing hour, so the second run
+        reuses the cache regardless of calendar drift.
+        """
         monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
-        broker_now = datetime(2026, 7, 25, 14, 0)
-        trading_graph.data_provider.get_broker_time.return_value = broker_now
+        # 14:00 and 14:59 both map to H1 closing hour 15
+        broker_now_save = datetime(2026, 7, 25, 14, 0)
+        broker_now_load = datetime(2026, 7, 25, 14, 59)
+        trading_graph.data_provider.get_broker_time.return_value = broker_now_load
 
         # Pre-populate cache
         from src.decision.synthesizer_cache import save_synthesis
 
-        save_synthesis("EURUSD", broker_now, _make_cached_summary())
+        save_synthesis("EURUSD", broker_now_save, _make_cached_summary())
 
         # Run with DIFFERENT calendar events (cache key ignores calendar)
         state = AgentState(
@@ -941,6 +959,51 @@ class TestCacheKeyIsolation:
             "Expected cached reasoning, not LLM output"
         )
 
+    def test_different_h1_hour_misses_cache(
+        self,
+        trading_graph,
+        mock_synthesizer,
+        tmp_path,
+        monkeypatch,
+    ):
+        """Different H1 hour on same day → cache miss (different closing hours).
+
+        Cache key includes H1-closing-hour, so runs at 10:00 (closing 11)
+        and 14:00 (closing 15) are treated as distinct cache entries.
+        """
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        # 10:00 → H1 closing hour 11; 14:00 → H1 closing hour 15
+        broker_now_save = datetime(2026, 7, 25, 10, 0)
+        broker_now_load = datetime(2026, 7, 25, 14, 0)
+        trading_graph.data_provider.get_broker_time.return_value = broker_now_load
+
+        # Pre-populate cache for the earlier H1 hour
+        from src.decision.synthesizer_cache import save_synthesis
+
+        save_synthesis("EURUSD", broker_now_save, _make_cached_summary())
+
+        state = AgentState(
+            calendar_events=[],
+            current_pending_orders=[],
+            current_positions=[],
+            decision=None,
+            errors=[],
+            fatal_error=None,
+            final_output=None,
+            market_context=None,
+            review=None,
+            review_attempts=0,
+            review_feedback=None,
+            structure_analysis=_canonical_structure_analysis(),
+            symbol="EURUSD",
+            symbol_price=None,
+        )
+
+        trading_graph._synthesize_context(state)
+
+        # Cache miss — synthesizer must be called with fresh LLM output
+        mock_synthesizer.synthesize.assert_called_once()
+
     def test_model_version_drift_uses_cache(
         self,
         trading_graph,
@@ -950,8 +1013,8 @@ class TestCacheKeyIsolation:
     ):
         """Model changed across runs → cache hit (model version not in cache key).
 
-        The cache is keyed only on (symbol, broker-day). A model change
-        between runs does NOT invalidate the cache. This is a deliberate
+        The cache is keyed only on (symbol, day, H1-closing-hour). A model
+        change between runs does NOT invalidate the cache. This is a deliberate
         design choice because the cache stores the synthesizer *output*,
         not the LLM request; the orchestrator must produce the same
         MarketContextSummary regardless of which model generated it.

@@ -300,11 +300,14 @@ class TestDayKeyAndCrossSymbol:
     def test_cache_file_path_format(
         self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        """File path is ``<analysis_cache_dir>/<YYYY>/<MM>/<DD>/<symbol>/synthesizer.json``."""
+        """File path includes H1 closing hour: ``…/synthesizer-h1-13.json``."""
         monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
         now = datetime(2026, 7, 25, 12, 0, 0)
         save_synthesis("EURUSD", now, _make_summary())
-        expected = tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer.json"
+        # broker_now=12:00 → H1 period 12:00-13:00 → closing hour 13
+        expected = (
+            tmp_path / "analysis" / "2026" / "07" / "25" / "EURUSD" / "synthesizer-h1-13.json"
+        )
         assert expected.exists()
 
     # ------------------------------------------------------------------
@@ -319,6 +322,50 @@ class TestDayKeyAndCrossSymbol:
         assert should_run_synthesis("EURUSD", now) is True
         save_synthesis("EURUSD", now, _make_summary())
         assert should_run_synthesis("EURUSD", now) is False
+
+    # ------------------------------------------------------------------
+    # 17. Same H1 hour → cache hit (different calendar events)
+    # ------------------------------------------------------------------
+    def test_same_h1_hour_different_calendar_still_cache_hit(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Two runs within the same H1 period → cache hit regardless of calendar drift."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        # Both 14:00 and 14:59 map to H1 closing hour 15
+        save_at = datetime(2026, 7, 25, 14, 0, 0)
+        load_at = datetime(2026, 7, 25, 14, 59, 0)
+        save_synthesis("EURUSD", save_at, _make_summary())
+        assert should_run_synthesis("EURUSD", load_at) is False
+        assert load_cached_synthesis("EURUSD", load_at) is not None
+
+    # ------------------------------------------------------------------
+    # 18. Different H1 hour → cache miss
+    # ------------------------------------------------------------------
+    def test_different_h1_hour_causes_cache_miss(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Runs at different H1 hours → cache miss (different H1 closing hours)."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        # 10:30 → H1 closing hour 11; 14:30 → H1 closing hour 15
+        save_at = datetime(2026, 7, 25, 10, 30, 0)
+        load_at = datetime(2026, 7, 25, 14, 30, 0)
+        save_synthesis("EURUSD", save_at, _make_summary())
+        assert should_run_synthesis("EURUSD", load_at) is True
+        assert load_cached_synthesis("EURUSD", load_at) is None
+
+    # ------------------------------------------------------------------
+    # 19. H1 hour boundary crossing
+    # ------------------------------------------------------------------
+    def test_h1_hour_boundary_crossing_invalidates_cache(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """14:59 (closing hour 15) vs 15:01 (closing hour 16) → cache miss."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        before_boundary = datetime(2026, 7, 25, 14, 59, 0)
+        after_boundary = datetime(2026, 7, 25, 15, 1, 0)
+        save_synthesis("EURUSD", before_boundary, _make_summary())
+        assert should_run_synthesis("EURUSD", after_boundary) is True
+        assert load_cached_synthesis("EURUSD", after_boundary) is None
 
 
 # ===================================================================
@@ -339,4 +386,6 @@ def _write_raw_cache(
         tmp_path / "analysis" / f"{dt.year:04d}" / f"{dt.month:02d}" / f"{dt.day:02d}" / symbol
     )
     cache_dir.mkdir(parents=True, exist_ok=True)
-    (cache_dir / "synthesizer.json").write_text(content)
+    # H1 closing hour = dt.hour + 1 (mod 24) — matches candle_cache.get_cache_date("H1", …)
+    closing_hour = (dt.hour + 1) % 24
+    cache_dir.joinpath(f"synthesizer-h1-{closing_hour:02d}.json").write_text(content)

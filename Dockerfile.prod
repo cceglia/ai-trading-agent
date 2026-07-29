@@ -11,23 +11,34 @@ WORKDIR /app
 RUN python3 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
+# ---- Create non-root user with configurable UID/GID ----
+# Removes any existing user/group that conflicts with the target IDs
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+COPY scripts/create-user.sh /tmp/
+RUN USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} /tmp/create-user.sh && \
+    rm /tmp/create-user.sh
+
+# Switch to non-root user for everything below
+USER app
+
 # ---- Layer 1: Dependencies (cached until package files change) ----
 
 # Server dependencies (Python FastAPI)
-COPY server/pyproject.toml ./server/
+COPY --chown=app:app server/pyproject.toml ./server/
 RUN cd server && pip install --no-cache-dir "."
 
 # Analyzer dependencies (install into venv)
-COPY analyzer/pyproject.toml ./analyzer/
+COPY --chown=app:app analyzer/pyproject.toml ./analyzer/
 RUN cd analyzer && pip install --no-cache-dir "."
 
 # UI dependencies
-COPY ui/package*.json ./ui/
+COPY --chown=app:app ui/package*.json ./ui/
 RUN cd ui && npm ci
 
 # ---- Layer 2: Source code ----
 
-COPY . .
+COPY --chown=app:app . .
 
 # ---- Layer 3: Build artifacts ----
 

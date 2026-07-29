@@ -2,7 +2,7 @@
 
 AI-powered trading agent for multi-timeframe market structure analysis, economic calendar
 monitoring, and advisory-only trading decision-making. The full stack comprises a Python
-analysis engine, a Node.js REST API server, and a Vue 3 terminal-themed dashboard.
+analysis engine, a Python FastAPI REST API server, and a Vue 3 terminal-themed dashboard.
 
 ## Overview
 
@@ -67,16 +67,16 @@ with a corresponding web UI.
 ### Service Architecture
 
 ```
-┌──────────┐     HTTP/API      ┌──────────┐     spawns child     ┌──────────┐
-│  MT5 MCP │◄─────────────────►│ Analyzer │◄────────────────────►│  Server  │
-│ Terminal │  MCP Streamable   │ (Python) │   python main.py     │  (Node)  │
-│(host:22346)│                 │  (CLI)   │                      │(port 3000)│
-└──────────┘                   └────┬─────┘                      └────▲─────┘
-                                    │                                 │
-                                    │ reads/writes                    │ reads
-                                    ▼                                 │
-                            ┌──────────────┐                         │
-                            │    data/      │◄────────────────────────┘
+┌──────────┐     HTTP/API      ┌──────────┐     spawns child     ┌──────────────┐
+│  MT5 MCP │◄─────────────────►│ Analyzer │◄────────────────────►│   Server     │
+│ Terminal │  MCP Streamable   │ (Python) │   python main.py     │ (Python /    │
+│(host:22346)│                 │  (CLI)   │                      │  FastAPI)    │
+└──────────┘                   └────┬─────┘                      │ (port 3000)  │
+                                    │                            └──────▲───────┘
+                                    │ reads/writes                     │ reads
+                                    ▼                                  │
+                            ┌──────────────┐                          │
+                            │    data/      │◄─────────────────────────┘
                             │  (JSON files) │    filesystem via ResultScanner
                             └──────────────┘
                                     ▲
@@ -86,7 +86,7 @@ with a corresponding web UI.
                             │  UI (Vue 3)    │
                             │  Vite dev:5173 │
                             │  Prod: served  │
-                            │  by Express    │
+                            │  by FastAPI    │
                             └────────────────┘
 ```
 
@@ -106,9 +106,9 @@ with a corresponding web UI.
 ## Services
 
 | Service | Language | Directory | Purpose |
-|---|---|---|---|
+|---|---|---|---|---|
 | **Analyzer** (core) | Python 3.14+ | `analyzer/` | CLI-based trading analysis engine. Fetches MT5 data via MCP, runs 16-module deterministic market structure engine, synthesizes context via LLM, makes advisory decisions, and reviews them. |
-| **Server** (API) | Node.js/TypeScript | `server/` | Express REST API that serves analysis results from the filesystem and can trigger new analyses by spawning the Python analyzer as a child process. |
+| **Server** (API) | Python 3.11+ (FastAPI) | `server/` | FastAPI REST API that serves analysis results from the filesystem and can trigger new analyses by spawning the Python analyzer as a child process. |
 | **UI** (frontend) | Vue 3 + Vite | `ui/` | Dark-terminal-themed web dashboard displaying analysis results, OHLC charts, run history, and a detail view for individual symbol analyses. |
 
 ## Installation
@@ -127,22 +127,19 @@ with a corresponding web UI.
 git clone <repository-url>
 cd Agent
 
-# --- Analyzer ---
+# --- Analyzer & Server ---
 # Create virtual environment
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # or
 .venv\Scripts\activate  # Windows
 
-# Install dependencies
-pip install -e .
-
-# Install dev dependencies (optional)
+# Install analyzer + dev dependencies
 pip install -e ".[dev]"
 
-# --- Server ---
+# Install server
 cd server
-npm install
+pip install -e .
 cd ..
 
 # --- UI ---
@@ -194,15 +191,20 @@ the environment.
 
 ### Environment Variables — Server
 
-These are loaded from the environment (or a `.env` file in `server/`) by the Express server.
+These are loaded from the environment (or a `.env` file) by the FastAPI server via `WebSettings`.
 
 | Variable | Default | Description |
 |---|---|---|
+| `HOST` | `127.0.0.1` | HTTP listen address |
 | `PORT` | `3000` | HTTP listen port |
 | `DATA_DIR` | `../data/runs` | Path to analysis result files (relative to `server/`) |
 | `PYTHON_CMD` | `python` | Python executable for spawning the analyzer |
 | `ANALYZER_DIR` | `.` | Working directory for the Python analyzer process |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed CORS origins |
+| `TRADING_ANALYSIS_CACHE_DIR` | `analysis` | Base directory for analysis disk cache (shared with analyzer) |
+| `TRADING_API_KEY` | — | API key for authenticated endpoints |
+| `TRADING_RATE_LIMIT_MAX` | `10` | Max requests per rate-limit window |
+| `TRADING_RATE_LIMIT_WINDOW` | `60` | Rate-limit window in seconds |
 
 ### Default Model Pricing
 
@@ -271,10 +273,15 @@ python main.py EURUSD --log-level DEBUG
 ### API Server
 
 ```bash
-cd server
-npm run dev      # Development with hot-reload (tsx watch)
-npm run build    # TypeScript compile
-npm start        # Run compiled server (port 3000)
+# Must use -m flag so src/ is resolved as a package
+cd server && python -m src.main     # Runs uvicorn on port 3000
+```
+
+Or with hot-reload:
+
+```bash
+pip install watchfiles
+uvicorn src.main:app --reload --port 3000
 ```
 
 The server exposes:
@@ -291,7 +298,7 @@ npm run dev    # Vite dev server (port 5173, proxies /api to :3000)
 npm run build  # Production build → ui/dist/
 ```
 
-In production the Express server serves the built UI files from `ui/dist/`.
+In production the FastAPI server serves the built UI files from `ui/dist/`.
 
 ### Programmatic Usage
 
@@ -385,21 +392,20 @@ result = graph.run("EURUSD")
 │   │   └── output/                          # Result models + JSON writer
 │   └── tests/                               # 356 tests
 │
-├── server/                                  # Node.js Express API
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── vitest.config.ts
+├── server/                                  # Python FastAPI
+│   ├── pyproject.toml
 │   ├── .env.example
 │   └── src/
-│       ├── index.ts                         # Express app (port 3000)
-│       ├── types.ts                         # TypeScript interfaces
-│       ├── routes/
-│       │   ├── run.ts                       # POST /api/run
-│       │   └── runs.ts                      # GET /api/runs
-│       ├── services/
-│       │   ├── runner.ts                    # Spawns Python analyzer
-│       │   └── scanner.ts                   # Reads result JSON files
-│       └── __tests__/
+│       ├── main.py                          # FastAPI app (port 3000)
+│       ├── models.py                        # Pydantic DTOs
+│       ├── runner.py                        # Spawns Python analyzer
+│       ├── scanner.py                       # Reads result JSON files
+│       ├── settings.py                      # WebSettings (pydantic-settings)
+│       ├── middleware/
+│       │   ├── auth.py                      # API key auth
+│       │   └── ratelimit.py                 # Sliding window rate limiter
+│       └── __init__.py
+│   └── tests/                               # pytest tests
 │
 ├── ui/                                      # Vue 3 frontend
 │   ├── package.json
@@ -490,14 +496,16 @@ result = graph.run("EURUSD")
 
 ### Server (`server/`)
 
-- **Express app** (`src/index.ts`): CORS-configured REST API that serves result JSON files
+- **FastAPI app** (`src/main.py`): CORS-configured REST API that serves result JSON files
   from the filesystem and proxies new analysis runs to the Python CLI.
-- **ResultScanner** (`src/services/scanner.ts`): Walks the `data/` directory tree, parses
+- **ResultScanner** (`src/scanner.py`): Walks the `data/` directory tree, parses
   result JSON files, and returns typed `RunSummary` or `FullResult` objects.
-- **RunService** (`src/services/runner.ts`): Spawns `python main.py` as a child process with
+- **RunService** (`src/runner.py`): Spawns `python main.py` as a child process with
   the requested symbols and optional model override. Enforces a 10-minute timeout.
 - **Routes**: `GET /api/runs` (list with filters), `GET /api/runs/:symbol/:year/:month/:day/:file`
   (detail), `POST /api/run` (trigger).
+- **Middleware**: API key authentication (`middleware/auth.py`) and sliding-window rate
+  limiting (`middleware/ratelimit.py`).
 
 ### UI (`ui/`)
 
@@ -507,7 +515,7 @@ result = graph.run("EURUSD")
   with SL/TP overlay, decision reasoning, review verdict, and calendar context.
 - **Components**: `OhlcChart.vue` (echarts candle chart), `RunCard.vue` (run summary card),
   `SymbolSidebar.vue` (symbol filter), `TimelineBar.vue` (time-based run navigation).
-- **API client** (`lib/api.ts`): Axios-based client communicating with the Express server.
+- **API client** (`lib/api.ts`): Axios-based client communicating with the FastAPI server.
 
 ## Docker
 
@@ -520,26 +528,64 @@ The project includes Docker support for both development and production environm
 
 ### Development
 
+The dev container runs as a non-root user matching your host UID/GID (set in `.env` as
+`UID`/`GID`). This avoids root-owned files in bind-mounted directories. Set `UID` and `GID`
+to your user's values (`id -u` and `id -g`) before building.
+
+#### First-time setup
+
 ```bash
-# Build and start the dev container
+# 1. Build the image and start the container
 docker compose -f docker-compose.devel.yml up -d --build
 
-# First-time: install dependencies inside the container
+# 2. Install all Python dependencies (analyzer + server share the same venv)
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/analyzer && pip install -e '.[dev]' && cd /app/server && npm install"
+  -c "cd /app/analyzer && pip install -e '.[dev]' && cd /app/server && pip install -e ."
 
-# Run the analyzer
+# 3. (Optional) Install UI dependencies for frontend development
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/analyzer && python main.py XAUUSD"
-
-# Start the API server (port 3000)
-docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/server && npm run dev"
+  -c "cd /app/ui && npm install"
 ```
 
 The dev container uses bind mounts for all source directories, so code changes on the host
 are immediately visible inside the container. The container stays alive with `sleep infinity` —
 use `docker compose exec` to run commands.
+
+#### Running commands
+
+```bash
+# Run the analyzer
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/analyzer && python main.py XAUUSD"
+
+# Start the API server (port 3000) — use -m flag for correct package resolution
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && python -m src.main"
+
+# Run analyzer tests
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/analyzer && pytest"
+
+# Run server tests
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && python -m pytest"
+
+# Open a shell inside the container
+docker compose -f docker-compose.devel.yml exec trading-agent bash
+```
+
+#### Migration from root-based setup
+
+If you were running the container before the non-root user change, remove the old
+named volume first — it still contains root-owned files:
+
+```bash
+docker compose -f docker-compose.devel.yml down
+docker volume rm agent_trading_node_modules
+docker compose -f docker-compose.devel.yml up -d
+```
+
+Then re-run the first-time setup commands above.
 
 ### Production
 
@@ -556,17 +602,16 @@ docker compose -f docker-compose.prod.yml down
 
 The production image is self-contained:
 
-- All dependencies are installed at build time (`npm ci`, `pip install`)
+- All dependencies are installed at build time (`pip install`, `npm ci`)
 - The Vue UI is built into static files (`ui/dist/`)
-- The TypeScript server is compiled (`server/dist/`)
-- The Express server serves both the REST API and the built UI on port 3000
+- The FastAPI server serves both the REST API and the built UI on port 3000
 - Only the `data/` directory is persisted via bind mount
 
 ### Images
 
 | Image | Base | Size | Purpose |
 |---|---|---|---|
-| `trading-agent:devel` | Ubuntu 26.04 | ~270 MB content | Development with bind mounts, Python venv, Node 22, tsx |
+| `trading-agent:devel` | Ubuntu 26.04 | ~270 MB content | Development with bind mounts, Python venv, Node.js (for UI toolchain) |
 | `trading-agent:prod` | Ubuntu 26.04 | ~400 MB content | Production with all deps baked in, UI built |
 
 ## Testing
@@ -587,8 +632,8 @@ pytest tests/decision/test_cost_tracker.py -v
 # Run tests matching a keyword
 pytest -k "cache"
 
-# Server (Node)
-cd server && npm test        # vitest
+# Server (Python)
+cd server && python -m pytest
 
 # UI type checking
 cd ui && npm run typecheck   # vue-tsc
@@ -707,10 +752,9 @@ pytest                 # Run all tests
 
 # --- Server ---
 cd server
-npm run dev            # tsx watch (hot-reload)
-npm run build          # tsc compile
-npm test               # vitest
-npm run typecheck      # tsc --noEmit
+python -m src.main          # uvicorn (port 3000) — -m flag required for src/ package
+python -m pytest            # run tests
+uvicorn src.main:app --reload --port 3000  # hot-reload (requires watchfiles)
 
 # --- UI ---
 cd ui
@@ -787,10 +831,10 @@ graphify explain "<concept>"
 - `pre-commit` — Git hook framework
 
 **Server:**
-- `express` — HTTP framework
-- `cors` — Cross-origin resource sharing
-- `dotenv` — Environment variable loading
-- `typescript`, `tsx`, `vitest`, `supertest` — Dev toolchain
+- `fastapi` — HTTP framework
+- `uvicorn[standard]` — ASGI server
+- `pydantic` + `pydantic-settings` — Data validation and configuration
+- `pytest` — Testing
 
 **UI:**
 - `vue` + `vue-router` — Frontend framework

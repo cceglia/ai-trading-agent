@@ -3,8 +3,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+      args:
+        USER_ID: ${UID:-1000}
+        GROUP_ID: ${GID:-1000}
     image: trading-agent:devel
     container_name: trading-agent
+    user: "${UID:-1000}:${GID:-1000}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

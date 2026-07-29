@@ -35,7 +35,15 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 
 ## Development environment (Docker)
 
-All commands below **must be run inside the developer Docker container**. The container provides Ubuntu 26.04 with Node.js, Python 3, and a virtual environment at `/app/.venv` (auto-activated). Source code is mounted live from the host so changes take effect immediately.
+All commands below **must be run inside the developer Docker container**. The container runs as
+a non-root user matching your host UID/GID (set in `.env` as `UID`/`GID`). The container
+provides Ubuntu 26.04 with Node.js, Python 3, and a virtual environment at `/app/.venv`
+(auto-activated). Source code is mounted live from the host so changes take effect immediately.
+
+### Setup
+
+See the [Docker Development section in README.md](./README.md#development) for a complete
+first-time setup guide (build, start, install dependencies).
 
 ### Starting the container
 
@@ -47,7 +55,7 @@ docker compose -f docker-compose.devel.yml build
 docker compose -f docker-compose.devel.yml up -d
 
 # Open a shell inside the running container
-docker exec -it trading-agent bash
+docker compose -f docker-compose.devel.yml exec trading-agent bash
 ```
 
 ### Stopping
@@ -73,6 +81,22 @@ cd server && python src/main.py          # runs uvicorn on :3000
 cd ui && npm run dev                     # Vite on :5173 (proxies /api to :3000)
 cd ui && npm run typecheck               # vue-tsc --noEmit
 cd ui && npm run build                   # Vite build → ui/dist/
+```
+
+### Running from Docker (host → container)
+
+```bash
+# Start the API server
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && python -m src.main"
+
+# Start the UI dev server (needs npm install done first)
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/ui && npm run dev"
+
+# Run the analyzer CLI
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/analyzer && python main.py XAUUSD"
 ```
 
 ## Testing
