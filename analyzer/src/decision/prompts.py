@@ -71,6 +71,17 @@ lower high, bearish or supportive internal structure, price not
 trapped above major support, no confirmed bullish CHoCH against
 primary structure, supportive momentum and follow-through
 
+## Structural Bias (broader context)
+- structural_bias: The dominant directional context over a wider window
+  (up to ~12 recent swings, bounded by 120 bars). When primary_structure
+  is RANGE, structural_bias indicates whether the range is developing within
+  a larger BEARISH or BULLISH move, or is genuinely NEUTRAL.
+- structure_context: A human-readable label combining local + broad context
+  (e.g. BEARISH_CONSOLIDATION, BULLISH_CONSOLIDATION, NEUTRAL_RANGE).
+- The deterministic score already reflects structural_bias. Do not
+  double-weight it in your reasoning — treat it as explanatory context
+  that helps explain why a RANGE structure sits inside a larger trend.
+
 ## Output Requirements
 - Provide bias as one of the 7 levels above
 - Provide confidence score 0-100

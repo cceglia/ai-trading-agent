@@ -82,6 +82,8 @@ def build_timeframe_context(
                 "bias": scoring["bias"],
                 "confidence_score": scoring["confidence_score"],
                 "primary_structure": structure["primary_structure"],
+                "structural_bias": structure.get("structural_bias", structure["primary_structure"]),
+                "structure_context": structure.get("structure_context"),
                 "previous_primary_structure": structure["previous_primary_structure"],
                 "internal_structure": structure["internal_structure"],
                 "operational_status": status,
@@ -99,11 +101,15 @@ def build_timeframe_context(
     d1 = parents.get("D1", {})
     d1_bias = d1.get("strategic_bias", {}).get("bias") or d1.get("bias")
     d1_direction = _direction_from_bias(d1_bias)
-    current_direction = (
-        structure["primary_structure"]
-        if structure["primary_structure"] in ("BULLISH", "BEARISH")
-        else _direction_from_bias(scoring["bias"])
-    )
+    # When local structure is RANGE/TRANSITION, use structural_bias (broader
+    # directional context inferred from swing displacement) instead of the
+    # primary_structure alone.  This makes H4 alignment correctly detect
+    # conflicts (e.g. a bearish macro context while H4 tries to go long).
+    if structure["primary_structure"] in ("BULLISH", "BEARISH"):
+        current_direction = structure["primary_structure"]
+    else:
+        sb = structure.get("structural_bias", structure["primary_structure"])
+        current_direction = _direction_from_bias(sb if sb in ("BULLISH", "BEARISH") else None)
 
     if timeframe == "H4":
         if parent_context_mode == "STANDALONE":
@@ -201,8 +207,6 @@ def build_timeframe_context(
         else levels.get("nearest_resistance")
     )
     close = scoring.get("latest_close")
-    if close is None:
-        close = None
     target_price = nearest_target.get("price") if nearest_target else None
     invalidation_price = nearest_invalidation.get("price") if nearest_invalidation else None
     rr = None

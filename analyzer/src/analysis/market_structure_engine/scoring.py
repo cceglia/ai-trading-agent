@@ -4,6 +4,12 @@ from typing import Any
 
 from .utils import clamp
 
+# Directional vote bonus applied when primary_structure is RANGE but the
+# broader structural_bias indicates a dominant direction (e.g. bearish
+# consolidation inside a larger downtrend).  Tune this value based on
+# historical fixture results.
+_STRUCTURAL_BIAS_VOTE = 8
+
 
 def _directional_votes(
     structure: dict[str, Any],
@@ -23,6 +29,14 @@ def _directional_votes(
         bearish += 35
     elif primary == "RANGE":
         neutral += 30
+        # Structural bias reveals dominant direction even in a local range.
+        # This bonus is applied only when primary == "RANGE" to avoid double-
+        # counting when the swing classifier already returned BULLISH/BEARISH.
+        sb = structure.get("structural_bias")
+        if sb == "BEARISH":
+            bearish += _STRUCTURAL_BIAS_VOTE
+        elif sb == "BULLISH":
+            bullish += _STRUCTURAL_BIAS_VOTE
     else:
         neutral += 18
 
@@ -110,6 +124,8 @@ def calculate_score(
         bias = "NEUTRAL_BEARISH"
 
     components = {
+        # structural_bias affects direction, but local RANGE remains lower-
+        # confidence than a confirmed directional swing sequence.
         "structure": min(
             40, 35 if structure["primary_structure"] in ("BULLISH", "BEARISH") else 25
         ),

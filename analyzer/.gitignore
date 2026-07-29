@@ -1,0 +1,2 @@
+# Test runtime artifacts (created by test fixtures that write to disk)
+MagicMock/

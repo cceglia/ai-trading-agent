@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/context.py": {
-    "mtime": 1785337799.0194077,
-    "ast_hash": "c41dbd9142c323e2151b903398946001",
+    "mtime": 1785349674.8926275,
+    "ast_hash": "61f671d857567e0badb4eaa0c2b11e6c",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/engine.py": {
@@ -90,13 +90,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/scoring.py": {
-    "mtime": 1785337799.0287888,
-    "ast_hash": "43ba9ed2a5a864b68f3fb3272e69354f",
+    "mtime": 1785349662.1717942,
+    "ast_hash": "18e547890ddea5d8639cd6a1f897075c",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/structure.py": {
-    "mtime": 1785337799.0298893,
-    "ast_hash": "7c91f0763825c69802e7f30b0e7ee892",
+    "mtime": 1785349815.1437895,
+    "ast_hash": "2f43d8df78aa422a5171720e19d7f352",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/swings.py": {
@@ -155,8 +155,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/prompts.py": {
-    "mtime": 1785337799.0420008,
-    "ast_hash": "9d703a15b7b7b2f0af6991e74a0a10d5",
+    "mtime": 1785349689.8334317,
+    "ast_hash": "e6ce264cca1c0c9be9e88e5bf2a30199",
     "semantic_hash": ""
   },
   "analyzer/src/decision/protocols.py": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/test_main_multi_symbol.py": {
-    "mtime": 1785337804.6314938,
-    "ast_hash": "9215e3013a6125e67133535319c86263",
+    "mtime": 1785341018.0779994,
+    "ast_hash": "4f78582a6d1c8045466137e0d2c5a104",
     "semantic_hash": ""
   },
   "analyzer/tests/test_project_setup.py": {
@@ -430,18 +430,18 @@
     "semantic_hash": ""
   },
   "ui/src/types.ts": {
-    "mtime": 1785336131.3792036,
-    "ast_hash": "59063451d5ab5ca3f7b6a9aebcabdf67",
+    "mtime": 1785340499.5690882,
+    "ast_hash": "a5b12b2486692633521c8cce5a9fc9ca",
     "semantic_hash": ""
   },
   "ui/src/views/Dashboard.vue": {
-    "mtime": 1785336191.1996577,
-    "ast_hash": "656eee62374d88704c4c4985fa9f8658",
+    "mtime": 1785340564.0280929,
+    "ast_hash": "8ca4cdb03384519905478d76c08ea967",
     "semantic_hash": ""
   },
   "ui/src/views/Detail.vue": {
-    "mtime": 1785336269.0009363,
-    "ast_hash": "632980def08227332cb53e5bea592c56",
+    "mtime": 1785340540.7664547,
+    "ast_hash": "3ccb5ac7fe9eeaddf7cc8cf6bbdb4cd9",
     "semantic_hash": ""
   },
   "ui/tailwind.config.js": {
@@ -515,8 +515,8 @@
     "semantic_hash": ""
   },
   "server/src/scanner.py": {
-    "mtime": 1785337798.9845574,
-    "ast_hash": "f43fa544554ef2e1cbe6192d149ac89b",
+    "mtime": 1785340478.781408,
+    "ast_hash": "92bf8136aa82633feb06164d655cade2",
     "semantic_hash": ""
   },
   "server/src/runner.py": {
@@ -555,8 +555,8 @@
     "semantic_hash": ""
   },
   "server/tests/test_scanner.py": {
-    "mtime": 1785337877.718206,
-    "ast_hash": "0a71278d51068ea1b5edfb0b1b86879a",
+    "mtime": 1785341010.5841165,
+    "ast_hash": "f2cd11e74662c890ebfdf2bf69c0db4f",
     "semantic_hash": ""
   },
   "analyzer/src/notification/__init__.py": {
@@ -614,269 +614,89 @@
     "ast_hash": "9419204ae395996cf684f6983a2ae429",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246050089216/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336541.076327,
-    "ast_hash": "82ddfe26d5f82b86519e937ebebd6812",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133150221920/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.728161,
+    "ast_hash": "30709fc8f715c0fcfa5fad794dddf42f",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246050089216/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.074519,
-    "ast_hash": "c3309ddacb1bff1d3eddfab4c1c173c5",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133150221920/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.7250774,
+    "ast_hash": "385423ea2f104b6320e287387155a494",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246051165856/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.044207,
-    "ast_hash": "52ed0610e4efce5a3f20622dcfcf5cfd",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133150902320/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.8432026,
+    "ast_hash": "92d4d6381a6d4ac0754217fce3f704e3",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246051172912/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.0497067,
-    "ast_hash": "43578180e933942397022a3d0264736b",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158622544/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.638783,
+    "ast_hash": "b014211e9dea052c1a0ea19d153fae4a",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246051649392/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336541.0698261,
-    "ast_hash": "5f73c41ecf99d9980e3d51557198a199",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158622544/2026/07/29/GBPUSD/result-20.json": {
+    "mtime": 1785349804.64219,
+    "ast_hash": "7317ddd32c3b85874f22afc090e33c50",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246051649392/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.0680308,
-    "ast_hash": "25ec26aaf5311532accce13a09d5fcf8",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158622544/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.6839268,
+    "ast_hash": "55589f7043634823cf127bcc24e3f63e",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246053669584/2026/07/29/GBPUSD/result-16-49.json": {
-    "mtime": 1785336541.0291219,
-    "ast_hash": "a9739f71105336fd122a01cc125499ea",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158623552/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.67497,
+    "ast_hash": "26626e1de3f75c78bd6c1989611873b8",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246053669584/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.0287738,
-    "ast_hash": "dda61485942f9157917e8930d95af77e",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158629264/2026/07/29/GBPUSD/result-20.json": {
+    "mtime": 1785349804.6516964,
+    "ast_hash": "25a07b42c2fad26336a205a341537f43",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246054547344/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336541.0252106,
-    "ast_hash": "97f09d7618bc04a74c54a431933a0df1",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133158629264/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.648714,
+    "ast_hash": "d68564bac4985f7f561d8ae4d5b5df66",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246054547344/2026/07/29/GBPUSD/result-16-49.json": {
-    "mtime": 1785336541.025426,
-    "ast_hash": "71d6cd3d7d33959f553dd1d3dc910157",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133159255216/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.614163,
+    "ast_hash": "4620785b9fd193e86cc7866333a6ec0e",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140246054547344/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.0247607,
-    "ast_hash": "d0afc37772d7a2b5a16d27baf53ff3da",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133160998224/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.7181084,
+    "ast_hash": "3a7b0efe3a72275c6716a55c2ffc051b",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612592553328/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336561.15641,
-    "ast_hash": "1f558749cc559abd1caffb41d74308e6",
+  "analyzer/MagicMock/Settings().analysis_cache_dir/140133160998224/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.7145922,
+    "ast_hash": "efc453d9c70674b49b9ea2daba9b477f",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612592553328/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1511927,
-    "ast_hash": "de08128d80d6d8d7a3c1abab10796471",
+  "analyzer/MagicMock/mock.analysis_cache_dir/140133160997552/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.7054482,
+    "ast_hash": "01b7b7df5fd88468373b8f816a50688d",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612593619632/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1248503,
-    "ast_hash": "dda4d19492e5d3958aab511bf18883a1",
+  "analyzer/MagicMock/mock.analysis_cache_dir/140133160997552/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.7021854,
+    "ast_hash": "26b8891823a0770471a627f137823845",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612594129888/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336561.144765,
-    "ast_hash": "b758462b98b96a20120917a85a447f69",
+  "analyzer/MagicMock/mock.analysis_cache_dir/140133161182144/2026/07/29/EURUSD/result-20.json": {
+    "mtime": 1785349804.695817,
+    "ast_hash": "504aa132b2dfcbc45ff5ac248b8a37e6",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612594129888/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1430237,
-    "ast_hash": "cfa4ad0618942d55a10904aab859126e",
+  "analyzer/MagicMock/mock.analysis_cache_dir/140133161182144/2026/07/29/XAUUSD/result-20.json": {
+    "mtime": 1785349804.69253,
+    "ast_hash": "aeefad9953cb674b95efa937d07a2a07",
     "semantic_hash": ""
   },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612595250720/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1191192,
-    "ast_hash": "e5db38a61a20daf3c0feb9cb09505166",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612597044224/2026/07/29/GBPUSD/result-16-49.json": {
-    "mtime": 1785336561.1043003,
-    "ast_hash": "fb9413d029c6255da6b81610a64810ab",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612597044224/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1039433,
-    "ast_hash": "354ab159fab1c809ba229a38f250dc8c",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612597051280/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336561.09899,
-    "ast_hash": "4972a3db287022d7e96b899a44ae9f8e",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612597051280/2026/07/29/GBPUSD/result-16-49.json": {
-    "mtime": 1785336561.0991964,
-    "ast_hash": "20158d2bcaa31883b30e47d9c9026d47",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140612597051280/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.098652,
-    "ast_hash": "bfbcdc4f4f8243c3c4b0f01d9469f6fa",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712325215776/2026/07/29/XAUUSD/result-16-48.json": {
-    "mtime": 1785336503.310667,
-    "ast_hash": "9ab6c1779b3a07e0f0f00af7636e69e8",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712325698224/2026/07/29/XAUUSD/result-16-48.json": {
-    "mtime": 1785336503.316786,
-    "ast_hash": "58cba550f38ed5bec48ad8204ed25ae2",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712329056944/2026/07/29/GBPUSD/result-16-48.json": {
-    "mtime": 1785336503.2899396,
-    "ast_hash": "bb680c67a35ce4f6e265a9407f7a86a3",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712329056944/2026/07/29/XAUUSD/result-16-48.json": {
-    "mtime": 1785336503.2896397,
-    "ast_hash": "9bab2c3106e4f7cd4327cc6088223b88",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712329064336/2026/07/29/EURUSD/result-16-48.json": {
-    "mtime": 1785336503.2848556,
-    "ast_hash": "e68cfea3a010bf0b0d4de7272c7b1730",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712329064336/2026/07/29/GBPUSD/result-16-48.json": {
-    "mtime": 1785336503.285072,
-    "ast_hash": "bcc2a32a2782599ef9fe07c1ff01d61e",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140712329064336/2026/07/29/XAUUSD/result-16-48.json": {
-    "mtime": 1785336503.284507,
-    "ast_hash": "cb2b073c5429b08230062fd8b1e4a5ac",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140246051639312/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336541.0563915,
-    "ast_hash": "463ba8bcc3d082c7266299d62b1e2295",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140246051639312/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.0547082,
-    "ast_hash": "3c954c7ddf6868ad1037abd421d17b5a",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140246051647040/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336541.0621216,
-    "ast_hash": "4e2dd28b6c81aae972705ff8a011fd42",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140246051647040/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336541.060323,
-    "ast_hash": "7301bb1fa339192b56c2a4edd88214f3",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140612593627024/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336561.131621,
-    "ast_hash": "a4ef0b3a2113b83755e458a1088b0077",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140612593627024/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1298494,
-    "ast_hash": "1bf022c03ec33fc3e0c25ec182bdc024",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140612594127536/2026/07/29/EURUSD/result-16-49.json": {
-    "mtime": 1785336561.1373024,
-    "ast_hash": "cd468ce50ab7ac9407fd8cd384cd95b5",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140612594127536/2026/07/29/XAUUSD/result-16-49.json": {
-    "mtime": 1785336561.1354556,
-    "ast_hash": "6280826184f90165df3fb132ee8393c9",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137994455424/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.8275328,
-    "ast_hash": "f130e8e71adfa632edca35e633222e59",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137996857904/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.8606389,
-    "ast_hash": "e26fd8aa77d42672add25ef0ae1e1bc4",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137996857904/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.857502,
-    "ast_hash": "1d43967b8950a7a332eb37c522df896f",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998545792/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.873319,
-    "ast_hash": "934981d17566ef6ed4ece0ba8aaa8587",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998545792/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.8671217,
-    "ast_hash": "baeb7dd8d7b00c3282bf2c82a147a713",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998548480/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.8185542,
-    "ast_hash": "fe13e7c2d97e419f50f5bf11bba7d4a5",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998965392/2026/07/29/GBPUSD/result-17.json": {
-    "mtime": 1785337901.8005154,
-    "ast_hash": "99db607d872bd70fd7ee1d615972d5e8",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998965392/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.7979465,
-    "ast_hash": "acf77a36e6ec022b4c1011962d8d1653",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998971104/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.7912955,
-    "ast_hash": "566eb07b929154adab80be22391348ac",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998971104/2026/07/29/GBPUSD/result-17.json": {
-    "mtime": 1785337901.7930915,
-    "ast_hash": "70f7a90b3b5c1c4ac3348ef1f8834c21",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140137998971104/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.789362,
-    "ast_hash": "f284e48ac3ca88daf1209d1dbfe5304a",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/Settings().analysis_cache_dir/140138002185728/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.7779875,
-    "ast_hash": "88007eaf08cae6d0bcad11648cd00606",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140137987310992/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.8460312,
-    "ast_hash": "d613d8784a1e92edd1717f8158b709f2",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140137987310992/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.8431845,
-    "ast_hash": "225b79bda9811807fd1e22a9079eabce",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140137994462816/2026/07/29/EURUSD/result-17.json": {
-    "mtime": 1785337901.8378315,
-    "ast_hash": "dee6ae3c90fa428e5779a4dba4d49e52",
-    "semantic_hash": ""
-  },
-  "analyzer/MagicMock/mock.analysis_cache_dir/140137994462816/2026/07/29/XAUUSD/result-17.json": {
-    "mtime": 1785337901.8349783,
-    "ast_hash": "a84eb8710a3e70394a9c5d11162fc0b6",
+  "analyzer/tests/analysis/market_structure_engine/test_structure.py": {
+    "mtime": 1785349754.0385904,
+    "ast_hash": "6a93d50e180613d882a2058c9aac95f4",
     "semantic_hash": ""
   }
 }
