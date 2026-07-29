@@ -61,49 +61,91 @@ class TestModelPricingSettings:
         assert len(settings.model_pricing) > 0
 
     def test_model_pricing_has_gpt_4o(self):
-        """Default model_pricing contains 'gpt-4o' with 'prompt' and 'completion' keys."""
+        """Default model_pricing contains 'gpt-4o' with new format keys."""
         settings = Settings()
         assert "gpt-4o" in settings.model_pricing
         entry = settings.model_pricing["gpt-4o"]
-        assert "prompt" in entry
-        assert "completion" in entry
+        assert "input_per_million" in entry
+        assert "cached_input_per_million" in entry
+        assert "output_per_million" in entry
 
     def test_model_pricing_from_env_json(self, monkeypatch: pytest.MonkeyPatch):
-        """TRADING_MODEL_PRICING JSON env var overrides the default."""
+        """TRADING_MODEL_PRICING JSON env var overrides the default (new format)."""
         monkeypatch.setenv(
             "TRADING_MODEL_PRICING",
-            '{"gpt-4o": {"prompt": 0.01, "completion": 0.03}}',
+            '{"gpt-4o": {"input_per_million": 2.5, '
+            '"cached_input_per_million": 1.25, "output_per_million": 10.0}',
         )
         settings = Settings()
-        assert settings.model_pricing == {"gpt-4o": {"prompt": 0.01, "completion": 0.03}}
+        assert settings.model_pricing == {
+            "gpt-4o": {
+                "input_per_million": 2.5,
+                "cached_input_per_million": 1.25,
+                "output_per_million": 10.0,
+            },
+        }
 
     def test_model_pricing_invalid_env(self, monkeypatch: pytest.MonkeyPatch):
-        """Invalid JSON raises a validation error or falls back to default."""
+        """Invalid JSON raises a validation error."""
         monkeypatch.setenv("TRADING_MODEL_PRICING", "not-valid-json")
         with pytest.raises(Exception):
             Settings()
 
     def test_model_pricing_values_positive(self):
-        """All price values in model_pricing are > 0."""
+        """All price values in model_pricing are >= 0."""
         settings = Settings()
         for model, prices in settings.model_pricing.items():
-            assert prices["prompt"] > 0, f"{model} prompt price must be positive"
-            assert prices["completion"] > 0, f"{model} completion price must be positive"
+            for key in ("input_per_million", "cached_input_per_million", "output_per_million"):
+                val = prices.get(key)
+                if val is not None:
+                    assert val >= 0, f"{model} {key} must be >= 0, got {val}"
 
-    def test_zero_price_logs_warning(self, monkeypatch, caplog):
-        """Price of exactly 0.0 should log a warning but not be rejected."""
-        import logging
-
-        caplog.set_level(logging.WARNING)
+    def test_zero_price_accepted(self, monkeypatch):
+        """Price of exactly 0.0 is accepted silently (valid configuration)."""
         monkeypatch.setenv(
             "TRADING_MODEL_PRICING",
-            '{"test-model": {"prompt": 0.0, "completion": 0.01}}',
+            '{"test-model": {"input_per_million": 0.0, '
+            '"cached_input_per_million": 0.0, "output_per_million": 0.01}}',
         )
         settings = Settings()
-        # Should be accepted (not raise)
-        assert settings.model_pricing["test-model"]["prompt"] == 0.0
-        # Should log warning
-        assert "zero" in caplog.text.lower() or "0.0" in caplog.text
+        assert settings.model_pricing["test-model"]["input_per_million"] == 0.0
+        assert settings.model_pricing["test-model"]["cached_input_per_million"] == 0.0
+
+    def test_boolean_price_rejected(self, monkeypatch):
+        """Boolean as a price value is rejected."""
+        monkeypatch.setenv(
+            "TRADING_MODEL_PRICING",
+            '{"test-model": {"input_per_million": true, "output_per_million": 0.01}}',
+        )
+        with pytest.raises(Exception):
+            Settings()
+
+    def test_negative_price_rejected(self, monkeypatch):
+        """Negative price is rejected."""
+        monkeypatch.setenv(
+            "TRADING_MODEL_PRICING",
+            '{"test-model": {"input_per_million": -1.0, "output_per_million": 0.01}}',
+        )
+        with pytest.raises(ValueError, match="negative"):
+            Settings()
+
+    def test_nan_price_rejected(self, monkeypatch):
+        """NaN price is rejected."""
+        monkeypatch.setenv(
+            "TRADING_MODEL_PRICING",
+            '{"test-model": {"input_per_million": NaN, "output_per_million": 0.01}}',
+        )
+        with pytest.raises(Exception):
+            Settings()
+
+    def test_inf_price_rejected(self, monkeypatch):
+        """Infinity price is rejected."""
+        monkeypatch.setenv(
+            "TRADING_MODEL_PRICING",
+            '{"test-model": {"input_per_million": Infinity, "output_per_million": 0.01}}',
+        )
+        with pytest.raises(Exception):
+            Settings()
 
     def test_no_commented_pricing_lines(self):
         """config/settings.py should not contain commented-out pricing entries."""
@@ -112,8 +154,8 @@ class TestModelPricingSettings:
         from config.settings import Settings
 
         source = inspect.getsource(Settings)
-        # Check for the specific commented-out DeepSeek line
-        assert '# "DeepSeek-V4-Flash"' not in source, "Commented-out pricing line should be removed"
+        # Check for any remaining commented-out pricing lines
+        assert '# "DeepSeek' not in source, "Commented-out pricing line should be removed"
 
 
 class TestSynthesizerCacheEnabled:

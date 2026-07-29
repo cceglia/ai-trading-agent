@@ -1623,7 +1623,14 @@ def _make_tracking_side_effect(ct_instance: CostTracker) -> Callable[..., object
     """
 
     def side_effect(*args: object, **kwargs: object) -> MagicMock:
-        ct_instance.record_call("gpt-4o", prompt_tokens=100, completion_tokens=50)
+        from src.decision.usage import LLMUsage
+
+        ct_instance.record_call(
+            "gpt-4o",
+            LLMUsage(
+                input_tokens=100, uncached_input_tokens=100, output_tokens=50, total_tokens=150
+            ),
+        )
         return MagicMock()
 
     return side_effect
@@ -1739,8 +1746,16 @@ class TestCostTrackerWiring:
             "confluence": {"status": "NO_VALID_CANDIDATE"},
         }
 
-        # Create a shared CostTracker and wire it to all 3 mock agents
-        ct = CostTracker()
+        # Create a shared CostTracker with pricing and wire it to all 3 mock agents
+        ct = CostTracker(
+            pricing={
+                "gpt-4o": {
+                    "input_per_million": 2.50,
+                    "cached_input_per_million": 1.25,
+                    "output_per_million": 10.00,
+                },
+            }
+        )
         track = _make_tracking_side_effect(ct)
 
         mock_synthesizer = MagicMock()

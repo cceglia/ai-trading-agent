@@ -1132,7 +1132,14 @@ class TestCostTracking:
         original_return = mock_synthesizer.synthesize.return_value
 
         def _synthesize_and_record(*args: object, **kwargs: object) -> MarketContextSummary:
-            tracker.record_call("gpt-4o", 100, 50)
+            from src.decision.usage import LLMUsage
+
+            tracker.record_call(
+                "gpt-4o",
+                LLMUsage(
+                    input_tokens=100, uncached_input_tokens=100, output_tokens=50, total_tokens=150
+                ),
+            )
             return original_return  # type: ignore[no-any-return]
 
         mock_synthesizer.synthesize.side_effect = _synthesize_and_record

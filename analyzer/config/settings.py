@@ -38,46 +38,92 @@ class Settings(BaseSettings):
     )
 
     # Model Pricing Configuration
+    #
+    # Environment variable (JSON — overrides the defaults below):
+    #
+    #   TRADING_MODEL_PRICING='{"gpt-4o": {"input_per_million": 2.5,
+    #       "cached_input_per_million": 1.25, "output_per_million": 10.0}}'
+    #
+    # Migration from old format (removed):
+    #   Old keys: {"prompt": $/token, "completion": $/token}
+    #   New keys: {"input_per_million": $/M,
+    #       "cached_input_per_million": $/M, "output_per_million": $/M}
+    #
+    # Prices are in dollars per million tokens.  Set cached_input_per_million to 0.0
+    # when the provider does not offer a cached-input discount or when the price
+    # has not been verified from official documentation.
+    #
+    # Only models with verified official pricing are included below.  Add additional
+    # models via the TRADING_MODEL_PRICING env var.
     model_pricing: dict[str, dict[str, float]] = Field(
         default={
-            "gpt-4o": {"prompt": 0.0000025, "completion": 0.00001},
-            "gpt-4o-mini": {"prompt": 0.00000015, "completion": 0.0000006},
-            "gpt-4": {"prompt": 0.00003, "completion": 0.00006},
-            "gpt-3.5-turbo": {"prompt": 0.0000005, "completion": 0.0000015},
-            "DeepSeek-V4-Flash": {"prompt": 0.00000009, "completion": 0.00000018},
-            "DeepSeek-V4-Pro": {"prompt": 0.000000435, "completion": 0.00000087},
+            "gpt-4o": {
+                "input_per_million": 2.50,
+                "cached_input_per_million": 1.25,  # verified OpenAI discount
+                "output_per_million": 10.00,
+            },
+            "gpt-4o-mini": {
+                "input_per_million": 0.15,
+                "cached_input_per_million": 0.075,  # verified OpenAI discount
+                "output_per_million": 0.60,
+            },
+            "gpt-4": {
+                "input_per_million": 30.00,
+                "cached_input_per_million": 0.0,  # not configured — no official cached-input price
+                "output_per_million": 60.00,
+            },
+            "gpt-3.5-turbo": {
+                "input_per_million": 0.50,
+                "cached_input_per_million": 0.0,  # not configured — no official cached-input price
+                "output_per_million": 1.50,
+            },
         },
-        description="Per-model token pricing: {model: {prompt: $/token, completion: $/token}}",
+        description=(
+            "Per-model token pricing: "
+            "{model: {input_per_million: $/M, "
+            "cached_input_per_million: $/M, output_per_million: $/M}}"
+        ),
     )
 
     @field_validator("model_pricing", mode="before")
     @classmethod
     def parse_model_pricing(cls, v: object) -> object:
-        """Parse JSON string env var and validate all prices are non-negative."""
+        """Parse JSON string env var and validate prices.
+
+        Accepts only the new format keys (``input_per_million``,
+        ``cached_input_per_million``, ``output_per_million``).
+        Rejects booleans, negative values, NaN, infinity, and
+        non-numeric values.
+        """
+        import math
+
         if isinstance(v, str):
             v = json.loads(v)
         if isinstance(v, dict):
+            allowed_keys = {"input_per_million", "cached_input_per_million", "output_per_million"}
             for model, prices in v.items():
                 if not isinstance(prices, dict):
                     raise ValueError(
                         f"Invalid pricing for {model!r}: expected dict, got {type(prices).__name__}"
                     )
-                for key in ("prompt", "completion"):
-                    val = prices.get(key)
-                    if val is None:
-                        raise ValueError(f"Missing {key!r} price for {model!r}")
+                for key in allowed_keys:
+                    val = prices.get(key, 0.0)
+                    # A missing key is fine — defaults to 0.0 at lookup time
+                    if key not in prices:
+                        continue
+                    if isinstance(val, bool):
+                        raise ValueError(
+                            f"Boolean {val!r} not allowed as {key!r} price for {model!r}"
+                        )
                     if not isinstance(val, int | float):
                         raise ValueError(f"Invalid {key!r} price for {model!r}: {val!r}")
-                    if val == 0:
-                        logger.warning(
-                            "Zero %s price for model %r — cost tracking will undercount",
-                            key,
-                            model,
-                        )
+                    if math.isnan(val) or math.isinf(val):
+                        raise ValueError(f"NaN/inf not allowed as {key!r} price for {model!r}")
                     if val < 0:
                         raise ValueError(
                             f"{key!r} price for {model!r} must be non-negative, got {val}"
                         )
+                    # price == 0.0 is accepted silently (valid configuration)
         return v
 
     # Calendar Configuration

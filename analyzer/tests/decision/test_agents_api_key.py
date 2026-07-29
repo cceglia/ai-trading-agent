@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+from tests.conftest import make_raw_response
+
 
 class TestAgentApiKey:
     def test_synthesizer_passes_api_key_to_client(self):
@@ -308,10 +310,7 @@ class TestReasoningEffortIntegration:
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
-            raw_response = MagicMock()
-            raw_response.usage.prompt_tokens = 100
-            raw_response.usage.completion_tokens = 50
-            raw_response.usage.total_tokens = 150
+            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
             mock_client.create_with_completion.return_value = (
                 MagicMock(),
                 raw_response,
@@ -335,10 +334,7 @@ class TestReasoningEffortIntegration:
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
-            raw_response = MagicMock()
-            raw_response.usage.prompt_tokens = 100
-            raw_response.usage.completion_tokens = 50
-            raw_response.usage.total_tokens = 150
+            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
             mock_client.create_with_completion.return_value = (
                 MagicMock(),
                 raw_response,
@@ -362,10 +358,7 @@ class TestReasoningEffortIntegration:
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
-            raw_response = MagicMock()
-            raw_response.usage.prompt_tokens = 100
-            raw_response.usage.completion_tokens = 50
-            raw_response.usage.total_tokens = 150
+            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
             mock_client.create_with_completion.return_value = (
                 MagicMock(),
                 raw_response,
@@ -389,10 +382,7 @@ class TestReasoningEffortIntegration:
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             mock_client = MagicMock()
-            raw_response = MagicMock()
-            raw_response.usage.prompt_tokens = 100
-            raw_response.usage.completion_tokens = 50
-            raw_response.usage.total_tokens = 150
+            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
             mock_client.create_with_completion.return_value = (
                 MagicMock(),
                 raw_response,
@@ -417,10 +407,7 @@ class TestReasoningEffortIntegration:
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
             prebuilt = MagicMock()
             mock_client = MagicMock()
-            raw_response = MagicMock()
-            raw_response.usage.prompt_tokens = 100
-            raw_response.usage.completion_tokens = 50
-            raw_response.usage.total_tokens = 150
+            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
             mock_client.create_with_completion.return_value = (
                 MagicMock(),
                 raw_response,
@@ -546,49 +533,24 @@ class TestAgentCostLogging:
 
     These tests verify that agents:
     - Use create_with_completion() instead of create()
-    - Extract prompt_tokens, completion_tokens, total_tokens from raw_response.usage
-    - Call CostTracker.record_call(model, prompt_tokens, completion_tokens)
+    - Extract token usage from raw_response via parse_usage()
+    - Call CostTracker.record_call(model, LLMUsage) — note the new LLMUsage arg
     - Log token usage and cost per call at INFO level
+    - Still return the correct model when usage is missing
     """
 
     # ------------------------------------------------------------------
-    # Helpers
-    # ------------------------------------------------------------------
-
-    @staticmethod
-    def _make_raw_response(
-        prompt_tokens: int = 100,
-        completion_tokens: int = 50,
-        total_tokens: int = 150,
-    ):
-        """Build a mock raw_response with a usable .usage attribute."""
-        raw = MagicMock()
-        raw.usage.prompt_tokens = prompt_tokens
-        raw.usage.completion_tokens = completion_tokens
-        raw.usage.total_tokens = total_tokens
-        return raw
-
-    @staticmethod
-    def _make_raw_response_no_usage():
-        """Build a mock raw_response with usage set to None."""
-        raw = MagicMock()
-        raw.usage = None
-        return raw
-
-    # ------------------------------------------------------------------
-    # Test 1 — Synthesizer logs token usage
+    # Test 1 — Synthesizer logs token usage (new field names)
     # ------------------------------------------------------------------
 
     def test_synthesizer_logs_token_usage(self, caplog):
-        """SynthesizerAgent must log prompt_tokens, completion_tokens and total_tokens."""
+        """SynthesizerAgent must log input, output and total_tokens."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
 
-        raw_response = self._make_raw_response(
-            prompt_tokens=100, completion_tokens=50, total_tokens=150
-        )
+        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -604,11 +566,11 @@ class TestAgentCostLogging:
             )
 
             records_text = " ".join(r.message for r in caplog.records)
-            assert "prompt=100" in records_text, (
-                f"Expected log to contain 'prompt=100'. Logs: {records_text}"
+            assert "input=100" in records_text, (
+                f"Expected log to contain 'input=100'. Logs: {records_text}"
             )
-            assert "completion=50" in records_text, (
-                f"Expected log to contain 'completion=50'. Logs: {records_text}"
+            assert "output=50" in records_text, (
+                f"Expected log to contain 'output=50'. Logs: {records_text}"
             )
             assert "total=150" in records_text, (
                 f"Expected log to contain 'total=150'. Logs: {records_text}"
@@ -626,9 +588,7 @@ class TestAgentCostLogging:
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
 
-        raw_response = self._make_raw_response(
-            prompt_tokens=100, completion_tokens=50, total_tokens=150
-        )
+        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -660,9 +620,7 @@ class TestAgentCostLogging:
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import DeciderAgent
 
-        raw_response = self._make_raw_response(
-            prompt_tokens=200, completion_tokens=80, total_tokens=280
-        )
+        raw_response = make_raw_response(input_tokens=200, output_tokens=80, total_tokens=280)
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -678,8 +636,8 @@ class TestAgentCostLogging:
             )
 
             records_text = " ".join(r.message for r in caplog.records)
-            assert "prompt=200" in records_text
-            assert "completion=80" in records_text
+            assert "input=200" in records_text
+            assert "output=80" in records_text
             assert "total=280" in records_text
 
     # ------------------------------------------------------------------
@@ -693,9 +651,7 @@ class TestAgentCostLogging:
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import ReviewerAgent
 
-        raw_response = self._make_raw_response(
-            prompt_tokens=150, completion_tokens=60, total_tokens=210
-        )
+        raw_response = make_raw_response(input_tokens=150, output_tokens=60, total_tokens=210)
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -711,8 +667,8 @@ class TestAgentCostLogging:
             )
 
             records_text = " ".join(r.message for r in caplog.records)
-            assert "prompt=150" in records_text
-            assert "completion=60" in records_text
+            assert "input=150" in records_text
+            assert "output=60" in records_text
             assert "total=210" in records_text
 
     # ------------------------------------------------------------------
@@ -726,7 +682,7 @@ class TestAgentCostLogging:
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
 
-        raw_response = self._make_raw_response()
+        raw_response = make_raw_response()
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -752,17 +708,17 @@ class TestAgentCostLogging:
             )
 
     # ------------------------------------------------------------------
-    # Test 6 — Log when usage is None
+    # Test 6 — Log when usage is None (all-zero)
     # ------------------------------------------------------------------
 
     def test_log_when_usage_none(self, caplog):
-        """When raw_response.usage is None, agents must log N/A gracefully."""
+        """When raw_response.usage is None, agents must log zero cost gracefully."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
 
-        raw_response = self._make_raw_response_no_usage()
+        raw_response = make_raw_response(usage_none=True)
         mock_result = MagicMock()
 
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -778,9 +734,9 @@ class TestAgentCostLogging:
             )
 
             records_text = " ".join(r.message for r in caplog.records)
-            # Should contain some indicator that usage was unavailable
-            assert "N/A" in records_text or None, (
-                f"Expected log to contain 'N/A' when usage is None. Logs: {records_text}"
+            # Should contain zero cost
+            assert "cost=$0.000000" in records_text, (
+                f"Expected log to contain 'cost=$0.000000' when usage is None. Logs: {records_text}"
             )
 
     # ------------------------------------------------------------------
@@ -796,9 +752,7 @@ class TestAgentCostLogging:
         from src.decision.agents import SynthesizerAgent
         from src.decision.models import MarketContextSummary
 
-        raw_response = self._make_raw_response(
-            prompt_tokens=100, completion_tokens=50, total_tokens=150
-        )
+        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
         # First element must be a real model instance — synthesize() returns it directly
         expected_result = MarketContextSummary(
             symbol="EURUSD",
@@ -826,8 +780,8 @@ class TestAgentCostLogging:
 
             # Logs must contain token and cost info (default CostTracker works)
             records_text = " ".join(r.message for r in caplog.records)
-            assert "prompt=100" in records_text
-            assert "completion=50" in records_text
+            assert "input=100" in records_text
+            assert "output=50" in records_text
             assert "total=150" in records_text
             assert re.search(r"cost=\$[\d.]+", records_text)
 
@@ -836,9 +790,7 @@ class TestAgentCostLogging:
     # ------------------------------------------------------------------
 
     def test_agent_with_empty_pricing_works(self, caplog):
-        """Agents with cost_tracker=CostTracker(pricing={}) still work when
-        raw_response.usage is None (no usage data), since record_call is never
-        invoked and the pricing dict is never consulted."""
+        """Agents with empty pricing dict still work when usage is None."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
@@ -846,7 +798,7 @@ class TestAgentCostLogging:
         from src.decision.cost_tracker import CostTracker
         from src.decision.models import MarketContextSummary
 
-        raw_response = self._make_raw_response_no_usage()
+        raw_response = make_raw_response(usage_none=True)
         expected_result = MarketContextSummary(
             symbol="EURUSD",
             bias="bullish",
@@ -872,12 +824,12 @@ class TestAgentCostLogging:
             assert isinstance(result, MarketContextSummary)
             assert result is expected_result
 
-            # Logs should indicate N/A since usage was not available
+            # Logs should indicate zero cost since usage was not available
             records_text = " ".join(r.message for r in caplog.records)
-            assert "N/A" in records_text
+            assert "cost=$0.000000" in records_text
 
-            # verify the cost_tracker was untouched
-            assert agent.cost_tracker.call_count == 0
+            # verify the cost_tracker was untouched (usage=None → all-zero LLMUsage)
+            assert agent.cost_tracker.call_count == 1  # call IS counted
             assert agent.cost_tracker.total_cost == 0.0
 
     # ------------------------------------------------------------------
@@ -888,7 +840,7 @@ class TestAgentCostLogging:
         """Agent public methods must still return correct model types."""
         from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 
-        raw_response = self._make_raw_response()
+        raw_response = make_raw_response()
 
         # --- Synthesizer ---
         with patch("src.decision.agents.instructor.from_openai") as mock_from:
@@ -975,3 +927,138 @@ class TestAgentCostLogging:
             assert isinstance(result_rev, ReviewVerdict), (
                 f"review() must return ReviewVerdict, got {type(result_rev)}"
             )
+
+    # ------------------------------------------------------------------
+    # Test 10 — Agent returns content even when usage is None
+    # ------------------------------------------------------------------
+
+    def test_agent_returns_content_when_usage_none(self):
+        """Agent returns the generated model content even without usage data."""
+        from src.decision.models import MarketContextSummary
+
+        raw_response = make_raw_response(usage_none=True)
+        expected_result = MarketContextSummary(
+            symbol="EURUSD",
+            bias="bullish",
+            confidence=75.0,
+            reasoning="Test reasoning",
+        )
+
+        with patch("src.decision.agents.instructor.from_openai") as mock_from:
+            mock_client = MagicMock()
+            mock_client.create_with_completion.return_value = (
+                expected_result,
+                raw_response,
+            )
+            mock_from.return_value = mock_client
+            from src.decision.agents import SynthesizerAgent
+
+            agent = SynthesizerAgent(api_key="test")
+            result = agent.synthesize(
+                structure_analysis={"test": True},
+                calendar_events=[],
+                symbol="EURUSD",
+            )
+
+            assert result is expected_result
+            assert result.symbol == "EURUSD"
+            assert result.bias == "bullish"
+
+    # ------------------------------------------------------------------
+    # Test 11 — Agent returns content when usage has partial fields
+    # ------------------------------------------------------------------
+
+    def test_agent_returns_content_when_partial_usage(self):
+        """Agent returns content when usage has some fields but not others."""
+        # Missing output_tokens_details
+        from types import SimpleNamespace
+
+        from src.decision.models import MarketContextSummary
+
+        raw_response = SimpleNamespace(
+            usage=SimpleNamespace(
+                input_tokens=100,
+                output_tokens=50,
+                total_tokens=150,
+                input_tokens_details=None,
+                output_tokens_details=None,
+            )
+        )
+        expected_result = MarketContextSummary(
+            symbol="EURUSD",
+            bias="neutral",
+            confidence=50.0,
+            reasoning="Partial usage test",
+        )
+
+        with patch("src.decision.agents.instructor.from_openai") as mock_from:
+            mock_client = MagicMock()
+            mock_client.create_with_completion.return_value = (
+                expected_result,
+                raw_response,
+            )
+            mock_from.return_value = mock_client
+            from src.decision.agents import SynthesizerAgent
+
+            agent = SynthesizerAgent(api_key="test")
+            result = agent.synthesize(
+                structure_analysis={"test": True},
+                calendar_events=[],
+                symbol="EURUSD",
+            )
+
+            assert result is expected_result
+            assert result.bias == "neutral"
+
+    # ------------------------------------------------------------------
+    # Test 12 — Unknown model in pricing does not crash
+    # ------------------------------------------------------------------
+
+    def test_agent_unknown_model_pricing_returns_content(self):
+        """Agent works when model is not in pricing table."""
+        from src.decision.cost_tracker import CostTracker
+        from src.decision.models import MarketContextSummary
+
+        # Pricing only has gpt-4o, but agent uses a different model
+        cost_tracker = CostTracker(
+            pricing={
+                "gpt-4o": {
+                    "input_per_million": 2.50,
+                    "cached_input_per_million": 1.25,
+                    "output_per_million": 10.00,
+                }
+            }
+        )
+
+        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
+        expected_result = MarketContextSummary(
+            symbol="EURUSD",
+            bias="bullish",
+            confidence=75.0,
+            reasoning="Test unknown model",
+        )
+
+        with patch("src.decision.agents.instructor.from_openai") as mock_from:
+            mock_client = MagicMock()
+            mock_client.create_with_completion.return_value = (
+                expected_result,
+                raw_response,
+            )
+            mock_from.return_value = mock_client
+            from src.decision.agents import SynthesizerAgent
+
+            agent = SynthesizerAgent(
+                api_key="test",
+                model="gpt-4-unknown",
+                cost_tracker=cost_tracker,
+            )
+            result = agent.synthesize(
+                structure_analysis={"test": True},
+                calendar_events=[],
+                symbol="EURUSD",
+            )
+
+            assert result is expected_result
+            # Call counted, cost is zero
+            assert cost_tracker.call_count == 1
+            assert cost_tracker.total_cost == 0.0

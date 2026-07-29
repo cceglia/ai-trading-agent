@@ -731,9 +731,18 @@ class TestMainIntegrationCostLimit:
         side_effect that calls record_call(), triggering the limit check.
         """
         from src.decision.cost_tracker import CostTracker
+        from src.decision.usage import LLMUsage
 
         # Use a real CostTracker with a very low limit
-        real_ct = CostTracker()
+        real_ct = CostTracker(
+            pricing={
+                "gpt-4": {
+                    "input_per_million": 30.0,
+                    "cached_input_per_million": 0.0,
+                    "output_per_million": 60.0,
+                }
+            }
+        )
         real_ct.set_limit(0.0001)  # Extremely low — any real call exceeds this
 
         # Track whether set_limit was called (it happens inside _run_pipeline)
@@ -747,8 +756,14 @@ class TestMainIntegrationCostLimit:
             nonlocal call_count
             call_count += 1
             # Record a real cost that exceeds the tiny limit
-            # gpt-4 prompt rate = 0.00003/token → 100 tokens = 0.003 > 0.0001
-            real_ct.record_call("gpt-4", prompt_tokens=100, completion_tokens=50)
+            # gpt-4 input rate = $30/M, output = $60/M
+            # 100 input + 50 output = 0.003 + 0.003 = 0.006 > 0.0001
+            real_ct.record_call(
+                "gpt-4",
+                LLMUsage(
+                    input_tokens=100, uncached_input_tokens=100, output_tokens=50, total_tokens=150
+                ),
+            )
             return {"errors": [], "fatal_error": None}
 
         mock_graph.run.side_effect = side_effect_with_cost_tracking
@@ -821,9 +836,23 @@ class TestMainTelegramNotification:
         mock_graph.run.return_value = {
             "errors": [],
             "fatal_error": None,
-            "decision": {"action": "buy_setup", "entry_price": "1900.00"},
-            "market_context": {"bias": "bullish", "confidence": 0.85},
-            "review": {"approved": True},
+            "broker_now": None,
+            "decision": {
+                "symbol": "XAUUSD",
+                "action": "buy_setup",
+                "entry_price": 1900.00,
+                "reasoning": "Bullish setup with good R/R",
+            },
+            "market_context": {
+                "symbol": "XAUUSD",
+                "bias": "bullish",
+                "confidence": 85.0,
+                "reasoning": "Strong bullish structure",
+            },
+            "review": {
+                "approved": True,
+                "reasoning": "All criteria met",
+            },
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -874,9 +903,23 @@ class TestMainTelegramNotification:
         mock_graph.run.return_value = {
             "errors": [],
             "fatal_error": None,
-            "decision": {"action": "buy_setup", "entry_price": "1900.00"},
-            "market_context": {"bias": "bullish"},
-            "review": {"approved": True},
+            "broker_now": None,
+            "decision": {
+                "symbol": "XAUUSD",
+                "action": "buy_setup",
+                "entry_price": 1900.00,
+                "reasoning": "Bullish setup",
+            },
+            "market_context": {
+                "symbol": "XAUUSD",
+                "bias": "bullish",
+                "confidence": 85.0,
+                "reasoning": "Strong structure",
+            },
+            "review": {
+                "approved": True,
+                "reasoning": "OK",
+            },
         }
         mock_graph_cls.return_value = mock_graph
 

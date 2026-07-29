@@ -11,6 +11,7 @@ from src.decision.prompts import (
     REVIEWER_SYSTEM_PROMPT,
     SYNTHESIZER_SYSTEM_PROMPT,
 )
+from src.decision.usage import LLMUsage, parse_usage
 
 logger = logging.getLogger(__name__)
 
@@ -18,29 +19,25 @@ logger = logging.getLogger(__name__)
 def _log_llm_call(
     agent_name: str,
     model: str,
-    usage: Any,
+    usage: LLMUsage,
     cost_tracker: CostTracker,
-) -> float | None:
-    """Record an LLM call and log its cost. Returns cost or None if no usage."""
-    if usage is not None:
-        cost = cost_tracker.record_call(model, usage.prompt_tokens, usage.completion_tokens)
-        logger.info(
-            "LLM call: agent=%s model=%s tokens=(prompt=%d completion=%d total=%d) cost=$%.4f",
-            agent_name,
-            model,
-            usage.prompt_tokens,
-            usage.completion_tokens,
-            usage.total_tokens,
-            cost,
-        )
-        return cost
-    else:
-        logger.info(
-            "LLM call: agent=%s model=%s tokens=N/A cost=N/A (no usage data)",
-            agent_name,
-            model,
-        )
-        return None
+) -> LLMUsage:
+    """Record an LLM call and log its cost. Returns enriched usage with costs."""
+    enriched = cost_tracker.record_call(model, usage)
+    logger.info(
+        "LLM call: agent=%s model=%s input=%d cached=%d uncached=%d "
+        "output=%d reasoning=%d total=%d cost=$%.6f",
+        agent_name,
+        model,
+        enriched.input_tokens,
+        enriched.cached_input_tokens,
+        enriched.uncached_input_tokens,
+        enriched.output_tokens,
+        enriched.reasoning_tokens,
+        enriched.total_tokens,
+        enriched.total_cost,
+    )
+    return enriched
 
 
 class SynthesizerAgent:
@@ -100,7 +97,8 @@ class SynthesizerAgent:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
         response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+        usage = parse_usage(raw_response)
+        _log_llm_call(self.__class__.__name__, self.model, usage, self.cost_tracker)
 
         logger.info("Synthesis complete: bias=%s confidence=%s", response.bias, response.confidence)
         return response  # type: ignore[no-any-return]
@@ -164,7 +162,8 @@ class DeciderAgent:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
         response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+        usage = parse_usage(raw_response)
+        _log_llm_call(self.__class__.__name__, self.model, usage, self.cost_tracker)
 
         logger.info("Decision: action=%s", response.action)
         return response  # type: ignore[no-any-return]
@@ -223,7 +222,8 @@ class ReviewerAgent:
             create_kwargs["reasoning_effort"] = self.reasoning_effort
         response, raw_response = self.client.create_with_completion(**create_kwargs)
 
-        _log_llm_call(self.__class__.__name__, self.model, raw_response.usage, self.cost_tracker)
+        usage = parse_usage(raw_response)
+        _log_llm_call(self.__class__.__name__, self.model, usage, self.cost_tracker)
 
         logger.info("Review complete: approved=%s", response.approved)
         return response  # type: ignore[no-any-return]
