@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.decision.cost_tracker import CostTracker
+from src.decision.cost_tracker import CostLimitExceeded, CostTracker
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
@@ -993,6 +993,10 @@ def test_analyze_structure_fresh_saves_mtf_cache(tmp_path, monkeypatch):
 
     cache_dir = tmp_path / "analysis"
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "00:00")
+    from src.analysis.candle_cache import reload_settings
+
+    reload_settings()
 
     broker_time = datetime(2026, 7, 21, 14, 0)
 
@@ -1055,6 +1059,10 @@ def test_analyze_structure_saves_h1_cache(tmp_path, monkeypatch):
 
     cache_dir = tmp_path / "analysis"
     monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(cache_dir))
+    monkeypatch.setenv("TRADING_D1_CLOSE_TIME", "00:00")
+    from src.analysis.candle_cache import reload_settings
+
+    reload_settings()
 
     mock_data_provider = MagicMock()
     mock_data_provider.get_candles.return_value = (
@@ -1885,3 +1893,319 @@ def test_get_broker_time_called_once_per_run(
         "get_broker_time() should not be called in _synthesize_context "
         "when broker_now is already in state"
     )
+
+
+# =============================================================================
+# TASK-2: Graph node re-raise guards for CostLimitExceeded
+# =============================================================================
+
+
+class TestCostLimitReRaise:
+    """Tests for ``except CostLimitExceeded: raise`` in every graph node.
+
+    Without the re-raise guards, ``CostLimitExceeded`` is caught by the
+    generic ``except Exception`` handlers and returned as
+    ``{"fatal_error": msg}`` instead of propagating. These tests verify
+    that each node lets ``CostLimitExceeded`` propagate *out* of
+    ``graph.run()``, while a normal ``Exception`` still produces a
+    ``fatal_error`` result dict (unchanged behaviour).
+
+    Because TASK-1 is already implemented (``CostLimitExceeded`` exists),
+    but TASK-2 production code has *not* been written yet, every
+    ``pytest.raises(CostLimitExceeded)`` test here is expected to FAIL
+    RED — the exception will be swallowed by ``except Exception`` and
+    the test will get a result dict instead.
+    """
+
+    # ------------------------------------------------------------------
+    # Helper: a valid multi-timeframe result for mock_structure_analyzer
+    # so that _analyze_structure can complete and later nodes can be
+    # exercised.
+    # ------------------------------------------------------------------
+    _VALID_MTF_RESULT: dict = {
+        "timeframes": {
+            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
+            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
+            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
+        },
+        "confluence": {"status": "NO_VALID_CANDIDATE"},
+    }
+
+    _CSV_DATA: str = "time,open,high,low,close\n2024-01-01,1.0850,1.0900,1.0800,1.0875\n"
+
+    # ------------------------------------------------------------------
+    # Tests 1-3: LLM-agent nodes (synthesize, decide, review)
+    # ------------------------------------------------------------------
+
+    def test_synthesize_context_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_decider,
+        mock_reviewer,
+        monkeypatch,
+        tmp_path,
+    ):
+        """When ``SynthesizerAgent.synthesize`` raises ``CostLimitExceeded``,
+        it must propagate through ``_synthesize_context`` out of
+        ``graph.run()`` — not be caught and returned as fatal_error."""
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 25, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = self._CSV_DATA
+        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.side_effect = CostLimitExceeded(limit=0.05, total_cost=0.06)
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            graph.run("EURUSD")
+
+    def test_decide_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_reviewer,
+        monkeypatch,
+        tmp_path,
+    ):
+        """When ``DeciderAgent.decide`` raises ``CostLimitExceeded``,
+        it must propagate through ``_decide`` out of ``graph.run()``."""
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 25, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = self._CSV_DATA
+        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+
+        # Synthesizer must succeed so _decide is reached
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = MarketContextSummary(
+            symbol="EURUSD",
+            bias=BiasLevel.BULLISH,
+            confidence=75.0,
+            reasoning="Bullish structure",
+        )
+
+        mock_decider = MagicMock()
+        mock_decider.decide.side_effect = CostLimitExceeded(limit=0.05, total_cost=0.06)
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            graph.run("EURUSD")
+
+    def test_review_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        monkeypatch,
+        tmp_path,
+    ):
+        """When ``ReviewerAgent.review`` raises ``CostLimitExceeded``,
+        it must propagate through ``_review`` out of ``graph.run()``."""
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 25, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = self._CSV_DATA
+        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+
+        mock_synthesizer = MagicMock()
+        mock_synthesizer.synthesize.return_value = MarketContextSummary(
+            symbol="EURUSD",
+            bias=BiasLevel.BULLISH,
+            confidence=75.0,
+            reasoning="Bullish structure",
+        )
+
+        mock_decider = MagicMock()
+        mock_decider.decide.return_value = DecisionOutput(
+            symbol="EURUSD",
+            action=DecisionAction.BUY_SETUP,
+            entry_price=1.0875,
+            stop_loss=1.0825,
+            take_profit=1.0975,
+            reasoning="Good setup",
+            risk_reward_ratio=2.0,
+        )
+
+        mock_reviewer = MagicMock()
+        mock_reviewer.review.side_effect = CostLimitExceeded(limit=0.05, total_cost=0.06)
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            graph.run("EURUSD")
+
+    # ------------------------------------------------------------------
+    # Tests 4-6: Data-provider nodes (fetch_data, analyze_structure,
+    #            evaluate_calendar)
+    # ------------------------------------------------------------------
+
+    def test_fetch_data_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+        trading_graph,
+    ):
+        """When ``DataSource.get_positions`` raises ``CostLimitExceeded``,
+        it must propagate through ``_fetch_data`` out of ``graph.run()``.
+
+        We override ``get_positions`` on the fixture's mock to raise;
+        the ``trading_graph`` fixture uses the same mock, so it picks up
+        the change automatically.
+        """
+        mock_data_provider.get_positions.side_effect = CostLimitExceeded(
+            limit=0.05, total_cost=0.06
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            trading_graph.run("EURUSD")
+
+    def test_analyze_structure_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+        monkeypatch,
+        tmp_path,
+    ):
+        """When ``DataSource.get_candles`` raises ``CostLimitExceeded``
+        inside ``_analyze_structure``'s main try/except, it must
+        propagate — not be caught and returned as fatal_error.
+
+        ``get_broker_time()`` is set to succeed so we get past the
+        outer try/except in ``_analyze_structure`` and exercise the
+        main try/except where ``get_candles`` is called.
+        """
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 25, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        # Override get_candles to raise instead of returning CSV
+        mock_data_provider.get_candles.side_effect = CostLimitExceeded(limit=0.05, total_cost=0.06)
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            graph.run("EURUSD")
+
+    def test_evaluate_calendar_re_raises_cost_limit_exceeded(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+        monkeypatch,
+        tmp_path,
+    ):
+        """When ``CalendarProvider.fetch_events`` raises
+        ``CostLimitExceeded``, it must propagate through
+        ``_evaluate_calendar`` out of ``graph.run()``."""
+        from datetime import datetime
+
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+
+        broker_time = datetime(2026, 7, 25, 14, 0)
+        mock_data_provider.get_broker_time.return_value = broker_time
+        mock_data_provider.get_candles.return_value = self._CSV_DATA
+        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+
+        mock_calendar_provider.fetch_events.side_effect = CostLimitExceeded(
+            limit=0.05, total_cost=0.06
+        )
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        with pytest.raises(CostLimitExceeded):
+            graph.run("EURUSD")
+
+    # ------------------------------------------------------------------
+    # Test 7: Normal Exception handling is unchanged
+    # ------------------------------------------------------------------
+
+    def test_normal_exception_still_handled(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+        trading_graph,
+    ):
+        """A normal ``Exception`` (not ``CostLimitExceeded``) must still
+        be caught and returned as ``{"fatal_error": ...}`` by every node.
+        We trigger it in ``_fetch_data`` and verify the run returns a
+        dict with a fatal_error message — it does NOT re-raise.
+        """
+        mock_data_provider.get_positions.side_effect = Exception("Something bad")
+
+        result = trading_graph.run("EURUSD")
+
+        assert isinstance(result, dict), (
+            f"Expected dict result from graph.run(), got {type(result).__name__}"
+        )
+        assert "fatal_error" in result, (
+            f"Expected fatal_error in result dict, got keys: {list(result.keys())}"
+        )
+        assert "Something bad" in result["fatal_error"]

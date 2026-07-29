@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "analyzer/main.py": {
-    "mtime": 1785184268.5922499,
-    "ast_hash": "f6e3162aad0d1a434e107f7b803bd9de",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "d4bfa07257fa8ac73afa25f70f08198b",
     "semantic_hash": ""
   },
   "analyzer/pyproject.toml": {
@@ -30,7 +30,7 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/candle_cache.py": {
-    "mtime": 1785218133.441682,
+    "mtime": 1785228125.33008,
     "ast_hash": "76d0433bae6ff0abd2d565ecc9e816d9",
     "semantic_hash": ""
   },
@@ -145,8 +145,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/cost_tracker.py": {
-    "mtime": 1785045455.3896227,
-    "ast_hash": "1e2e304c70fbe0f99bb0652fc2ba567a",
+    "mtime": 1785268262.7437372,
+    "ast_hash": "4110c3680e07d27180235ec9b249f44c",
     "semantic_hash": ""
   },
   "analyzer/src/decision/models.py": {
@@ -220,7 +220,7 @@
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/test_candle_cache.py": {
-    "mtime": 1785218133.4425347,
+    "mtime": 1785228125.33008,
     "ast_hash": "d7b5b8f0eff7fb4a5ef3e5ed1708eaa7",
     "semantic_hash": ""
   },
@@ -245,7 +245,7 @@
     "semantic_hash": ""
   },
   "analyzer/tests/conftest.py": {
-    "mtime": 1785218133.4428794,
+    "mtime": 1785228125.33008,
     "ast_hash": "4915938b67052deb4b67285415d3eba2",
     "semantic_hash": ""
   },
@@ -270,8 +270,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_cost_tracker.py": {
-    "mtime": 1785046796.8923287,
-    "ast_hash": "bd185de81074df1b4d6358b979369244",
+    "mtime": 1785268087.0251508,
+    "ast_hash": "904b3d7497d6a219349ab19d9bf74a1d",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_models.py": {
@@ -360,8 +360,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/test_main_multi_symbol.py": {
-    "mtime": 1785176842.5096643,
-    "ast_hash": "8eeb8dcd4fc042ddf52fedd530c904eb",
+    "mtime": 1785228516.8705487,
+    "ast_hash": "0723ddabe1f329eefcfe1f976a8d7650",
     "semantic_hash": ""
   },
   "analyzer/tests/test_project_setup.py": {
@@ -470,13 +470,13 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1785082913.8997939,
-    "ast_hash": "0a55316318a27478427acdce30202620",
+    "mtime": 1785242960.4415822,
+    "ast_hash": "8912d382043debc2f453d78ad34b9def",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785088536.034053,
-    "ast_hash": "ab26437827fa7e0cf0fc82f1d979845e",
+    "mtime": 1785242683.1261408,
+    "ast_hash": "faac9792c9f701eecb921536663feace",
     "semantic_hash": ""
   },
   "ui/index.html": {
@@ -495,12 +495,12 @@
     "semantic_hash": ""
   },
   "server/pyproject.toml": {
-    "mtime": 1785218133.4434175,
+    "mtime": 1785228125.3346598,
     "ast_hash": "b58c9d85f6821d85dc4a8ee8f49b0a9b",
     "semantic_hash": ""
   },
   "server/src/settings.py": {
-    "mtime": 1785218133.444533,
+    "mtime": 1785228125.3346598,
     "ast_hash": "043826764e809a5fc228245bcff73dc7",
     "semantic_hash": ""
   },
@@ -515,18 +515,18 @@
     "semantic_hash": ""
   },
   "server/src/scanner.py": {
-    "mtime": 1785218133.444223,
-    "ast_hash": "7e056122ddf93c86923fd84a3e4b7f8e",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "ec2f440efb8251585fdae2408ccdef59",
     "semantic_hash": ""
   },
   "server/src/runner.py": {
-    "mtime": 1785218133.4439483,
+    "mtime": 1785228125.3346598,
     "ast_hash": "52417ee53c0be39f7da4320019ed33a8",
     "semantic_hash": ""
   },
   "server/src/main.py": {
-    "mtime": 1785218133.4436982,
-    "ast_hash": "403aff52771c1fcbfc1b449b9b1543b8",
+    "mtime": 1785228125.3346598,
+    "ast_hash": "2850cc3918504e8905caf00e5f163f82",
     "semantic_hash": ""
   },
   "server/tests/__init__.py": {
@@ -535,8 +535,8 @@
     "semantic_hash": ""
   },
   "server/tests/conftest.py": {
-    "mtime": 1785218133.4448447,
-    "ast_hash": "756b679e866209cc6caa79c95c19a0be",
+    "mtime": 1785228125.3346598,
+    "ast_hash": "92a543524f06f9db136374bf0f2beff2",
     "semantic_hash": ""
   },
   "server/tests/test_integration.py": {
@@ -545,18 +545,18 @@
     "semantic_hash": ""
   },
   "server/tests/test_routes.py": {
-    "mtime": 1785218133.445117,
-    "ast_hash": "a4a8afc27b03dbb2d52c5f307e899059",
+    "mtime": 1785242611.0983226,
+    "ast_hash": "587e8b5f0dbf4bf3fa100d198805b817",
     "semantic_hash": ""
   },
   "server/tests/test_runner.py": {
-    "mtime": 1785218133.445387,
-    "ast_hash": "f4d51e8e35fd7a3e3f4c9a13ed7d0d2d",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "fcd8e839bb8dff42a02f36ce12060304",
     "semantic_hash": ""
   },
   "server/tests/test_scanner.py": {
-    "mtime": 1785218133.4456794,
-    "ast_hash": "e0ae52f758eb0b4ec574de53684cb6df",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "e1de6e384261f186b0c855dcfda05d71",
     "semantic_hash": ""
   },
   "analyzer/src/notification/__init__.py": {
@@ -565,7 +565,7 @@
     "semantic_hash": ""
   },
   "analyzer/src/notification/telegram_sender.py": {
-    "mtime": 1785218133.442097,
+    "mtime": 1785228125.33008,
     "ast_hash": "cd30f07cbf804a5260df1cc1e6106c11",
     "semantic_hash": ""
   },
@@ -580,8 +580,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/notification/test_telegram_sender.py": {
-    "mtime": 1785218133.443141,
-    "ast_hash": "8dceed651e6e1f2a03f90aa86e882628",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "06a451f8a9a99e431f16bbeffdf3fd74",
     "semantic_hash": ""
   },
   "server/src/middleware/__init__.py": {
@@ -590,8 +590,8 @@
     "semantic_hash": ""
   },
   "server/src/middleware/auth.py": {
-    "mtime": 1785214729.5298297,
-    "ast_hash": "73193764d9749cbfbb371f2dda19703a",
+    "mtime": 1785231474.7183585,
+    "ast_hash": "67943d6aab7c76d9c925435b30d6ebdc",
     "semantic_hash": ""
   },
   "server/src/middleware/ratelimit.py": {
@@ -600,18 +600,13 @@
     "semantic_hash": ""
   },
   "server/tests/test_main.py": {
-    "mtime": 1785215683.7897515,
-    "ast_hash": "298f5ac34573b7d9515cdcf30463d80f",
+    "mtime": 1785242611.0993226,
+    "ast_hash": "382f6e46d485c68467573a8988b21d27",
     "semantic_hash": ""
   },
   "server/tests/test_settings.py": {
     "mtime": 1785218013.1193018,
     "ast_hash": "6248d68e81939dd31f5cb35cea192125",
-    "semantic_hash": ""
-  },
-  "REQUIREMENTS_ANALYSIS.md": {
-    "mtime": 1785185502.240359,
-    "ast_hash": "db4d53469e7c0a68f21897748768cdbc",
     "semantic_hash": ""
   }
 }

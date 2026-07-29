@@ -13,7 +13,7 @@ from src.analysis.structure_analyzer import MarketStructureEngine
 from src.calendar.forexfactory import ForexFactoryCalendar
 from src.data.terminal_data_provider import TerminalDataProvider
 from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
-from src.decision.cost_tracker import CostTracker
+from src.decision.cost_tracker import CostLimitExceeded, CostTracker
 from src.logging_config import setup_logging
 from src.notification.telegram_sender import send_trade_notification
 from src.orchestrator.graph import TradingGraph
@@ -354,6 +354,8 @@ def _run_single_symbol(
         logger.info("Analysis complete for %s", symbol)
         return symbol, "success", result
 
+    except CostLimitExceeded:
+        raise
     except Exception as e:
         logger.error("Failed for %s: %s", symbol, e)
         return symbol, "error", {"fatal_error": str(e)}
@@ -395,10 +397,13 @@ def _run_pipeline(
         telegram_enabled: Whether ``--telegram`` was set on CLI.
     """
     cost_tracker = CostTracker(pricing=settings.model_pricing)
+    cost_tracker.set_limit(settings.cost_per_symbol_limit)
     graph, writer = _initialize_pipeline(settings, cost_tracker, output_dir)
 
     results: list[tuple[str, str, dict[str, Any]]] = []
     for symbol in symbols:
+        cost_tracker.reset()
+        cost_tracker.set_symbol(symbol)
         result = _run_single_symbol(graph, symbol, settings, writer, telegram_enabled)
         results.append(result)
 

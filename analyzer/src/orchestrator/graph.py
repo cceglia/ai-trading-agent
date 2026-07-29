@@ -15,6 +15,7 @@ from src.analysis.candle_cache import (
 )
 from src.analysis.market_structure_engine.config import get_profile
 from src.data.snapshot_builder import SnapshotBuilder
+from src.decision.cost_tracker import CostLimitExceeded
 from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 from src.decision.synthesizer_cache import (
     load_cached_synthesis,
@@ -342,6 +343,8 @@ class TradingGraph:
                 "current_pending_orders": current_pending_orders,
                 "symbol_price": symbol_price_data,
             }
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Data fetch failed: {e}"
             logger.error(msg)
@@ -363,6 +366,8 @@ class TradingGraph:
 
         try:
             broker_now = self.data_provider.get_broker_time()
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Structure analysis failed: cannot get broker time: {e}"
             logger.error(msg)
@@ -494,6 +499,8 @@ class TradingGraph:
                 result["_ohlc_bars"] = ohlc_bars_all
 
             return {"structure_analysis": result, "broker_now": broker_now}
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Structure analysis failed: {e}"
             logger.error(msg)
@@ -509,6 +516,8 @@ class TradingGraph:
         try:
             events = self.calendar_provider.fetch_events()
             return {"calendar_events": events}
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Calendar evaluation failed: {e}"
             logger.error(msg)
@@ -579,6 +588,8 @@ class TradingGraph:
             save_synthesis(symbol, broker_now, context)
 
             return {"market_context": context}
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Context synthesis failed: {e}"
             logger.error(msg)
@@ -607,6 +618,8 @@ class TradingGraph:
                 current_price=context.current_price,
             )
             return {"decision": decision, "review_attempts": attempts}
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Decision failed: {e}"
             logger.error(msg)
@@ -643,6 +656,8 @@ class TradingGraph:
                 "review_feedback": feedback,
                 "review_attempts": state.get("review_attempts", 0) + 1,
             }
+        except CostLimitExceeded:
+            raise
         except Exception as e:
             msg = f"Review failed: {e}"
             logger.error(msg)

@@ -10,6 +10,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+class CostLimitExceeded(Exception):  # noqa: N818 — domain-specific exception; "Exceeded" suffix is convention in this codebase
+    """Raised when per-symbol LLM cost exceeds the configured limit."""
+
+    def __init__(self, limit: float, total_cost: float, symbol: str | None = None) -> None:
+        self.limit = limit
+        self.total_cost = total_cost
+        self.symbol = symbol
+        msg = f"Cost limit ${limit:.4f} exceeded (total: ${total_cost:.4f})"
+        if symbol:
+            msg += f" for {symbol}"
+        super().__init__(msg)
+
+
 DEFAULT_PRICING: dict[str, dict[str, float]] = {
     "gpt-4o": {"prompt": 0.0000025, "completion": 0.00001},
     "gpt-4o-mini": {"prompt": 0.00000015, "completion": 0.0000006},
@@ -38,6 +52,32 @@ class CostTracker:
         self._pricing = pricing if pricing is not None else DEFAULT_PRICING
         self._total_cost: float = 0.0
         self._call_count: int = 0
+        self._limit: float | None = None
+        self._symbol: str | None = None  # ← NEW: symbol for error context
+
+    def set_limit(self, limit: float) -> None:
+        """Set a per-symbol cost limit.
+
+        When *limit* is ``<= 0`` the limit check is disabled.
+        When *total_cost* exceeds *limit* after a ``record_call()``,
+        ``CostLimitExceeded`` is raised.
+        """
+        if limit is None or limit <= 0:  # ← was: if limit <= 0
+            self._limit = None
+        else:
+            self._limit = limit
+
+    def set_symbol(self, symbol: str) -> None:
+        """Set the current symbol for error context.
+
+        The symbol is used by :meth:`record_call` when raising
+        :class:`CostLimitExceeded` to indicate which symbol
+        exceeded the cost limit.
+
+        Args:
+            symbol: Trading symbol (e.g. ``"XAUUSD"``).
+        """
+        self._symbol = symbol
 
     def record_call(
         self,
@@ -85,6 +125,12 @@ class CostTracker:
         cost = prompt_tokens * rates["prompt"] + completion_tokens * rates["completion"]
         self._total_cost += cost
         self._call_count += 1
+        if self._limit is not None and self._total_cost > self._limit:
+            raise CostLimitExceeded(
+                limit=self._limit,
+                total_cost=self._total_cost,
+                symbol=self._symbol,
+            )
         return cost
 
     @property

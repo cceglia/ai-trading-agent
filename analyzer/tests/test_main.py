@@ -59,6 +59,7 @@ class TestMainErrorDuplication:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.cost_per_symbol_limit = 0.05
 
         # ── Configure TradingGraph mock ──────────────────────────────
         mock_graph = MagicMock()
