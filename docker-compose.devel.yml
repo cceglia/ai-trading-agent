@@ -17,7 +17,6 @@ services:
       - ./ui:/app/ui
       - ./data:/app/data
       - ./scripts:/app/scripts
-      - ./rules.json:/app/rules.json
       # Preserve node_modules installed inside the container
       - trading_node_modules:/app/server/node_modules
     ports:

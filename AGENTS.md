@@ -18,7 +18,7 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 | `server/` | Python 3.11+ (FastAPI) | REST API serving analysis results + triggering new runs. Entry: `src/main.py`. |
 | `ui/` | Vue 3 + Vite | Dark-terminal web dashboard. |
 
-**Pipeline (per symbol):** `fetch_data` → `analyze_structure` → `evaluate_calendar` → `synthesize_context` → `decide` → `review` → (retry up to `MAX_REVIEW_ATTEMPTS` or end)
+**Pipeline (per symbol):** `fetch_data` → `analyze_structure` → `evaluate_calendar` → `synthesize_context` → `grade_setup` → `build_risk_policy` → `evaluate_execution_policy` → `early_execution_routing` → (`decide` | deterministic NO_TRADE) → `pre_review_decision_validation` → `review` → (retry to `decide` | `final_enforcement`) → `assemble_output` → END
 
 **Key modules:**
 - `analyzer/src/data/terminal_data_provider.py` — MT5 data via MCP server (retry logic, async wrapped sync)
@@ -28,7 +28,7 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 
 ## Critical invariants
 
-- **Advisory-only**: `entry_authorized` must always be `False`. Enforced at the model layer (`DecisionOutput` Pydantic validator forces it) and the structure analyzer rejects any result where it isn't `False`.
+- **Advisory-only**: `entry_authorized` must always be `False`. Enforced at four layers: the deterministic engine hardcodes it; the structure analyzer adapter validates on read; the LLM prompts instruct the model; and the `DeterministicEnforcementGate` blocks post-hoc.
 - **Environment prefix**: Analyzer settings use `TRADING_` prefix via `pydantic-settings` (`config/settings.py`). Server `WebSettings` (`server/src/settings.py`) uses **unprefixed aliases** for most vars (`HOST`, `PORT`, `CORS_ORIGINS`, `PYTHON_CMD`) for backward compatibility; only `TRADING_ANALYSIS_CACHE_DIR`, `TRADING_API_KEY`, `TRADING_RATE_LIMIT_MAX`, `TRADING_RATE_LIMIT_WINDOW` keep the prefix.
 - **Protocol DI**: Dependencies injected via protocols in `analyzer/src/decision/protocols.py` (`DataSource`, `CalendarProvider`, `StructureAnalyzer`). Orchestration code never imports concrete implementations.
 
@@ -100,8 +100,8 @@ docker compose -f docker-compose.devel.yml exec trading-agent bash \
 
 ## Testing
 
-- **Analyzer**: 446 tests, pytest with `asyncio_mode = "auto"`. Fixtures in `tests/conftest.py`: `sample_market_context`, `sample_decision`, `sample_review`.
-- **Server**: 98 tests, pytest with `asyncio_mode = "auto"`. Client fixtures in `server/tests/conftest.py` mock scanner+runner.
+- **Analyzer**: 1001 tests, pytest with `asyncio_mode = "auto"`. Fixtures in `tests/conftest.py`: `sample_market_context`, `sample_decision`, `sample_review`.
+- **Server**: 104 tests, pytest with `asyncio_mode = "auto"`. Client fixtures in `server/tests/conftest.py` mock scanner+runner.
 - All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked.
 - **Quirk**: Module-level `_settings` singleton in `candle_cache.py` and `synthesizer_cache.py` must be manually invalidated in tests — no refresh mechanism.
 
@@ -119,7 +119,7 @@ docker compose -f docker-compose.devel.yml exec trading-agent bash \
 ## Architectural notes
 
 - The server was ported **from Node.js/Express to Python/FastAPI**. All `.ts` files were removed.
-- `analyzer/main.py` is a 165-line CLI entry point accepting symbols, `--model`, `--base-url`, `--output-dir`, `--log-level`, `--telegram`.
+- `analyzer/main.py` is a 492-line CLI entry point accepting symbols, `--model`, `--base-url`, `--log-level`, `--telegram`.
 - Synthesizer caching is content-addressable: identical structure analysis + calendar events skip the LLM call.
 - Candle caching is disk-backed, keyed by `symbol/timeframe/candle_close_time`, with broker-local time alignment.
 - The `/data/` directory tree stores versioned JSON results (`<symbol>/<year>/<month>/<day>/result-<time>.json`).

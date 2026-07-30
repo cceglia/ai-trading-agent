@@ -17,7 +17,11 @@ with a corresponding web UI.
 
 **Key characteristics:**
 
-- **Advisory-only** — `entry_authorized` is always `False`; the system never executes trades
+- **Advisory-only** — The system never executes trades. Enforced at four layers:
+  the deterministic engine hardcodes `entry_authorized = False` at every output level;
+  the structure analyzer adapter validates this on every read; the LLM prompts instruct
+  the model (instructional, not enforceable); and the `DeterministicEnforcementGate`
+  blocks any executable action that fails invariant checks post-hoc.
 - **Protocol-based dependency injection** — all dependencies wired via `DataSource`,
   `CalendarProvider`, and `StructureAnalyzer` protocols
 - **Deterministic market structure engine** — 16 self-contained modules for swing detection,
@@ -25,69 +29,128 @@ with a corresponding web UI.
 - **LLM-enhanced synthesis** — context synthesis, decision generation, and independent review
   via structured output (Instructor + OpenAI)
 - **Cost-controlled** — `CostTracker` tracks per-symbol spend against configurable limits using
-  model-specific pricing tables
-- **Synthesizer caching** — caches identical analysis inputs to eliminate redundant LLM calls
+  model-specific pricing tables; raises `CostLimitExceeded` to halt mid-pipeline
+- **Synthesizer caching** — content-addressable cache eliminates redundant LLM calls for
+  identical analysis inputs
 - **MTF candle caching** — disk-backed cache keyed by symbol/timeframe/close-time for faster
   re-analysis
-- **Knowledge graph** — graphify-updated dependency graph supports codebase queries and
-  cross-file navigation
-- **Pre-commit hooks** — automated `ruff` lint+format, `mypy` static checks, and graphify
-  update on commit
+- **Knowledge graph** — persistent dependency graph at `graphify-out/` supports codebase
+  queries and cross-file navigation
+- **Two-LLM-instance architecture** — reviewer can use an independent model, API key, base URL,
+  and reasoning effort from the primary synthesizer/decider
+- **Deterministic enforcement gate** — 5 invariant checks block any action that contradicts
+  deterministic pipeline outputs
 
 ## Architecture
 
 ### Analysis Pipeline (LangGraph State Machine)
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         Trading Graph                               │
-│                     (LangGraph Orchestrator)                        │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                     │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐     │
-│  │  fetch   │───▶│ analyze  │───▶│evaluate  │───▶│synthesize│     │
-│  │  _data   │    │structure │    │calendar  │    │ _context │     │
-│  └──────────┘    └──────────┘    └──────────┘    └────┬─────┘     │
-│                                                        │           │
-│                                              ┌─────────▼────────┐  │
-│                                              │     decide       │  │
-│                                              └─────────┬────────┘  │
-│                                                        │           │
-│                                    ┌───────────────────▼─────────┐ │
-│                                    │          review             │ │
-│                                    └───────────────────┬─────────┘ │
-│                                                        │           │
-│                                        ┌───────────────▼────────┐  │
-│                                        │  retry (if rejected)   │  │
-│                                        └────────────────────────┘  │
-│                                                                     │
-└─────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                  Trading Graph (14 nodes)                                  │
+│                              LangGraph StateGraph Orchestrator                             │
+├────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                            │
+│  ┌───────────┐   ┌───────────────┐   ┌────────────────┐   ┌──────────────────┐            │
+│  │ fetch_data │──▶│analyze_struct │──▶│evaluate_calendar│──▶│synthesize_context│            │
+│  └───────────┘   └───────────────┘   └────────────────┘   └────────┬─────────┘            │
+│                                                                    │                       │
+│                                             ┌──────────────────────▼──────────────────┐    │
+│                                             │        Deterministic Pipeline           │    │
+│                                             │  grade_setup → build_risk_policy →     │    │
+│                                             │  evaluate_execution_policy →           │    │
+│                                             │  early_execution_routing               │    │
+│                                             └──────────────────────┬──────────────────┘    │
+│                                                                    │                       │
+│                                             ┌──────────────────────▼──────────────────┐    │
+│                                             │      early_execution_routing           │    │
+│                                             │                                        │    │
+│                                             │  ┌──────────────────┐ ┌──────────────┐ │    │
+│                                             │  │deterministic_con │ │  llm_decide  │ │    │
+│                                             │  │tinue (NO_TRADE   │ │  (proceed    │ │    │
+│                                             │  │ bypass LLM)      │ │  to LLM)    │ │    │
+│                                             │  └────────┬─────────┘ └──────┬───────┘ │    │
+│                                             └───────────┼──────────────────┼──────────┘    │
+│                                                         │                  │               │
+│                               ┌─────────────────────────┘                  │               │
+│                               ▼                                            ▼               │
+│  ┌──────────────────────────────┐                          ┌──────────────────────────┐    │
+│  │pre_review_decision_validation│                          │         decide           │    │
+│  └──────────────┬───────────────┘                          └────────────┬─────────────┘    │
+│                 │                                                       │                  │
+│                 └──────────────────┬────────────────────────────────────┘                  │
+│                                    ▼                                                        │
+│                         ┌──────────────────────┐                                            │
+│                         │        review         │                                            │
+│                         └──────────┬───────────┘                                            │
+│                                    │                                                        │
+│                     ┌──────────────┴──────────────┐                                         │
+│                     │                             │                                         │
+│             ┌───────▼────────┐           ┌────────▼───────┐                                 │
+│             │   enforcement  │           │  retry_decide  │                                 │
+│             │ (approved /    │           │ (rejected,     │                                 │
+│             │  NOT_REQUIRED  │           │  attempts      │                                 │
+│             │  / max retry)  │           │  remaining)    │                                 │
+│             └───────┬────────┘           └────────┬───────┘                                 │
+│                     │                             │                                         │
+│                     │                             └── back to decide ───────────────────────┤
+│                     ▼                                                                      │
+│             ┌────────────────┐                                                              │
+│             │ final_enforce- │                                                              │
+│             │ ment           │                                                              │
+│             └───────┬────────┘                                                              │
+│                     ▼                                                                       │
+│             ┌────────────────┐                                                              │
+│             │ assemble_output│                                                              │
+│             └───────┬────────┘                                                              │
+│                     ▼                                                                       │
+│                     END                                                                     │
+└────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
+
+**Pipeline flow (14 nodes):**
+
+| Phase | Nodes | Description |
+|---|---|---|
+| **Data pipeline** | `fetch_data` → `analyze_structure` → `evaluate_calendar` | Sequential: fetches MT5 candles/positions via MCP, runs 16-module deterministic market structure engine (D1/H4/H1), scrapes ForexFactory calendar |
+| **LLM synthesis** | `synthesize_context` | One LLM call combining summarised structure analysis + calendar events → `MarketContextSummary`. Content-addressable caching skips redundant calls. |
+| **Deterministic pipeline** | `grade_setup` → `build_risk_policy` → `evaluate_execution_policy` → `early_execution_routing` | Pure deterministic: grades the setup (AAA/AA/COUNTERTREND/REJECTED), maps grade → risk multiplier + min R/R, evaluates execution blockers (policy/calendar/geometry/data-quality), then routes |
+| **LLM decision** | `decide` | LLM generates a trading decision (action + reasoning). Price levels come from the deterministic engine — never from the LLM. |
+| **Validation** | `pre_review_decision_validation` | Validates decision presence and symbol match before review. Logs advisory warnings for unexpected NO_TRADE without deterministic early-exit reason. |
+| **Review** | `review` → conditional retry to `decide` | Independent LLM review verdict; if `REVISION_REQUIRED` and attempts remain, loops back to `decide` with feedback (up to `MAX_REVIEW_ATTEMPTS`). Deterministic early-exit bypasses the LLM reviewer entirely. |
+| **Enforcement + output** | `final_enforcement` → `assemble_output` | `DeterministicEnforcementGate` (5 invariant checks) blocks any action violating deterministic invariants. Assembles final `AnalysisResult` with SL/TP overlay, execution blockers, enforcement violations. |
+
+**Conditional routing:**
+
+- `early_execution_routing → {deterministic_continue, llm_decide}` — when execution status is `NON_EXECUTABLE` or `BLOCKED_BY_DATA_QUALITY`, the LLM is bypassed entirely. A deterministic `NO_TRADE` decision and `NOT_REQUIRED` review verdict are injected directly, flowing to `pre_review_decision_validation` → `review` (pass-through) → `final_enforcement` → `assemble_output`.
+- `review → {continue_enforcement, retry_decide}` — when review is `APPROVED`, `NOT_REQUIRED`, or max attempts reached, proceeds to enforcement. When `REVISION_REQUIRED` and attempts remain, retries the `decide` node with structured reviewer feedback injected into the prompt.
 
 ### Service Architecture
 
 ```
-┌──────────┐     HTTP/API      ┌──────────┐     spawns child     ┌──────────────┐
-│  MT5 MCP │◄─────────────────►│ Analyzer │◄────────────────────►│   Server     │
-│ Terminal │  MCP Streamable   │ (Python) │   python main.py     │ (Python /    │
-│(host:22346)│                 │  (CLI)   │                      │  FastAPI)    │
-└──────────┘                   └────┬─────┘                      │ (port 3000)  │
-                                    │                            └──────▲───────┘
-                                    │ reads/writes                     │ reads
-                                    ▼                                  │
-                            ┌──────────────┐                          │
-                            │    data/      │◄─────────────────────────┘
-                            │  (JSON files) │    filesystem via ResultScanner
-                            └──────────────┘
-                                    ▲
-                                    │ HTTP (axios)
-                                    │
-                            ┌───────┴────────┐
-                            │  UI (Vue 3)    │
-                            │  Vite dev:5173 │
-                            │  Prod: served  │
-                            │  by FastAPI    │
-                            └────────────────┘
+┌──────────┐     MCP over HTTP   ┌──────────┐     spawns child     ┌──────────────┐
+│  MT5 MCP │◄───────────────────►│ Analyzer │◄────────────────────►│   Server     │
+│ Terminal │  req/res + notify   │ (Python) │   python main.py     │ (Python /    │
+│(host:22346)│                   │  (CLI)   │                      │  FastAPI)    │
+└──────────┘                     └────┬─────┘                      │ (port 3000)  │
+                                      │                            └──────▲───────┘
+                                      │ reads/writes                     │ reads
+                                      ▼                                  │
+                              ┌──────────────┐                          │
+                              │    data/      │◄─────────────────────────┘
+                              │  (JSON files) │    filesystem via ResultScanner
+                              └──────────────┘
+                                      ▲
+                                      │ HTTP (axios)
+                                      │
+                              ┌───────┴────────┐     ┌──────────────────┐
+                              │  UI (Vue 3)    │     │   Telegram Bot   │
+                              │  Vite dev:5173 │     │  (notifications) │
+                              │  Prod: served  │     │                  │
+                              │  by FastAPI    │     │  ◄────────────── │
+                              └────────────────┘     │  analyzer sends  │
+                                                     │  approved setups │
+                                                     └──────────────────┘
 ```
 
 ### Design Principles
@@ -95,19 +158,66 @@ with a corresponding web UI.
 - **SOLID**: Single responsibility per module, open for extension via protocols
 - **Dependency Injection**: All dependencies injected via protocol interfaces; orchestration
   code never imports concrete implementations
-- **Advisory-Only**: System never executes trades; `entry_authorized` is always `False`
-  (enforced via invariant check)
+- **Advisory-Only**: System never executes trades. Enforced at four layers: engine
+  hardcodes `entry_authorized = False` (context.py, engine.py, review.py); structure
+  analyzer adapter validates on read; LLM prompts instruct the model; enforcement gate
+  blocks post-hoc.
 - **Cost Control**: Configurable per-symbol spend limits with model-specific token pricing
 - **Cache-Heavy**: Multi-level caching (candle data + synthesizer output) reduces redundant
   computation and LLM calls
 - **Broker-Local Time**: All time-sensitive operations align to broker/server time, not local
   wall clock
 
+### Deployment Architecture
+
+**Development (`docker-compose.devel.yml`):**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        trading-agent:devel                        │
+│                                                                   │
+│  ┌────────────┐  ┌────────────┐  ┌────────┐  ┌──────┐  ┌──────┐ │
+│  │ analyzer/  │  │  server/   │  │  ui/   │  │data/ │  │scripts│ │
+│  │ (bind:rw)  │  │ (bind:rw)  │  │(bind:rw)│  │:rw   │  │:rw   │ │
+│  └────────────┘  └────────────┘  └────────┘  └──────┘  └──────┘ │
+│                                                                   │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │              Auto-starts on boot:                        │    │
+│  │  ┌─────────────────┐          ┌───────────────────┐     │    │
+│  │  │ FastAPI (reload) │          │ Vite (HMR)        │     │    │
+│  │  │ :3000 (internal) │          │ :5173 → host:5173 │     │    │
+│  │  └─────────────────┘          └───────────────────┘     │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                   │
+│  Ports: 5173:5173    Env: .env    Volumes: node_modules (named)  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Production (`docker-compose.prod.yml`):**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       trading-agent:prod                          │
+│                                                                   │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │              All deps baked in at build time             │    │
+│  │  ┌─────────────────┐    ┌───────────────────┐           │    │
+│  │  │  FastAPI         │    │  Vue UI (built)   │           │    │
+│  │  │  :3000 → host:  │    │  served by FastAPI│           │    │
+│  │  │  3000            │    │  from ui/dist/    │           │    │
+│  │  └─────────────────┘    └───────────────────┘           │    │
+│  └──────────────────────────────────────────────────────────┘    │
+│                                                                   │
+│  Bind mount: ./data:/app/data (persisted)                        │
+│  Ports: 3000:3000    Env: .env    No source bind mounts          │
+└─────────────────────────────────────────────────────────────────┘
+```
+
 ## Services
 
 | Service | Language | Directory | Purpose |
 |---|---|---|---|---|
-| **Analyzer** (core) | Python 3.14+ | `analyzer/` | CLI-based trading analysis engine. Fetches MT5 data via MCP, runs 16-module deterministic market structure engine, synthesizes context via LLM, makes advisory decisions, and reviews them. |
+| **Analyzer** (core) | Python 3.11+ | `analyzer/` | CLI-based trading analysis engine. Fetches MT5 data via MCP, runs 16-module deterministic market structure engine, synthesizes context via LLM, makes advisory decisions, and reviews them. |
 | **Server** (API) | Python 3.11+ (FastAPI) | `server/` | FastAPI REST API that serves analysis results from the filesystem and can trigger new analyses by spawning the Python analyzer as a child process. |
 | **UI** (frontend) | Vue 3 + Vite | `ui/` | Dark-terminal-themed web dashboard displaying analysis results, OHLC charts, run history, and a detail view for individual symbol analyses. |
 
@@ -169,58 +279,93 @@ the environment.
 | **Terminal / Data** | | |
 | `TRADING_TERMINAL_SERVER_URL` | `http://127.0.0.1:22346/mcp` | MCP server URL for MT5 candle data and positions |
 | `TRADING_TERMINAL_API_KEY` | — | Bearer token for terminal MCP server authentication |
-| **LLM** | | |
+| **LLM — Primary** | | |
+| `TRADING_PRIMARY_LLM_PROVIDER` | `openai` | Provider for the primary LLM (currently only `openai`) |
 | `TRADING_OPENAI_API_KEY` | — | OpenAI API key (or compatible provider) |
 | `TRADING_OPENAI_MODEL` | `gpt-4o` | LLM model identifier |
 | `TRADING_OPENAI_BASE_URL` | `""` | OpenAI-compatible base URL (e.g. Ollama `http://localhost:11434/v1`, Groq, etc.); empty = `https://api.openai.com/v1` |
 | `TRADING_OPENAI_REASONING_EFFORT` | `""` | Reasoning effort level (`low`, `medium`, `high`); empty = model default |
-| **Review & Cost** | | |
+| `TRADING_OPENAI_MODEL_FAMILY_OVERRIDE` | — | Override detected model family for the primary LLM |
+| `TRADING_OPENAI_MODEL_VERSION_OVERRIDE` | — | Override detected model version for the primary LLM |
+| **LLM — Reviewer (independent)** | | |
+| `TRADING_REVIEWER_LLM_PROVIDER` | `openai` | Provider for the reviewer LLM |
+| `TRADING_REVIEWER_LLM_MODEL` | `""` | Model identifier (empty = use primary model) |
+| `TRADING_REVIEWER_LLM_API_KEY` | `""` | API key (empty = use primary API key) |
+| `TRADING_REVIEWER_LLM_BASE_URL` | `""` | Base URL (empty = default for provider) |
+| `TRADING_REVIEWER_LLM_REASONING_EFFORT` | `""` | Reasoning effort for reviewer |
+| `TRADING_REVIEWER_LLM_TIMEOUT_SECONDS` | `120.0` | Timeout for reviewer LLM calls |
+| `TRADING_REVIEWER_LLM_MAX_RETRIES` | `3` | Maximum provider retries for reviewer |
+| `TRADING_REVIEWER_LLM_TEMPERATURE` | `0.0` | Temperature for the reviewer LLM |
+| `TRADING_REVIEWER_LLM_MODEL_FAMILY_OVERRIDE` | — | Override detected model family for reviewer |
+| `TRADING_REVIEWER_LLM_MODEL_VERSION_OVERRIDE` | — | Override detected model version for reviewer |
+| **Review Policy** | | |
+| `TRADING_REQUIRE_REVIEWER` | `True` | Require independent reviewer for executable decisions |
+| `TRADING_ALLOW_UNREVIEWED_DECISIONS` | `False` | Allow decisions without review (forbidden in paper/live) |
+| `TRADING_ALLOW_SAME_MODEL_DIFFERENT_DEPLOYMENT` | `False` | Allow reviewer to use same model family with different deployment |
 | `TRADING_MAX_REVIEW_ATTEMPTS` | `2` | Maximum review retry attempts per symbol |
+| **Cost** | | |
 | `TRADING_COST_PER_SYMBOL_LIMIT` | `0.05` | Maximum allowed LLM cost per symbol (USD) |
-| `TRADING_MODEL_PRICING` | *(see below)* | JSON dict of per-model token prices: `{"model": {"prompt": $/token, "completion": $/token}}` |
+| `TRADING_MODEL_PRICING` | *(see below)* | JSON dict of per-model token prices: `{"model": {"input_per_million": $/M, "cached_input_per_million": $/M, "output_per_million": $/M}}` |
+| **Setup Policy** | | |
+| `TRADING_ENABLE_COUNTERTREND` | `False` | Allow countertrend setups |
+| `TRADING_MIN_RR_AAA` | `2.0` | Minimum reward-to-risk ratio for AAA-grade setups |
+| `TRADING_MIN_RR_AA` | `2.0` | Minimum reward-to-risk ratio for AA-grade setups |
+| `TRADING_MIN_RR_COUNTERTREND` | `2.5` | Minimum reward-to-risk ratio for countertrend setups |
+| `TRADING_RISK_MULTIPLIER_AAA` | `1.0` | Risk multiplier for AAA-grade setups |
+| `TRADING_RISK_MULTIPLIER_AA` | `0.5` | Risk multiplier for AA-grade setups |
+| `TRADING_RISK_MULTIPLIER_COUNTERTREND` | `0.25` | Risk multiplier for countertrend setups |
+| `TRADING_SETUP_EXPIRATION_H1_BARS` | `3` | Number of H1 bars before a setup expires |
+| **Execution Mode** | | |
+| `TRADING_EXECUTION_MODE` | `PAPER` | Execution mode: `DETERMINISTIC_BACKTEST`, `FULL_CHAIN_BACKTEST`, `DEVELOPMENT`, `SHADOW`, `PAPER`, `LIVE` |
 | **Caching & Calendar** | | |
 | `TRADING_CALENDAR_CACHE_HOURS` | `4` | Hours to cache ForexFactory calendar events |
 | `TRADING_SYNTHESIZER_CACHE_ENABLED` | `True` | Enable LLM synthesizer output caching |
-| `TRADING_ANALYSIS_CACHE_DIR` | `analysis` | Base directory for analysis disk cache |
+| `TRADING_ANALYSIS_CACHE_DIR` | `data` | Base directory for analysis disk cache and run results |
 | **Candle Close Times** | | |
 | `TRADING_D1_CLOSE_TIME` | `17:00` | D1 candle close time (`HH:MM` in broker time) |
 | `TRADING_H4_CLOSE_TIME` | `00:00` | H4 anchor time (`HH:MM` in broker time) |
 | `TRADING_H4_CLOSE_INTERVAL_HOURS` | `4` | H4 interval in hours |
+| **Telegram Notifications** | | |
+| `TRADING_TELEGRAM_BOT_TOKEN` | `""` | Telegram bot token for trade notifications |
+| `TRADING_TELEGRAM_CHAT_ID` | `""` | Telegram chat ID for notifications |
+| `TRADING_WEB_UI_BASE_URL` | `http://localhost:3000` | Web UI base URL for notification links |
 | **Logging** | | |
 | `TRADING_LOG_LEVEL` | `INFO` | Logging level |
 
 ### Environment Variables — Server
 
-These are loaded from the environment (or a `.env` file) by the FastAPI server via `WebSettings`.
+Loaded from the environment (or a `.env` file) by the FastAPI server via `WebSettings`.
+Uses backward-compatible unprefixed aliases for most vars; only `TRADING_ANALYSIS_CACHE_DIR`
+retains its prefix since it is shared with the analyzer.
 
 | Variable | Default | Description |
 |---|---|---|
-| `HOST` | `127.0.0.1` | HTTP listen address |
+| `HOST` | `0.0.0.0` | HTTP listen address |
 | `PORT` | `3000` | HTTP listen port |
-| `DATA_DIR` | `../data/runs` | Path to analysis result files (relative to `server/`) |
-| `PYTHON_CMD` | `python` | Python executable for spawning the analyzer |
-| `ANALYZER_DIR` | `.` | Working directory for the Python analyzer process |
 | `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed CORS origins |
-| `TRADING_ANALYSIS_CACHE_DIR` | `analysis` | Base directory for analysis disk cache (shared with analyzer) |
+| `PYTHON_CMD` | `python` | Python executable for spawning the analyzer |
+| `TRADING_ANALYSIS_CACHE_DIR` | `data` | Base directory for analysis disk cache (shared with analyzer) |
 | `TRADING_API_KEY` | — | API key for authenticated endpoints |
-| `TRADING_RATE_LIMIT_MAX` | `10` | Max requests per rate-limit window |
+| `TRADING_RATE_LIMIT_MAX` | `20` | Max requests per rate-limit window |
 | `TRADING_RATE_LIMIT_WINDOW` | `60` | Rate-limit window in seconds |
 
 ### Default Model Pricing
 
+Prices are in **dollars per million tokens**. `cached_input_per_million` is set to `0.0`
+when the provider does not offer a verified cached-input discount.
+
 ```json
 {
-  "gpt-4o":             {"prompt": 0.0000025,  "completion": 0.00001},
-  "gpt-4o-mini":        {"prompt": 0.00000015, "completion": 0.0000006},
-  "gpt-4":              {"prompt": 0.00003,    "completion": 0.00006},
-  "gpt-3.5-turbo":      {"prompt": 0.0000005,  "completion": 0.0000015},
-  "DeepSeek-V4-Flash":  {"prompt": 0.00000009, "completion": 0.00000018},
-  "DeepSeek-V4-Pro":    {"prompt": 0.000000435,"completion": 0.00000087}
+  "gpt-4o":        {"input_per_million": 2.50, "cached_input_per_million": 1.25, "output_per_million": 10.00},
+  "gpt-4o-mini":   {"input_per_million": 0.15, "cached_input_per_million": 0.075, "output_per_million": 0.60},
+  "gpt-4":         {"input_per_million": 30.00, "cached_input_per_million": 0.0,  "output_per_million": 60.00},
+  "gpt-3.5-turbo": {"input_per_million": 0.50, "cached_input_per_million": 0.0,  "output_per_million": 1.50}
 }
 ```
 
-Override via `TRADING_MODEL_PRICING` as a JSON environment variable. Any price set to `0` logs
-a warning — cost tracking will undercount.
+Override via `TRADING_MODEL_PRICING` as a JSON environment variable. Only models with
+verified official pricing are included by default; add additional models via the env var.
+Any price set to `0.0` logs a warning — cost tracking will undercount.
 
 ### Cost Analysis
 
@@ -268,6 +413,9 @@ python main.py EURUSD --model DeepSeek-V4-Flash --base-url http://localhost:1143
 
 # Override log level
 python main.py EURUSD --log-level DEBUG
+
+# Send Telegram notifications for approved trade setups
+python main.py EURUSD --telegram
 ```
 
 ### API Server
@@ -309,6 +457,8 @@ from src.analysis.structure_analyzer import MarketStructureEngine
 from src.calendar.forexfactory import ForexFactoryCalendar
 from src.decision.agents import SynthesizerAgent, DeciderAgent, ReviewerAgent
 from src.decision.cost_tracker import CostTracker
+from src.decision.llm_client import create_llm_client
+from src.decision.llm_config import ProviderKind
 from src.orchestrator.graph import TradingGraph
 
 # Initialize settings (loads from .env / environment)
@@ -316,6 +466,7 @@ settings = Settings()
 
 # Cost tracking with model-specific pricing
 cost_tracker = CostTracker(pricing=settings.model_pricing)
+cost_tracker.set_limit(settings.cost_per_symbol_limit)
 
 # Wire up data provider
 data_provider = TerminalDataProvider(
@@ -327,26 +478,41 @@ data_provider = TerminalDataProvider(
 structure_analyzer = MarketStructureEngine()
 calendar_provider = ForexFactoryCalendar()
 
-# Wire up LLM agents (all share the same cost_tracker)
+# Create LLM clients via factory
+# Synthesizer and decider share the primary client; reviewer gets its own
+api_key = settings.openai_api_key or ""
+base_url = settings.openai_base_url or None
+model = settings.openai_model
+reasoning_effort = settings.openai_reasoning_effort or None
+
+primary_client = create_llm_client(
+    provider=ProviderKind(settings.primary_llm_provider),
+    api_key=api_key,
+    base_url=base_url,
+    model=model,
+    reasoning_effort=reasoning_effort,
+)
+
+# Reviewer can use a different model
+reviewer_client = create_llm_client(
+    provider=ProviderKind(settings.reviewer_llm_provider),
+    api_key=settings.reviewer_llm_api_key or api_key,
+    base_url=settings.reviewer_llm_base_url or base_url,
+    model=settings.reviewer_llm_model or model,
+    reasoning_effort=settings.reviewer_llm_reasoning_effort or reasoning_effort,
+)
+
+# Wire up LLM agents with their respective clients
 synthesizer = SynthesizerAgent(
-    model=settings.openai_model,
-    api_key=settings.openai_api_key or None,
-    base_url=settings.openai_base_url or None,
-    reasoning_effort=settings.openai_reasoning_effort or None,
+    llm_client=primary_client,
     cost_tracker=cost_tracker,
 )
 decider = DeciderAgent(
-    model=settings.openai_model,
-    api_key=settings.openai_api_key or None,
-    base_url=settings.openai_base_url or None,
-    reasoning_effort=settings.openai_reasoning_effort or None,
+    llm_client=primary_client,
     cost_tracker=cost_tracker,
 )
 reviewer = ReviewerAgent(
-    model=settings.openai_model,
-    api_key=settings.openai_api_key or None,
-    base_url=settings.openai_base_url or None,
-    reasoning_effort=settings.openai_reasoning_effort or None,
+    llm_client=reviewer_client,
     cost_tracker=cost_tracker,
 )
 
@@ -376,35 +542,53 @@ result = graph.run("EURUSD")
 ├── docker-compose.devel.yml                 # Development Compose
 ├── docker-compose.prod.yml                  # Production Compose
 │
+├── scripts/                                 # Dev / CI helper scripts
+│   ├── create-user.sh                       # Non-root user creation
+│   └── start-dev.sh                         # Auto-starts FastAPI + Vite
+│
 ├── analyzer/                                # Python analysis engine
 │   ├── main.py                              # CLI entry point
 │   ├── pyproject.toml
 │   ├── config/
 │   │   └── settings.py                      # Pydantic BaseSettings
 │   ├── src/
+│   │   ├── logging_config.py                # Logging setup
 │   │   ├── analysis/                        # Market structure engine (16 modules)
 │   │   │   └── market_structure_engine/
 │   │   ├── calendar/                        # ForexFactory scraper + evaluator
 │   │   ├── data/                            # MT5 data provider + snapshot builder
-│   │   ├── decision/                        # LLM agents + protocols + cost tracker
+│   │   ├── decision/                        # LLM agents + protocols + cost tracker + LLM client
+│   │   │   └── adapters/                    # Provider adapters (OpenAI, etc.)
+│   │   ├── notification/                    # Telegram trade notifications
+│   │   │   └── telegram_sender.py
 │   │   ├── orchestrator/                    # LangGraph state machine
-│   │   └── output/                          # Result models + JSON writer
-│   └── tests/                               # 356 tests
+│   │   └── output/                          # Result models + JSON writer + OHLC cache
+│   │       ├── result_models.py
+│   │       ├── result_writer.py
+│   │       ├── ohlc_cache.py
+│   │       └── ohlc_extractor.py
+│   └── tests/                               # 1001 tests
 │
 ├── server/                                  # Python FastAPI
 │   ├── pyproject.toml
 │   ├── .env.example
-│   └── src/
-│       ├── main.py                          # FastAPI app (port 3000)
-│       ├── models.py                        # Pydantic DTOs
-│       ├── runner.py                        # Spawns Python analyzer
-│       ├── scanner.py                       # Reads result JSON files
-│       ├── settings.py                      # WebSettings (pydantic-settings)
-│       ├── middleware/
-│       │   ├── auth.py                      # API key auth
-│       │   └── ratelimit.py                 # Sliding window rate limiter
-│       └── __init__.py
-│   └── tests/                               # pytest tests
+│   ├── src/
+│   │   ├── main.py                          # FastAPI app (port 3000)
+│   │   ├── models.py                        # Pydantic DTOs
+│   │   ├── runner.py                        # Spawns Python analyzer
+│   │   ├── scanner.py                       # Reads result JSON files
+│   │   ├── settings.py                      # WebSettings (pydantic-settings)
+│   │   ├── middleware/
+│   │   │   ├── auth.py                      # API key auth
+│   │   │   └── ratelimit.py                 # Sliding window rate limiter
+│   │   └── __init__.py
+│   └── tests/                               # 104 tests
+│       ├── conftest.py
+│       ├── test_main.py
+│       ├── test_routes.py
+│       ├── test_runner.py
+│       ├── test_scanner.py
+│       └── test_settings.py
 │
 ├── ui/                                      # Vue 3 frontend
 │   ├── package.json
@@ -448,23 +632,89 @@ result = graph.run("EURUSD")
   results, keyed by `symbol/timeframe/candle_close_time`. Determines when re-analysis is
   needed based on broker-local time and cached candle periods. Reduces MCP server round-trips
   on repeated analysis of the same closed candles.
+- **Structure Analyzer Adapter** (`src/analysis/structure_analyzer.py`): Wraps the engine
+  output and validates the advisory-only invariant on every read — raises `ValueError` if
+  `confluence.entry_authorized` is not `False`.
 
 ### Decision Layer (`analyzer/src/decision/`)
 
 - **Protocols** (`protocols.py`): `DataSource`, `CalendarProvider`, `StructureAnalyzer` —
   runtime-checkable `typing.Protocol` interfaces for dependency injection.
-- **Models** (`models.py`): Pydantic models for `MarketContextSummary`, `DecisionOutput`
-  (with `entry_authorized: bool = False`), `ReviewVerdict`, and supporting types.
-- **Agents** (`agents.py`): LLM-powered agents using Instructor for structured JSON output:
-  - `SynthesizerAgent` — combines structure analysis + calendar events → market context summary
-  - `DeciderAgent` — generates trading decision (direction, entry, SL, TP, risk-reward)
-  - `ReviewerAgent` — independent quality review of the decision with veto power
-- **CostTracker** (`cost_tracker.py`): Tracks cumulative token usage and USD cost per analysis
-  run using model-specific pricing tables. Raises a `CostLimitExceeded` error when
-  `cost_per_symbol_limit` is reached.
+- **LLM Client Architecture** (`llm_client.py`):
+  - `LLMClientProtocol` — abstract protocol (structural typing via `@runtime_checkable`)
+    defining `generate_structured()` (async) and `generate_structured_sync()` (sync) methods.
+    Both return Pydantic models validated by `instructor`, with the sync variant also
+    returning an `LLMUsage` tuple for cost tracking.
+  - `OpenAIProviderAdapter` — concrete implementation wrapping an `instructor`-patched OpenAI
+    client. Supports configurable `max_retries`, `temperature`, `reasoning_effort`, custom
+    `base_url`, and model identity overrides. Both async and sync variants catch provider
+    errors and re-raise as `LLMClientError`.
+  - `create_llm_client()` — factory function dispatching by `ProviderKind` enum. Currently
+    only `OPENAI` is registered; `ANTHROPIC` and `GENERIC` are gated. Raises
+    `UnsupportedLLMProviderError` for unregistered providers.
+- **Model Identity Resolution** (`llm_config.py`):
+  - `LLMModelIdentity` — frozen dataclass carrying `provider`, `raw_model_identifier`,
+    `model_family`, `model_version`, and `resolution_status`. Provides a `display_name`
+    property for logging (e.g. `openai/gpt-4o/2024-08-06`).
+  - `ModelIdentityResolver` — protocol for provider-specific resolvers. Implementations:
+    `OpenAIModelIdentityResolver` (pattern: `gpt-{family}-{version}` / `o{family}-{version}`),
+    `AnthropicModelIdentityResolver` (pattern: `claude-{version}-{variant}-{date}`),
+    `GenericAliasModelIdentityResolver` (fallback — treats entire model string as family).
+  - `resolve_model_identity()` — iterates registered resolvers in order, applies optional
+    `family_override` / `version_override`, and returns the resolved identity.
+  - `ProviderKind` — `StrEnum` with `OPENAI`, `ANTHROPIC`, `GENERIC` values.
+  - `LLMModelConfig` — frozen dataclass bundling model, api_key, base_url, provider, and
+    reasoning_effort for end-to-end configuration.
+- **Usage Tracking** (`usage.py`):
+  - `LLMUsage` — frozen dataclass with `input_tokens`, `cached_input_tokens`,
+    `uncached_input_tokens`, `output_tokens`, `reasoning_tokens`, `total_tokens`, and
+    corresponding cost fields (filled in by `CostTracker`).
+  - `parse_usage()` — parses raw provider responses extracting token counts from either
+    Responses API or Chat Completions field names. Handles partial/missing data gracefully
+    — all fields default to `0`.
+- **Models** (`models.py`): Pydantic models for `MarketContextSummary` (bias, confidence,
+  reasoning, key levels, structural events, calendar context, canonical current price),
+  `DecisionOutput` (symbol, action, reasoning — no `entry_authorized` field), and
+  `ReviewVerdict` (status, reasoning, concerns, suggested improvements, plus six
+  deterministic compliance flags). `DecisionAction` and `ReviewStatus` enums are re-exported
+  from the engine.
+- **Agents** (`agents.py`): Three LLM agents, each accepting an `LLMClientProtocol` instance
+  and optional `CostTracker`:
+  - `SynthesizerAgent` — combines structure analysis + calendar events → `MarketContextSummary`
+  - `DeciderAgent` — generates trading decision (action + reasoning) from context + positions
+  - `ReviewerAgent` — independent quality review of the decision with structured verdict
+  - All agents log call-level cost via `_log_llm_call()` using the injected cost tracker.
+- **Two-LLM-Instance Architecture** (`main.py:_create_agents`): The synthesizer and decider
+  share a **primary** LLM client. The reviewer receives its own **reviewer** client, which
+  can use a different model, API key, base URL, reasoning effort, and model family/version
+  overrides — all configured via environment variables (`TRADING_REVIEWER_LLM_MODEL`,
+  `TRADING_REVIEWER_LLM_API_KEY`, etc.).
+- **CostTracker** (`cost_tracker.py`): Tracks cumulative token usage and USD cost per symbol
+  using per-model pricing tables (`input_per_million`, `cached_input_per_million`,
+  `output_per_million`). Raises `CostLimitExceeded` when `cost_per_symbol_limit` is exceeded
+  — this exception propagates up through the LangGraph pipeline and is caught by the CLI
+  entry point, halting the run for that symbol.
+- **Enforcement Gate** (`enforcement.py`): `DeterministicEnforcementGate` — purely
+  deterministic (no LLM calls, no I/O). The `enforce()` method runs five invariant checks
+  against the full pipeline state (setup, policy, risk, decision, review):
+  1. `CANDIDATE_NOT_GENERATED` — executable action without a classified candidate
+  2. `EXECUTION_NOT_ACTIONABLE` — executable action while execution status is not `ACTIONABLE`
+  3. `DIRECTION_MISMATCH` — decision action contradicts deterministic trade direction
+  4. `INVALID_GEOMETRY` — executable action while entry geometry is not `VALID`
+  5. `ACTION_NOT_ALLOWED` — decision action not in the derived allowed actions set
+  - If any violation is found: `final_action = NO_TRADE`, `status = BLOCKED_BY_ENFORCEMENT`
+  - If action is executable but review not approved: `status = BLOCKED_BY_REVIEW`
+  - Otherwise: pass-through of pre-review execution status and decision action.
 - **SynthesizerCache** (`synthesizer_cache.py`): Content-addressable cache for synthesizer
-  outputs. When identical analysis inputs are re-encountered (same structure state + calendar
-  events), the cached LLM response is returned, saving both time and cost.
+  outputs, keyed by `symbol / calendar-date / H1-closing-hour`. Day boundaries align with
+  calendar midnight (not D1 candle close). When identical analysis inputs are re-encountered
+  (same symbol, same day, same H1 hour), the cached `MarketContextSummary` is returned,
+  saving both time and cost. Best-effort writes — failures log a warning and do not raise.
+  Legacy cache files (pre-H1-hour-suffix format) are cleaned up automatically.
+- **Output Assembler** (`output_assembler.py`): `FinalOutputAssembler` — stateless mapper
+  collecting structured state from every pipeline stage into a single `AnalysisResult`.
+  Deterministic values (enforcement action, SL/TP from engine) always override LLM-produced
+  values. Produces a JSON-serialisable result for the web dashboard.
 
 ### Calendar Layer (`analyzer/src/calendar/`)
 
@@ -475,23 +725,24 @@ result = graph.run("EURUSD")
 
 ### Orchestrator (`analyzer/src/orchestrator/`)
 
-- **TradingGraph**: LangGraph state machine managing the 6-node analysis pipeline:
-  1. `fetch_data` — retrieves candles, positions, and broker time
-  2. `analyze_structure` — runs the deterministic market structure engine
-  3. `evaluate_calendar` — fetches and filters economic events
-  4. `synthesize_context` — LLM combines structure + calendar into a narrative context
-  5. `decide` — LLM generates a trading decision with specific levels
-  6. `review` — LLM independently reviews the decision; if rejected, loops back to `decide`
-     (up to `MAX_REVIEW_ATTEMPTS`)
-  - The advisory-only invariant is enforced at the model layer: `DecisionOutput.entry_authorized`
-    defaults to `False` and its Pydantic validator forces it to `False` regardless of LLM output;
-    the structure analyzer also rejects any engine result where `entry_authorized` is not `False`.
+- **TradingGraph**: LangGraph state machine with 13 nodes (plus END). Manages the full
+  14-node pipeline with two conditional routing branches:
+  - `early_execution_routing` bypasses the LLM entirely when the deterministic engine
+    classifies the setup as `NON_EXECUTABLE` or `BLOCKED_BY_DATA_QUALITY`
+  - `review` routes to `retry_decide` when `REVISION_REQUIRED` and attempts remain, or to
+    `continue_enforcement` when approved/maxed out
+  - State is modelled as a `TypedDict` (`AgentState`) with typed fields grouped by
+    provenance (market data, structure analysis, deterministic pipeline, LLM agents,
+    enforcement, output).
 
 ### Configuration (`analyzer/config/`)
 
-- **Settings**: Pydantic `BaseSettings` class binding all environment variables (`TRADING_*`
+- **Settings**: Pydantic `BaseSettings` class binding all environment variables (`TRADING_`
   prefix). Supports `.env` file loading, field validation, and complex types like
   `dict[str, dict[str, float]]` for model pricing (auto-parsed from JSON env var).
+  Includes execution-mode validation (paper/live modes require reviewer enforcement).
+  Provides `resolved_analysis_cache_dir` property that resolves relative paths against the
+  project root.
 
 ### Server (`server/`)
 
@@ -648,7 +899,7 @@ The production image is self-contained:
 # Analyzer (Python) — run from analyzer/
 cd analyzer
 
-# Run all tests (356 tests)
+# Run all tests (1001 tests)
 pytest
 
 # Run with coverage
@@ -669,23 +920,28 @@ cd ui && npm run typecheck   # vue-tsc
 
 ### Test Coverage — Analyzer
 
-The test suite contains **356 tests** covering:
+The test suite contains **1001 tests** covering:
 
-- **Analysis**: Candle cache engine fields
+- **Analysis**: Candle cache engine fields, market structure engine modules
 - **Calendar**: Event evaluator logic
-- **Config**: Settings loading, env prefix, validation, model pricing
+- **Config**: Settings loading, env prefix, validation, model pricing, execution policy
 - **Data**: Snapshot builder, terminal data provider (retry, auth, broker time)
 - **Decision**: Agents (API key handling, prompt rendering), cost tracker, models, protocols,
-  synthesizer cache
+  synthesizer cache, LLM client, LLM config, enforcement gate
+- **Notification**: Telegram sender
+- **Output**: Result writer, OHLC cache, result models
 - **Orchestrator**: Full graph pipeline, canonical price handling, synthesizer cache integration
 - **Main**: CLI entry point argument handling
+- **Integration**: End-to-end pipeline integration
 
 All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked in tests.
+
+**Server** has **104 tests** covering routes, runner, scanner, settings, and integration.
 
 ### Project Facts and Conventions
 
 - **Two-package monorepo**: `analyzer/` (trading-ai-agent, pip-installable) + `server/` (trading-server, pip-installable)
-- **Advisory-only**: `entry_authorized` must always be `False` — never executes trades
+- **Advisory-only**: `entry_authorized` is hardcoded `False` in the engine, validated by the structure analyzer adapter, instructed in LLM prompts, and enforced post-hoc by `DeterministicEnforcementGate` — the system never executes trades
 - **TRADING_ env prefix**: All settings use `TRADING_` prefix via `pydantic-settings`
 - **Protocol DI**: Dependencies injected via protocols in `analyzer/src/decision/protocols.py`
 - **pytest** with `asyncio_mode = "auto"` (both packages)
@@ -704,13 +960,15 @@ All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked in te
 │  │  (trading-ai-agent)      │     │  (trading-server, FastAPI)     │   │
 │  │                         │     │                               │   │
 │  │  main.py — CLI entry    │     │  src/main.py — FastAPI app    │   │
-│  │  src/decision/agents.py │ ◄── │  src/runner.py — spawns       │   │
-│  │  src/orchestrator/      │subpr │  analyzer as subprocess       │   │
-│  │  src/analysis/          │cess  │  src/scanner.py — reads       │   │
-│  │  src/calendar/          │     │  result files from disk        │   │
-│  │  src/data/              │     │  src/settings.py — WebSettings │   │
-│  │  src/notification/      │     │  src/models.py — Pydantic dtos │   │
-│  │  config/settings.py ◄───┼─────┤  tests/                       │   │
+│  │  src/logging_config.py │     │  src/runner.py — spawns       │   │
+│  │  src/decision/         │ ◄──│  analyzer as subprocess       │   │
+│  │  src/orchestrator/      │sub │  src/scanner.py — reads       │   │
+│  │  src/analysis/          │pr  │  result files from disk        │   │
+│  │  src/calendar/          │ocess│  src/settings.py — WebSettings │   │
+│  │  src/data/              │     │  src/models.py — Pydantic dtos │   │
+│  │  src/notification/      │     │  src/middleware/              │   │
+│  │  src/output/            │     │  tests/                       │   │
+│  │  config/settings.py ◄───┼─────┤                               │   │
 │  │  tests/                 │shared│                               │   │
 │  └─────────────────────────┘ env  └───────────────────────────────┘   │
 │                                   var                                │
@@ -777,7 +1035,6 @@ The repository includes a `.pre-commit-config.yaml` that runs automatically on `
 | `check-added-large-files` | Warn on large files (excludes `graphify-out/`) |
 | `check-merge-conflict` | Block unresolved merge markers |
 | `debug-statements` | Catch stray `pdb`/`breakpoint()` calls |
-| `graphify-update` | Rebuild knowledge graph on code changes |
 
 Install hooks:
 
@@ -809,7 +1066,7 @@ graphify explain "<concept>"
 2. All functions must have type hints
 3. Write tests for new functionality
 4. Run `mypy src/ && ruff check src/ && pytest` before committing (Analyzer)
-5. Ensure `entry_authorized = False` in all decision outputs (the graph enforces this)
+5. Ensure `entry_authorized = False` in all engine confluence outputs (the structure analyzer adapter and enforcement gate enforce this)
 6. Install pre-commit hooks to catch issues early
 
 ### Dependencies
