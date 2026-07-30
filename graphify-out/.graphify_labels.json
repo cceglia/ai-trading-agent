@@ -170,5 +170,14 @@
   "168": "test_save_h1_creates_hour_suffixed_file",
   "169": "test_cache_path_h4_includes_closing_hour",
   "170": "test_cache_path_h1_includes_closing_hour",
-  "171": "triage-labels.md"
+  "171": "triage-labels.md",
+  "172": "BiasLevel",
+  "173": "._synthesize_context",
+  "174": "test_scanner.py",
+  "175": "TestCORS",
+  "178": "TestCostTrackerWiring",
+  "181": "TestGenericAliasModelIdentityResolver",
+  "182": ".test_cost_limit_exceeded_message_in_stderr",
+  "183": "Domain Glossary",
+  "184": "Architecture"
 }
