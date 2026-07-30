@@ -1,19 +1,25 @@
-"""LLM client protocol and communication client for structured LLM calls.
+"""LLM client protocol, provider adapters, and factory for structured LLM calls.
 
-This module defines the abstract protocol for LLM communication and
-provides a concrete implementation with retry logic and error handling.
-It uses the ``instructor`` library to return structured Pydantic models
-from LLM responses.
+This module defines:
+
+* ``LLMClientProtocol`` — the abstract protocol that all provider adapters
+  must satisfy (structural typing via ``@runtime_checkable``).
+* ``OpenAIProviderAdapter`` — the concrete OpenAI adapter using
+  ``instructor`` for structured Pydantic output.
+* ``create_llm_client()`` — factory that returns the right adapter based
+  on a ``ProviderKind`` value.
 
 Usage::
 
-    from src.decision.llm_client import LLMCommunicationClient
+    from src.decision.llm_client import create_llm_client
+    from src.decision.llm_config import ProviderKind
 
-    client = LLMCommunicationClient(
+    client = create_llm_client(
+        provider=ProviderKind.OPENAI,
         api_key="...",
         model="gpt-4o",
     )
-    result = await client.generate_structured(
+    result = client.generate_structured_sync(
         messages=[{"role": "user", "content": "..."}],
         response_model=MyModel,
     )
@@ -147,12 +153,12 @@ class UnsupportedLLMProviderError(Exception):
 
 
 # ---------------------------------------------------------------------------
-# Concrete implementation
+# OpenAI adapter
 # ---------------------------------------------------------------------------
 
 
-class LLMCommunicationClient:
-    """Concrete LLM client implementing ``LLMClientProtocol``.
+class OpenAIProviderAdapter:
+    """OpenAI provider adapter implementing ``LLMClientProtocol``.
 
     Wraps an ``instructor``-patched OpenAI client and provides:
 
@@ -171,6 +177,10 @@ class LLMCommunicationClient:
         Optional base URL for OpenAI-compatible providers.
     model:
         Model identifier (e.g. ``"gpt-4o"``).
+    family_override:
+        Override the detected model family in the resolved identity.
+    version_override:
+        Override the detected model version in the resolved identity.
     reasoning_effort:
         Optional reasoning effort level (``"low"``/``"medium"``/``"high"``).
     default_max_retries:
@@ -187,21 +197,13 @@ class LLMCommunicationClient:
         api_key: str = "",
         base_url: str | None = None,
         model: str = "gpt-4o",
-        provider: ProviderKind = ProviderKind.OPENAI,
         family_override: str | None = None,
         version_override: str | None = None,
         reasoning_effort: str | None = None,
         default_max_retries: int = 3,
         default_temperature: float | None = None,
     ) -> None:
-        # Only OpenAI transport is supported in this client.
-        if provider is not ProviderKind.OPENAI:
-            raise UnsupportedLLMProviderError(
-                f"LLMCommunicationClient only supports OpenAI; got {provider.value}"
-            )
-
         self._model = model
-        self._provider = provider
         self._reasoning_effort = reasoning_effort
         self._default_max_retries = default_max_retries
         self._default_temperature = default_temperature
@@ -209,7 +211,7 @@ class LLMCommunicationClient:
         # Resolve and store model identity with optional overrides.
         self._identity = resolve_model_identity(
             model,
-            provider,
+            ProviderKind.OPENAI,
             family_override=family_override,
             version_override=version_override,
         )
@@ -225,10 +227,8 @@ class LLMCommunicationClient:
         self._async_client = instructor.from_openai(AsyncOpenAI(**openai_kwargs))
 
         logger.info(
-            "LLMCommunicationClient initialised: model=%s provider=%s "
-            "family=%s version=%s reasoning_effort=%s",
+            "OpenAIProviderAdapter initialised: model=%s family=%s version=%s reasoning_effort=%s",
             self._model,
-            self._identity.provider.value,
             self._identity.model_family,
             self._identity.model_version or "N/A",
             self._reasoning_effort,
@@ -267,10 +267,9 @@ class LLMCommunicationClient:
         if not (isinstance(response_model, type) and issubclass(response_model, BaseModel)):
             raise ValueError("response_model must be a BaseModel subclass")
 
-        if max_retries is not None:
-            effective_max_retries = max_retries
-        else:
-            effective_max_retries = self._default_max_retries
+        effective_max_retries = (
+            max_retries if max_retries is not None else self._default_max_retries
+        )
         effective_temperature = (
             temperature if temperature is not None else self._default_temperature
         )
@@ -344,10 +343,9 @@ class LLMCommunicationClient:
         if not (isinstance(response_model, type) and issubclass(response_model, BaseModel)):
             raise ValueError("response_model must be a BaseModel subclass")
 
-        if max_retries is not None:
-            effective_max_retries = max_retries
-        else:
-            effective_max_retries = self._default_max_retries
+        effective_max_retries = (
+            max_retries if max_retries is not None else self._default_max_retries
+        )
         effective_temperature = (
             temperature if temperature is not None else self._default_temperature
         )
@@ -392,3 +390,88 @@ class LLMCommunicationClient:
                 model=self._model,
                 cause=exc,
             ) from exc
+
+
+# ---------------------------------------------------------------------------
+# Provider factory
+# ---------------------------------------------------------------------------
+
+
+_ADAPTER_TYPES: dict[ProviderKind, type[OpenAIProviderAdapter]] = {
+    ProviderKind.OPENAI: OpenAIProviderAdapter,
+    # ProviderKind.ANTHROPIC: AnthropicProviderAdapter,  # gated — not yet implemented
+}
+
+
+def create_llm_client(
+    provider: ProviderKind,
+    *,
+    api_key: str = "",
+    base_url: str | None = None,
+    model: str = "gpt-4o",
+    family_override: str | None = None,
+    version_override: str | None = None,
+    reasoning_effort: str | None = None,
+    default_max_retries: int = 3,
+    default_temperature: float | None = None,
+) -> OpenAIProviderAdapter:
+    """Factory: create the right provider adapter for the given *provider*.
+
+    Args:
+        provider: Which LLM provider to use.
+        api_key: API key for the provider.
+        base_url: Optional base URL for OpenAI-compatible providers.
+        model: Model identifier string.
+        family_override: Override the detected model family.
+        version_override: Override the detected model version.
+        reasoning_effort: Optional reasoning effort level.
+        default_max_retries: Default retries per call.
+        default_temperature: Default temperature.
+
+    Returns:
+        An adapter satisfying ``LLMClientProtocol``.
+
+    Raises:
+        UnsupportedLLMProviderError: If *provider* has no registered adapter.
+    """
+    adapter_cls = _ADAPTER_TYPES.get(provider)
+    if adapter_cls is None:
+        supported = ", ".join(p.value for p in _ADAPTER_TYPES)
+        raise UnsupportedLLMProviderError(
+            f"No adapter registered for provider {provider.value!r}. "
+            f"Supported providers: {supported}"
+        )
+    return adapter_cls(
+        api_key=api_key,
+        base_url=base_url,
+        model=model,
+        family_override=family_override,
+        version_override=version_override,
+        reasoning_effort=reasoning_effort,
+        default_max_retries=default_max_retries,
+        default_temperature=default_temperature,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Deprecated alias (Phase 3A backward compat — remove after migration)
+# ---------------------------------------------------------------------------
+
+
+class LLMCommunicationClient(OpenAIProviderAdapter):
+    """Deprecated: use :class:`OpenAIProviderAdapter` or :func:`create_llm_client`."""
+
+    def __init__(self, *, provider: ProviderKind = ProviderKind.OPENAI, **kwargs: Any) -> None:
+        import warnings
+
+        warnings.warn(
+            "LLMCommunicationClient is deprecated, use OpenAIProviderAdapter or "
+            "create_llm_client() instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if provider is not ProviderKind.OPENAI:
+            raise UnsupportedLLMProviderError(
+                f"LLMCommunicationClient only supports OpenAI; got {provider.value}"
+            )
+        super().__init__(**kwargs)

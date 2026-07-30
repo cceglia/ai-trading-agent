@@ -14,7 +14,7 @@ from src.calendar.forexfactory import ForexFactoryCalendar
 from src.data.terminal_data_provider import TerminalDataProvider
 from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
 from src.decision.cost_tracker import CostLimitExceeded, CostTracker
-from src.decision.llm_client import LLMCommunicationClient
+from src.decision.llm_client import create_llm_client
 from src.decision.llm_config import ProviderKind, resolve_model_identity
 from src.logging_config import setup_logging
 from src.notification.telegram_sender import send_trade_notification
@@ -214,16 +214,17 @@ def _create_agents(
     model = settings.openai_model
     reasoning_effort = settings.openai_reasoning_effort or None
 
+    primary_provider = ProviderKind(settings.primary_llm_provider)
+
     client_kwargs: dict[str, Any] = {
         "api_key": api_key,
         "base_url": base_url,
         "model": model,
-        "provider": ProviderKind.OPENAI,
         "reasoning_effort": reasoning_effort,
     }
 
     # Resolve model identity for logging and diagnostics.
-    model_identity = resolve_model_identity(model, ProviderKind.OPENAI)
+    model_identity = resolve_model_identity(model, primary_provider)
     logger.info(
         "Resolved model identity: provider=%s family=%s version=%s status=%s",
         model_identity.provider.value,
@@ -234,15 +235,14 @@ def _create_agents(
 
     # Primary LLM client shared by synthesizer and decider; reviewer gets
     # its own instance with optional reviewer-specific overrides.
-    primary_client = LLMCommunicationClient(**client_kwargs)
+    primary_client = create_llm_client(provider=primary_provider, **client_kwargs)
 
     # Build reviewer client kwargs, overriding with reviewer-specific settings
     # when they are explicitly configured.  The provider setting controls
-    # which transport is used — only OPENAI is supported; any other value
-    # causes UnsupportedLLMProviderError at construction time.
-    reviewer_kwargs: dict[str, Any] = dict(client_kwargs)
+    # which transport is used — only OPENAI is currently supported; any
+    # other value causes UnsupportedLLMProviderError at construction time.
     reviewer_provider = ProviderKind(settings.reviewer_llm_provider)
-    reviewer_kwargs["provider"] = reviewer_provider
+    reviewer_kwargs: dict[str, Any] = dict(client_kwargs)
     if settings.reviewer_llm_model:
         reviewer_kwargs["model"] = settings.reviewer_llm_model
     if settings.reviewer_llm_api_key:
@@ -256,7 +256,7 @@ def _create_agents(
     if settings.reviewer_llm_model_version_override:
         reviewer_kwargs["version_override"] = settings.reviewer_llm_model_version_override
 
-    reviewer_client = LLMCommunicationClient(**reviewer_kwargs)
+    reviewer_client = create_llm_client(provider=reviewer_provider, **reviewer_kwargs)
 
     synthesizer = SynthesizerAgent(
         llm_client=primary_client,

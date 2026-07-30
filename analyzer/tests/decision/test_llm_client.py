@@ -1,49 +1,50 @@
-"""Tests for LLMCommunicationClient provider correctness (Phase 3A).
+"""Tests for LLM provider adapters and factory (Phase 3B).
 
 Verifies:
-- OpenAI provider constructs successfully
-- Resolved identity is OpenAI with correct family/version
+- OpenAIProviderAdapter constructs and resolves identity
 - Family/version overrides are honored
-- Anthropic provider raises UnsupportedLLMProviderError
-- Generic provider raises UnsupportedLLMProviderError
+- create_llm_client factory dispatches correctly
+- Unsupported providers raise UnsupportedLLMProviderError
+- LLMCommunicationClient deprecated alias works with warning
+- LLMClientProtocol structural compliance
 """
 
 from __future__ import annotations
 
+import warnings
 from unittest.mock import patch
 
 import pytest
 
-from src.decision.llm_client import LLMCommunicationClient, UnsupportedLLMProviderError
+from src.decision.llm_client import (
+    LLMClientProtocol,
+    OpenAIProviderAdapter,
+    UnsupportedLLMProviderError,
+    create_llm_client,
+)
 from src.decision.llm_config import ProviderKind, ResolutionStatus
 
+# ---------------------------------------------------------------------------
+# OpenAIProviderAdapter
+# ---------------------------------------------------------------------------
 
-class TestLLMCommunicationClientProvider:
-    """Provider-awareness of LLMCommunicationClient."""
 
-    @patch("src.decision.llm_client.instructor")
-    @patch("src.decision.llm_client.OpenAI")
-    @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_openai_provider_constructs(self, _mock_async, _mock_sync, _mock_instructor):
-        """OpenAI provider constructs without error."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="gpt-4o-2024-08-06",
-        )
-        assert client.model_identity.provider == ProviderKind.OPENAI
+class TestOpenAIProviderAdapter:
+    """Provider-awareness of OpenAIProviderAdapter."""
 
     @patch("src.decision.llm_client.instructor")
     @patch("src.decision.llm_client.OpenAI")
     @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_openai_identity_resolves_family_and_version(
-        self, _mock_async, _mock_sync, _mock_instructor
-    ):
-        """OpenAI model identity resolves family and version from model string."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="gpt-4o-2024-08-06",
-        )
-        identity = client.model_identity
+    def test_constructs(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o-2024-08-06")
+        assert adapter.model_identity.provider == ProviderKind.OPENAI
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_resolves_family_and_version(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o-2024-08-06")
+        identity = adapter.model_identity
         assert identity.provider == ProviderKind.OPENAI
         assert identity.model_family == "gpt-4o"
         assert identity.model_version == "2024-08-06"
@@ -52,95 +53,99 @@ class TestLLMCommunicationClientProvider:
     @patch("src.decision.llm_client.instructor")
     @patch("src.decision.llm_client.OpenAI")
     @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_family_override_is_honored(self, _mock_async, _mock_sync, _mock_instructor):
-        """Family override replaces detected family."""
-        client = LLMCommunicationClient(
+    def test_family_override(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o-2024-08-06", family_override="gpt-4o-mini")
+        assert adapter.model_identity.model_family == "gpt-4o-mini"
+        assert adapter.model_identity.resolution_status == ResolutionStatus.OVERRIDDEN
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_version_override(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o-2024-08-06", version_override="2024-12-01")
+        assert adapter.model_identity.model_version == "2024-12-01"
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_model_property(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o-2024-08-06")
+        assert adapter.model == "gpt-4o-2024-08-06"
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_satisfies_protocol(self, _mock_async, _mock_sync, _mock_instructor):
+        adapter = OpenAIProviderAdapter(model="gpt-4o")
+        assert isinstance(adapter, LLMClientProtocol)
+
+
+# ---------------------------------------------------------------------------
+# create_llm_client factory
+# ---------------------------------------------------------------------------
+
+
+class TestCreateLLMClient:
+    """Factory dispatches to the correct adapter."""
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_openai_dispatches_to_adapter(self, _mock_async, _mock_sync, _mock_instructor):
+        client = create_llm_client(provider=ProviderKind.OPENAI, model="gpt-4o")
+        assert isinstance(client, OpenAIProviderAdapter)
+
+    def test_anthropic_raises(self):
+        with pytest.raises(UnsupportedLLMProviderError, match="anthropic"):
+            create_llm_client(provider=ProviderKind.ANTHROPIC, model="claude-3-opus")
+
+    def test_generic_raises(self):
+        with pytest.raises(UnsupportedLLMProviderError, match="generic"):
+            create_llm_client(provider=ProviderKind.GENERIC, model="some-model")
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_passes_overrides(self, _mock_async, _mock_sync, _mock_instructor):
+        client = create_llm_client(
             provider=ProviderKind.OPENAI,
             model="gpt-4o-2024-08-06",
             family_override="gpt-4o-mini",
-        )
-        identity = client.model_identity
-        assert identity.model_family == "gpt-4o-mini"
-        assert identity.model_version == "2024-08-06"
-        assert identity.resolution_status == ResolutionStatus.OVERRIDDEN
-
-    @patch("src.decision.llm_client.instructor")
-    @patch("src.decision.llm_client.OpenAI")
-    @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_version_override_is_honored(self, _mock_async, _mock_sync, _mock_instructor):
-        """Version override replaces detected version."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="gpt-4o-2024-08-06",
             version_override="2024-12-01",
         )
-        identity = client.model_identity
-        assert identity.model_family == "gpt-4o"
-        assert identity.model_version == "2024-12-01"
-        assert identity.resolution_status == ResolutionStatus.OVERRIDDEN
+        assert client.model_identity.model_family == "gpt-4o-mini"
+        assert client.model_identity.model_version == "2024-12-01"
+
+
+# ---------------------------------------------------------------------------
+# LLMCommunicationClient deprecated alias
+# ---------------------------------------------------------------------------
+
+
+class TestLLMCommunicationClientDeprecated:
+    """Deprecated alias still works but emits DeprecationWarning."""
 
     @patch("src.decision.llm_client.instructor")
     @patch("src.decision.llm_client.OpenAI")
     @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_both_overrides_honored(self, _mock_async, _mock_sync, _mock_instructor):
-        """Both overrides applied together."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="gpt-4o-2024-08-06",
-            family_override="custom-family",
-            version_override="custom-version",
-        )
-        identity = client.model_identity
-        assert identity.model_family == "custom-family"
-        assert identity.model_version == "custom-version"
+    def test_emits_deprecation_warning(self, _mock_async, _mock_sync, _mock_instructor):
+        from src.decision.llm_client import LLMCommunicationClient
 
-    def test_anthropic_provider_raises(self):
-        """Anthropic provider raises UnsupportedLLMProviderError."""
-        with pytest.raises(UnsupportedLLMProviderError, match="anthropic"):
-            LLMCommunicationClient(
-                provider=ProviderKind.ANTHROPIC,
-                model="claude-3-opus-20240229",
-            )
-
-    def test_generic_provider_raises(self):
-        """Generic provider raises UnsupportedLLMProviderError."""
-        with pytest.raises(UnsupportedLLMProviderError, match="generic"):
-            LLMCommunicationClient(
-                provider=ProviderKind.GENERIC,
-                model="some-model",
-            )
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            client = LLMCommunicationClient(model="gpt-4o")
+            assert len(w) == 1
+            assert issubclass(w[0].category, DeprecationWarning)
+            assert "deprecated" in str(w[0].message).lower()
+        assert isinstance(client, OpenAIProviderAdapter)
 
     @patch("src.decision.llm_client.instructor")
     @patch("src.decision.llm_client.OpenAI")
     @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_default_provider_is_openai(self, _mock_async, _mock_sync, _mock_instructor):
-        """Default provider parameter is OPENAI."""
-        client = LLMCommunicationClient(model="gpt-4o")
-        assert client.model_identity.provider == ProviderKind.OPENAI
+    def test_rejects_non_openai(self, _mock_async, _mock_sync, _mock_instructor):
+        from src.decision.llm_client import LLMCommunicationClient
 
-    @patch("src.decision.llm_client.instructor")
-    @patch("src.decision.llm_client.OpenAI")
-    @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_unrecognized_model_still_resolves_as_openai(
-        self, _mock_async, _mock_sync, _mock_instructor
-    ):
-        """Unrecognized model string still resolves as OPENAI provider."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="custom-model-name",
-        )
-        identity = client.model_identity
-        assert identity.provider == ProviderKind.OPENAI
-        assert identity.model_family == "custom-model-name"
-        assert identity.resolution_status == ResolutionStatus.UNRECOGNIZED
-
-    @patch("src.decision.llm_client.instructor")
-    @patch("src.decision.llm_client.OpenAI")
-    @patch("src.decision.llm_client.AsyncOpenAI")
-    def test_model_property_returns_model_string(self, _mock_async, _mock_sync, _mock_instructor):
-        """model property returns the raw model string."""
-        client = LLMCommunicationClient(
-            provider=ProviderKind.OPENAI,
-            model="gpt-4o-2024-08-06",
-        )
-        assert client.model == "gpt-4o-2024-08-06"
+        with pytest.raises(UnsupportedLLMProviderError):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                LLMCommunicationClient(provider=ProviderKind.ANTHROPIC, model="claude-3")

@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     """Trading agent configuration."""
 
     # LLM Configuration
+    primary_llm_provider: str = Field(
+        default="openai",
+        description="Provider for the primary LLM (currently only 'openai' is supported)",
+    )
     openai_api_key: str = Field(default="", description="OpenAI API key")
     openai_model: str = Field(default="gpt-4o", description="Model to use")
     openai_base_url: str = Field(

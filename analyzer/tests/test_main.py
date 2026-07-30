@@ -24,7 +24,7 @@ class TestMainErrorDuplication:
     @patch("src.analysis.structure_analyzer.MarketStructureEngine")
     @patch("src.calendar.forexfactory.ForexFactoryCalendar")
     @patch("src.data.terminal_data_provider.TerminalDataProvider")
-    @patch("main.LLMCommunicationClient")
+    @patch("main.create_llm_client")
     @patch("src.decision.agents.SynthesizerAgent")
     @patch("src.decision.agents.DeciderAgent")
     @patch("src.decision.agents.ReviewerAgent")
@@ -61,6 +61,7 @@ class TestMainErrorDuplication:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.primary_llm_provider = "openai"
         mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
