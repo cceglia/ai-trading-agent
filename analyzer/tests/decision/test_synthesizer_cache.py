@@ -47,7 +47,7 @@ def reset_synthesizer_cache_settings():
 def _make_summary(**overrides: object) -> MarketContextSummary:
     defaults: dict[str, object] = {
         "symbol": "EURUSD",
-        "bias": "bullish",
+        "bias": "BULLISH",
         "confidence": 75.0,
         "reasoning": "Test reasoning",
         "key_levels": [],

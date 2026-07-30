@@ -14,6 +14,34 @@ from src.models import RunSummary
 logger = logging.getLogger(__name__)
 
 
+def _normalize_legacy_result(data: dict[str, Any]) -> dict[str, Any]:
+    """Normalize legacy result JSON to current schema.
+
+    - Derive ``review.status`` from ``review.approved`` when missing.
+    - Create ``sl_tp_overlay`` from legacy ``decision`` price fields
+      when the overlay is absent.
+    """
+    review = data.get("review")
+    if isinstance(review, dict):
+        if "status" not in review and "approved" in review:
+            review["status"] = "APPROVED" if review["approved"] else "REJECTED"
+
+    sl_tp = data.get("sl_tp_overlay")
+    if sl_tp is None:
+        decision = data.get("decision") or {}
+        entry = decision.get("entry_price")
+        sl = decision.get("stop_loss")
+        tp = decision.get("take_profit")
+        if entry is not None or sl is not None or tp is not None:
+            data["sl_tp_overlay"] = {
+                "entry_price": entry,
+                "stop_loss": sl,
+                "take_profit": tp,
+            }
+
+    return data
+
+
 class ResultScanner:
     """Walk the data directory tree, read/parse JSON result files,
     filter/sort into RunSummary list.
@@ -82,7 +110,8 @@ class ResultScanner:
         if not fpath.exists():
             return None
         try:
-            return json.loads(fpath.read_text(encoding="utf-8"))
+            data = json.loads(fpath.read_text(encoding="utf-8"))
+            return _normalize_legacy_result(data) if isinstance(data, dict) else data
         except (json.JSONDecodeError, OSError):
             return None
 
@@ -302,7 +331,7 @@ class ResultScanner:
                 bias=market_ctx.get("bias", "unknown"),
                 confidence=market_ctx.get("confidence", 0),
                 action=decision.get("action", "unknown"),
-                review_approved=review.get("approved", False),
+                review_approved=review.get("status") == "APPROVED",
                 current_price=market_ctx.get("current_price"),
                 file_path=str(rel),
             )

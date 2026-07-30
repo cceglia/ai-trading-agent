@@ -5,7 +5,11 @@ from unittest.mock import MagicMock, patch
 
 import requests as req
 
-from src.notification.telegram_sender import _sanitize_url, send_trade_notification
+from src.notification.telegram_sender import (
+    _sanitize_url,
+    extract_trade_levels,
+    send_trade_notification,
+)
 
 
 class TestSendTradeNotification:
@@ -266,3 +270,132 @@ class TestSanitizeUrl:
         url = "https://example.com/api"
         sanitized = _sanitize_url(url, "any-token")
         assert sanitized == url
+
+
+class TestExtractTradeLevels:
+    """Tests for the extract_trade_levels helper."""
+
+    def test_reads_from_overlay(self):
+        """Overlay values are preferred over decision values."""
+        result = {
+            "decision": {
+                "action": "buy_setup",
+                "entry_price": 1.1111,
+                "stop_loss": 1.1000,
+                "take_profit": 1.1300,
+                "risk_reward_ratio": 1.5,
+                "confidence": 0.85,
+            },
+            "sl_tp_overlay": {
+                "entry_price": 1.2222,
+                "stop_loss": 1.2100,
+                "take_profit": 1.2500,
+            },
+            "estimated_reward_risk": 2.0,
+            "market_context": {"bias": "bullish"},
+        }
+
+        levels = extract_trade_levels(result)
+
+        assert levels.entry_price == 1.2222
+        assert levels.stop_loss == 1.2100
+        assert levels.take_profit == 1.2500
+        assert levels.risk_reward_ratio == 2.0
+        assert levels.confidence == 0.85
+        assert levels.bias == "bullish"
+
+    def test_overlay_takes_precedence_over_decision(self):
+        """When both overlay and decision have prices, overlay wins."""
+        result = {
+            "decision": {
+                "entry_price": 1.1111,
+                "stop_loss": 1.1000,
+                "take_profit": 1.1300,
+                "risk_reward_ratio": 1.5,
+            },
+            "sl_tp_overlay": {
+                "entry_price": 1.2222,
+                "stop_loss": 1.2100,
+                "take_profit": 1.2500,
+            },
+            "estimated_reward_risk": 2.0,
+        }
+
+        levels = extract_trade_levels(result)
+
+        assert levels.entry_price == 1.2222
+        assert levels.stop_loss == 1.2100
+        assert levels.take_profit == 1.2500
+        assert levels.risk_reward_ratio == 2.0
+
+    def test_falls_back_to_decision_when_overlay_missing(self):
+        """Legacy results without overlay use decision fields."""
+        result = {
+            "decision": {
+                "entry_price": 2400.0,
+                "stop_loss": 2380.0,
+                "take_profit": 2440.0,
+                "risk_reward_ratio": 2.0,
+                "confidence": 0.85,
+            },
+            "market_context": {"bias": "bullish"},
+        }
+
+        levels = extract_trade_levels(result)
+
+        assert levels.entry_price == 2400.0
+        assert levels.stop_loss == 2380.0
+        assert levels.take_profit == 2440.0
+        assert levels.risk_reward_ratio == 2.0
+
+    def test_na_defaults_when_no_prices(self):
+        """N/A when neither overlay nor decision has price fields."""
+        result = {
+            "decision": {"action": "buy_setup"},
+        }
+
+        levels = extract_trade_levels(result)
+
+        assert levels.entry_price == "N/A"
+        assert levels.stop_loss == "N/A"
+        assert levels.take_profit == "N/A"
+        assert levels.risk_reward_ratio == "N/A"
+
+    def test_result_param_sends_overlay_values(self):
+        """send_trade_notification with result= uses extract_trade_levels."""
+        result = {
+            "decision": {
+                "action": "buy_setup",
+                "entry_price": 1.1111,
+                "confidence": 0.85,
+            },
+            "sl_tp_overlay": {
+                "entry_price": 1.2222,
+                "stop_loss": 1.2100,
+                "take_profit": 1.2500,
+            },
+            "estimated_reward_risk": 2.0,
+            "market_context": {"bias": "bullish"},
+        }
+
+        with patch("src.notification.telegram_sender.requests.post") as mock_post:
+            mock_resp = MagicMock()
+            mock_resp.raise_for_status = MagicMock()
+            mock_post.return_value = mock_resp
+
+            send_trade_notification(
+                symbol="EURUSD",
+                decision=result["decision"],
+                context=result["market_context"],
+                review={"status": "APPROVED"},
+                web_ui_base_url="http://localhost:3000",
+                bot_token="test-token",
+                chat_id="test-chat",
+                result=result,
+            )
+
+            text = mock_post.call_args[1]["json"]["text"]
+            assert "1.2222" in text  # overlay entry, not 1.1111
+            assert "1.21" in text  # overlay SL
+            assert "1.25" in text  # overlay TP
+            assert "2.0" in text  # estimated_reward_risk

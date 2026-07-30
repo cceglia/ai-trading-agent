@@ -126,11 +126,18 @@
   "124": "test_h4_candle_period_at_boundary",
   "125": "testget_cache_date_d1_before_close",
   "126": "test_h1_candle_period_at_boundary",
-  "127": "testget_cache_date_d1_after_close",
-  "128": "test_should_run_d1_without_cache",
+  "127": "test_should_run_d1_after_close_without_cache",
+  "128": "usage.py",
   "129": "test_should_run_d1_after_close_with_cache",
-  "130": "test_should_run_h1_different_period",
+  "132": "TestCostTrackerWiring",
   "133": ".invalidate_cache",
+  "134": "reload_settings",
   "136": ".test_empty_pricing_table",
-  "137": "create-user.sh"
+  "137": "create-user.sh",
+  "138": ".test_cache_disabled_by_env",
+  "141": "test_h1_candle_period",
+  "145": ".test_pipeline_resets_cost_tracker_per_symbol",
+  "151": "derive_allowed_actions",
+  "152": "ExecutionStatus",
+  "160": "adapters/__init__.py"
 }

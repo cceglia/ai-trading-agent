@@ -1,8 +1,27 @@
 import json
 import logging
+from typing import Self
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings
+
+# ExecutionMode is defined in the market_structure_engine models (canonical home).
+# This try/except handles the case where the server test suite imports config.settings
+# without the analyzer's src directory on sys.path.  The inline fallback mirrors the
+# canonical enum exactly so there is never a value mismatch.
+try:
+    from src.analysis.market_structure_engine.models import ExecutionMode
+except ImportError:
+    from enum import StrEnum
+
+    class ExecutionMode(StrEnum):  # type: ignore[no-redef]
+        DETERMINISTIC_BACKTEST = "DETERMINISTIC_BACKTEST"
+        FULL_CHAIN_BACKTEST = "FULL_CHAIN_BACKTEST"
+        DEVELOPMENT = "DEVELOPMENT"
+        SHADOW = "SHADOW"
+        PAPER = "PAPER"
+        LIVE = "LIVE"
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +40,57 @@ class Settings(BaseSettings):
         default="", description="OpenAI reasoning_effort (low/medium/high), empty = not set"
     )
 
+    openai_model_family_override: str | None = Field(
+        default=None,
+        description="Override the detected model family for the primary LLM",
+    )
+    openai_model_version_override: str | None = Field(
+        default=None,
+        description="Override the detected model version for the primary LLM",
+    )
+
+    # Reviewer LLM Configuration
+    reviewer_llm_provider: str = Field(
+        default="openai",
+        description="Provider for the reviewer LLM (e.g. openai, anthropic)",
+    )
+    reviewer_llm_model: str = Field(
+        default="",
+        description="Model identifier for the reviewer LLM (empty = use primary model)",
+    )
+    reviewer_llm_model_family_override: str | None = Field(
+        default=None,
+        description="Override the detected model family for the reviewer",
+    )
+    reviewer_llm_model_version_override: str | None = Field(
+        default=None,
+        description="Override the detected model version for the reviewer",
+    )
+    reviewer_llm_api_key: str = Field(
+        default="",
+        description="API key for the reviewer LLM (empty = use primary API key)",
+    )
+    reviewer_llm_base_url: str = Field(
+        default="",
+        description="Base URL for the reviewer LLM (empty = use default for provider)",
+    )
+    reviewer_llm_timeout_seconds: float = Field(
+        default=120.0,
+        description="Timeout in seconds for reviewer LLM calls",
+    )
+    reviewer_llm_max_retries: int = Field(
+        default=3,
+        description="Maximum number of provider retries for reviewer LLM calls",
+    )
+    reviewer_llm_temperature: float = Field(
+        default=0.0,
+        description="Temperature setting for the reviewer LLM",
+    )
+    reviewer_llm_reasoning_effort: str = Field(
+        default="",
+        description="Reasoning effort for reviewer (low/medium/high), empty = not set",
+    )
+
     # Terminal MCP Configuration
     terminal_server_url: str = Field(
         default="http://127.0.0.1:22346/mcp", description="Terminal MCP server URL for candle data"
@@ -31,6 +101,66 @@ class Settings(BaseSettings):
 
     # Review Configuration
     max_review_attempts: int = Field(default=2, description="Maximum review retry attempts")
+
+    # Setup Policy
+    enable_countertrend: bool = Field(
+        default=False,
+        description="Allow countertrend setups when enabled",
+    )
+
+    # R/R Thresholds
+    min_rr_aaa: float = Field(
+        default=2.0,
+        description="Minimum reward-to-risk ratio for AAA-grade setups",
+    )
+    min_rr_aa: float = Field(
+        default=2.0,
+        description="Minimum reward-to-risk ratio for AA-grade setups",
+    )
+    min_rr_countertrend: float = Field(
+        default=2.5,
+        description="Minimum reward-to-risk ratio for countertrend setups",
+    )
+
+    # Risk Multipliers
+    risk_multiplier_aaa: float = Field(
+        default=1.0,
+        description="Risk multiplier for AAA-grade setups",
+    )
+    risk_multiplier_aa: float = Field(
+        default=0.5,
+        description="Risk multiplier for AA-grade setups",
+    )
+    risk_multiplier_countertrend: float = Field(
+        default=0.25,
+        description="Risk multiplier for countertrend setups",
+    )
+
+    # Lifecycle Configuration
+    setup_expiration_h1_bars: int = Field(
+        default=3,
+        description="Number of H1 bars before a setup expires",
+    )
+
+    # Reviewer Policy
+    require_reviewer: bool = Field(
+        default=True,
+        description="Require an independent reviewer for executable decisions",
+    )
+    allow_unreviewed_decisions: bool = Field(
+        default=False,
+        description="Allow decisions without review (forbidden in paper/live mode)",
+    )
+    allow_same_model_different_deployment: bool = Field(
+        default=False,
+        description="Allow reviewer to use the same model family with a different deployment",
+    )
+
+    # Execution Mode
+    execution_mode: ExecutionMode = Field(
+        default=ExecutionMode.PAPER,
+        description="Current execution mode of the trading system",
+    )
 
     # Cost Configuration
     cost_per_symbol_limit: float = Field(
@@ -177,6 +307,29 @@ class Settings(BaseSettings):
         # Resolve relative to the project root (parent of analyzer/)
         project_root = Path(__file__).resolve().parent.parent.parent
         return str(project_root / path)
+
+    @model_validator(mode="after")
+    def validate_execution_policy(self) -> Self:
+        """Validate execution policy settings based on execution mode.
+
+        Paper and Live modes require:
+        - ``require_reviewer`` must be ``True``
+        - ``allow_unreviewed_decisions`` must be ``False``
+        - ``allow_same_model_different_deployment`` must be ``False``
+        """
+        if self.execution_mode in (ExecutionMode.PAPER, ExecutionMode.LIVE):
+            if not self.require_reviewer:
+                raise ValueError("require_reviewer must be True in paper/live execution mode")
+            if self.allow_unreviewed_decisions:
+                raise ValueError(
+                    "allow_unreviewed_decisions must be False in paper/live execution mode"
+                )
+            if self.allow_same_model_different_deployment:
+                raise ValueError(
+                    "allow_same_model_different_deployment must be False "
+                    "in paper/live execution mode"
+                )
+        return self
 
     model_config = {"env_prefix": "TRADING_", "env_file": ".env"}
 

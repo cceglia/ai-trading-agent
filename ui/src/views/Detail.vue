@@ -100,21 +100,21 @@ function goBack() {
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Action</span>
             <span class="text-sm font-mono text-terminal-text">{{ result.decision.action.replace("_", " ") }}</span>
           </div>
-          <div v-if="result.decision.entry_price != null">
+          <div v-if="result.sl_tp_overlay?.entry_price != null">
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Entry</span>
-            <span class="text-sm font-mono text-terminal-text">{{ result.decision.entry_price }}</span>
+            <span class="text-sm font-mono text-terminal-text">{{ result.sl_tp_overlay.entry_price }}</span>
           </div>
-          <div v-if="result.decision.stop_loss != null">
+          <div v-if="result.sl_tp_overlay?.stop_loss != null">
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Stop Loss</span>
-            <span class="text-sm font-mono text-terminal-loss">{{ result.decision.stop_loss }}</span>
+            <span class="text-sm font-mono text-terminal-loss">{{ result.sl_tp_overlay.stop_loss }}</span>
           </div>
-          <div v-if="result.decision.take_profit != null">
+          <div v-if="result.sl_tp_overlay?.take_profit != null">
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Take Profit</span>
-            <span class="text-sm font-mono text-terminal-gain">{{ result.decision.take_profit }}</span>
+            <span class="text-sm font-mono text-terminal-gain">{{ result.sl_tp_overlay.take_profit }}</span>
           </div>
-          <div v-if="result.decision.risk_reward_ratio != null">
+          <div v-if="result.estimated_reward_risk != null">
             <span class="text-2xs font-sans text-terminal-text-tertiary block">R/R Ratio</span>
-            <span class="text-sm font-mono text-terminal-text">{{ result.decision.risk_reward_ratio }}</span>
+            <span class="text-sm font-mono text-terminal-text">{{ result.estimated_reward_risk }}</span>
           </div>
         </div>
         <div class="mt-2">
@@ -127,8 +127,8 @@ function goBack() {
       <section class="border border-terminal-border bg-terminal-surface p-3" v-if="result.review">
         <h2 class="text-xs font-sans font-medium text-terminal-text-secondary uppercase tracking-wider mb-2">Review</h2>
         <div class="flex items-center gap-2 mb-2">
-          <span :class="['text-xs font-mono', result.review.approved ? 'text-terminal-gain' : 'text-terminal-loss']">
-            {{ result.review.approved ? "APPROVED" : "REJECTED" }}
+          <span :class="['text-xs font-mono', (result.review.approved ?? (result.review.status === 'APPROVED')) ? 'text-terminal-gain' : 'text-terminal-loss']">
+            {{ result.review.status ?? (result.review.approved ? "APPROVED" : "REJECTED") }}
           </span>
           <span v-if="result.review.risk_management_ok === false" class="text-xs font-mono text-terminal-warning">&#9888; Risk</span>
           <span v-if="result.review.htf_alignment_ok === false" class="text-xs font-mono text-terminal-warning">&#9888; HTF</span>

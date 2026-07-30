@@ -8,6 +8,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.decision.cost_tracker import CostLimitExceeded
+from src.output.result_models import SLTPOverlay
+
+
+def _mock_analysis_result(sl_tp_overlay: SLTPOverlay | None = None) -> MagicMock:
+    """Create a mock AnalysisResult for test result dicts."""
+    mock = MagicMock()
+    mock.sl_tp_overlay = sl_tp_overlay or SLTPOverlay()
+    return mock
 
 
 class TestArgparseMultiSymbol:
@@ -78,6 +86,7 @@ class TestMainMultiSymbolExecution:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -86,6 +95,7 @@ class TestMainMultiSymbolExecution:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -100,6 +110,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -121,6 +132,7 @@ class TestMainMultiSymbolExecution:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -129,6 +141,7 @@ class TestMainMultiSymbolExecution:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -144,6 +157,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -171,6 +185,7 @@ class TestMainMultiSymbolExecution:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -179,6 +194,7 @@ class TestMainMultiSymbolExecution:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -194,6 +210,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
         mock_settings.analysis_cache_dir = str(tmp_path / "data")
 
@@ -205,6 +222,7 @@ class TestMainMultiSymbolExecution:
             "fatal_error": None,
             "broker_now": datetime(2026, 7, 26, 8, 30),
             "structure_analysis": {"_ohlc_bars": {}},
+            "analysis_result": _mock_analysis_result(),
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -223,6 +241,7 @@ class TestMainMultiSymbolExecution:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -231,6 +250,7 @@ class TestMainMultiSymbolExecution:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -246,6 +266,7 @@ class TestMainMultiSymbolExecution:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
         mock_settings.analysis_cache_dir = str(tmp_path / "data")
 
@@ -255,6 +276,7 @@ class TestMainMultiSymbolExecution:
             "errors": [],
             "fatal_error": None,
             "structure_analysis": {"_ohlc_bars": {}},
+            "analysis_result": _mock_analysis_result(),
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -288,6 +310,7 @@ class TestMainCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -296,6 +319,7 @@ class TestMainCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -315,6 +339,7 @@ class TestMainCostLimit:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -344,6 +369,7 @@ class TestMainCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -352,6 +378,7 @@ class TestMainCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -374,6 +401,7 @@ class TestMainCostLimit:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -407,6 +435,7 @@ class TestMainCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -417,6 +446,7 @@ class TestMainCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -444,6 +474,7 @@ class TestMainCostLimit:
         settings.openai_reasoning_effort = ""
         settings.terminal_server_url = ""
         settings.terminal_api_key = ""
+        settings.reviewer_llm_provider = "openai"
 
         from main import _run_pipeline
 
@@ -461,6 +492,7 @@ class TestMainCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -471,6 +503,7 @@ class TestMainCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -498,6 +531,7 @@ class TestMainCostLimit:
         settings.openai_reasoning_effort = ""
         settings.terminal_server_url = ""
         settings.terminal_api_key = ""
+        settings.reviewer_llm_provider = "openai"
 
         from main import _run_pipeline
 
@@ -533,6 +567,7 @@ class TestMainCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -541,6 +576,7 @@ class TestMainCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -561,6 +597,7 @@ class TestMainCostLimit:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0  # ← zero disables enforcement
 
         mock_graph = MagicMock()
@@ -596,6 +633,7 @@ class TestMainIntegrationCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -604,6 +642,7 @@ class TestMainIntegrationCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -623,6 +662,7 @@ class TestMainIntegrationCostLimit:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -657,6 +697,7 @@ class TestMainIntegrationCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -665,6 +706,7 @@ class TestMainIntegrationCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -683,6 +725,7 @@ class TestMainIntegrationCostLimit:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -710,6 +753,7 @@ class TestMainIntegrationCostLimit:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -718,6 +762,7 @@ class TestMainIntegrationCostLimit:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -778,6 +823,7 @@ class TestMainIntegrationCostLimit:
         settings.openai_reasoning_effort = ""
         settings.terminal_server_url = ""
         settings.terminal_api_key = ""
+        settings.reviewer_llm_provider = "openai"
 
         from main import _run_pipeline
 
@@ -803,6 +849,7 @@ class TestMainTelegramNotification:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -813,6 +860,7 @@ class TestMainTelegramNotification:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -827,6 +875,7 @@ class TestMainTelegramNotification:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.telegram_bot_token = "test-token"
         mock_settings.telegram_chat_id = "test-chat-id"
         mock_settings.web_ui_base_url = "http://localhost:3000"
@@ -840,19 +889,19 @@ class TestMainTelegramNotification:
             "decision": {
                 "symbol": "XAUUSD",
                 "action": "buy_setup",
-                "entry_price": 1900.00,
                 "reasoning": "Bullish setup with good R/R",
             },
             "market_context": {
                 "symbol": "XAUUSD",
-                "bias": "bullish",
+                "bias": "BULLISH",
                 "confidence": 85.0,
                 "reasoning": "Strong bullish structure",
             },
             "review": {
-                "approved": True,
+                "status": "APPROVED",
                 "reasoning": "All criteria met",
             },
+            "analysis_result": _mock_analysis_result(),
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -866,13 +915,14 @@ class TestMainTelegramNotification:
         call_kwargs = mock_send.call_args[1]
         assert call_kwargs["symbol"] == "XAUUSD"
         assert call_kwargs["decision"]["action"] == "buy_setup"
-        assert call_kwargs["review"]["approved"] is True
+        assert call_kwargs["review"]["status"] == "APPROVED"
 
     @patch("main.Settings")
     @patch("main.MarketStructureEngine")
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -883,6 +933,7 @@ class TestMainTelegramNotification:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -897,6 +948,7 @@ class TestMainTelegramNotification:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         mock_graph = MagicMock()
@@ -912,12 +964,12 @@ class TestMainTelegramNotification:
             },
             "market_context": {
                 "symbol": "XAUUSD",
-                "bias": "bullish",
+                "bias": "BULLISH",
                 "confidence": 85.0,
                 "reasoning": "Strong structure",
             },
             "review": {
-                "approved": True,
+                "status": "APPROVED",
                 "reasoning": "OK",
             },
         }
@@ -936,6 +988,7 @@ class TestMainTelegramNotification:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -946,6 +999,7 @@ class TestMainTelegramNotification:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -960,6 +1014,7 @@ class TestMainTelegramNotification:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.telegram_bot_token = "test-token"
         mock_settings.telegram_chat_id = "test-chat-id"
         mock_settings.cost_per_symbol_limit = 0.05
@@ -969,8 +1024,8 @@ class TestMainTelegramNotification:
             "errors": [],
             "fatal_error": None,
             "decision": {"action": "no_trade"},
-            "market_context": {"bias": "neutral"},
-            "review": {"approved": True},
+            "market_context": {"bias": "NEUTRAL"},
+            "review": {"status": "APPROVED"},
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -987,6 +1042,7 @@ class TestMainTelegramNotification:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -997,6 +1053,7 @@ class TestMainTelegramNotification:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -1011,6 +1068,7 @@ class TestMainTelegramNotification:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.telegram_bot_token = "test-token"
         mock_settings.telegram_chat_id = "test-chat-id"
         mock_settings.cost_per_symbol_limit = 0.05
@@ -1020,8 +1078,8 @@ class TestMainTelegramNotification:
             "errors": [],
             "fatal_error": None,
             "decision": {"action": "buy_setup"},
-            "market_context": {"bias": "bullish"},
-            "review": {"approved": False},
+            "market_context": {"bias": "BULLISH"},
+            "review": {"status": "REJECTED"},
         }
         mock_graph_cls.return_value = mock_graph
 
@@ -1038,6 +1096,7 @@ class TestMainTelegramNotification:
     @patch("main.ForexFactoryCalendar")
     @patch("main.TerminalDataProvider")
     @patch("main.SynthesizerAgent")
+    @patch("main.LLMCommunicationClient")
     @patch("main.DeciderAgent")
     @patch("main.ReviewerAgent")
     @patch("main.TradingGraph")
@@ -1046,6 +1105,7 @@ class TestMainTelegramNotification:
         mock_graph_cls: MagicMock,
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_synth_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
@@ -1061,6 +1121,7 @@ class TestMainTelegramNotification:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.telegram_bot_token = ""
         mock_settings.telegram_chat_id = ""
         mock_settings.cost_per_symbol_limit = 0.05

@@ -29,8 +29,8 @@ calendar events to produce a MarketContextSummary.
 
 ## Non-negotiable Rules
 1. Market structure is the primary basis of the Daily bias
-2. BOS and CHoCH must be derived from TradingView MCP OHLC data
-3. Do not add a market-structure indicator to TradingView
+2. BOS and CHoCH must be derived from MT5 OHLC data
+3. Do not modify or override the deterministic structure analysis
 4. BOS normally requires a closed Daily candle beyond a meaningful structural swing
 5. A wick-only penetration is not a confirmed BOS
 6. CHoCH is an early structural transition and not automatically a reversal
@@ -39,7 +39,7 @@ calendar events to produce a MarketContextSummary.
 9. Use zones when exact levels would be misleading
 10. The final bias must reference swings, structural events, support, resistance, and invalidation
 11. Moving averages and ATR remain secondary evidence
-12. Market-structure calculations do not consume TradingView indicator slots
+12. Market-structure calculations are deterministic and come from the analysis engine
 
 ## Structural Bias Levels
 - strong_bullish: Confirmed bullish primary structure, recent
@@ -158,19 +158,27 @@ Your role is to analyze market context and decide on trading action.
 - No confirmed bullish CHoCH against primary structure
 - Supportive momentum and follow-through
 
-## Decision Logic
-- If bias is neutral or unclear: NO_TRADE
-- If bias is strong in one direction with confirmation: Consider setup
-- Always check risk/reward ratio >= 2:1
-- Consider calendar events for timing
+## Deterministic Authority
+The following are IMMUTABLE — you must not modify, override, or contradict:
+- setup_grade, setup_lifecycle_status, execution_status
+- trade_direction, blockers, allowed_actions
+- entry_price, stop_loss, take_profit (pre-calculated by the engine)
 
 ## Non-negotiable Rules
 1. Market structure is the primary basis of the Daily bias
-2. BOS and CHoCH must be derived from TradingView MCP OHLC data
+2. BOS and CHoCH must be derived from MT5 OHLC data
 3. A wick-only penetration is not a confirmed BOS
 4. CHoCH is an early structural transition and not automatically a reversal
 5. Support and resistance must be based on meaningful Daily reactions
 6. Moving averages and ATR remain secondary evidence
+
+## Decision Logic
+- Select an action from allowed_actions
+- Entry_price, stop_loss, and take_profit are pre-calculated by the engine — do not modify them
+- If bias is neutral or unclear: select NO_TRADE
+- If bias is strong in one direction with confirmation: consider a setup from allowed_actions
+- Always check risk/reward ratio >= 2:1
+- Consider calendar events for timing
 
 ## Current Price Anchor
 - The user message provides a canonical current_price (with
@@ -206,6 +214,12 @@ Your role is to review trading decisions and provide feedback.
 - Stop loss is beyond invalidation level
 - Take profit targets realistic structural level
 
+### Deterministic Constraint Validation
+- Validate geometry using trade_direction
+- Verify deterministic constraints are satisfied
+- Confirm entry/stop/target match the engine pre-calculated values
+- Ensure setup_grade, blockers, and allowed_actions are respected
+
 ## Review Output
 - approved: True if all criteria pass
 - concerns: List specific issues found
@@ -214,7 +228,7 @@ Your role is to review trading decisions and provide feedback.
 
 ## Non-negotiable Rules
 1. Market structure is the primary basis of the Daily bias
-2. BOS and CHoCH must be derived from TradingView MCP OHLC data
+2. BOS and CHoCH must be derived from MT5 OHLC data
 3. A wick-only penetration is not a confirmed BOS
 4. CHoCH is an early structural transition and not automatically a reversal
 5. Moving averages and ATR remain secondary evidence

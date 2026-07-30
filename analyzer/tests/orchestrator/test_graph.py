@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.cost_tracker import CostLimitExceeded, CostTracker
 from src.decision.models import (
     BiasLevel,
@@ -14,6 +15,72 @@ from src.decision.models import (
     ReviewVerdict,
 )
 from src.orchestrator.graph import AgentState, TradingGraph
+
+
+# ---------------------------------------------------------------------------
+# Helper: structure analysis that produces a directional classified setup
+# so the deterministic pipeline routes through the LLM path.
+# ---------------------------------------------------------------------------
+def _directional_structure_analysis() -> dict:
+    """Return a multi-timeframe engine output that results in a CLASSIFIED
+    AAA-grade BULLISH setup.  Each timeframe carries ``analysis_context``
+    with the nested keys the grading engine expects."""
+    return {
+        "timeframes": {
+            "D1": {
+                "timeframe": "D1",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T00:00:00"},
+                "technical_context": {"close": 1.10},
+                "analysis_context": {
+                    "strategic_bias": {
+                        "bias": "BULLISH",
+                        "confidence_score": 75,
+                        "primary_structure": "BULLISH",
+                        "structural_bias": "BULLISH",
+                        "previous_primary_structure": "BULLISH",
+                        "internal_structure": "BULLISH",
+                        "operational_status": "LOOK_FOR_LONGS_ON_LOWER_TIMEFRAMES",
+                        "lower_timeframe_confirmation_required": True,
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+            "H4": {
+                "timeframe": "H4",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T12:00:00"},
+                "technical_context": {"close": 1.11},
+                "analysis_context": {
+                    "operational_context": {
+                        "alignment_status": "ALIGNED_CONTINUATION",
+                        "preferred_direction": "BULLISH",
+                        "h4_structure": "BULLISH",
+                        "h4_internal_structure": {"phase": "EXPANSION"},
+                        "parent_daily_bias": "BULLISH",
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+            "H1": {
+                "timeframe": "H1",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T20:00:00"},
+                "technical_context": {"close": 1.12},
+                "analysis_context": {
+                    "setup_context": {
+                        "setup_status": "VALID_SETUP",
+                        "preferred_direction": "BULLISH",
+                        "room_to_target_passed": True,
+                        "reward_risk_filter_passed": True,
+                        "latest_trigger_event": {"event_type": "BULLISH_BOS"},
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+        },
+        "confluence": {"status": "ALIGNED", "entry_authorized": False},
+    }
 
 
 @pytest.fixture
@@ -61,11 +128,7 @@ def mock_decider():
     decider.decide.return_value = DecisionOutput(
         symbol="EURUSD",
         action=DecisionAction.BUY_SETUP,
-        entry_price=1.0875,
-        stop_loss=1.0825,
-        take_profit=1.0975,
         reasoning="Good setup",
-        risk_reward_ratio=2.0,
     )
     return decider
 
@@ -74,7 +137,7 @@ def mock_decider():
 def mock_reviewer():
     reviewer = MagicMock()
     reviewer.review.return_value = ReviewVerdict(
-        approved=True,
+        status=ReviewStatus.APPROVED,
         reasoning="All criteria met",
     )
     return reviewer
@@ -221,27 +284,35 @@ class TestTradingGraphNodes:
 class TestReviewRouting:
     def test_review_to_end_when_approved(self, trading_graph):
         state = {
-            "review": ReviewVerdict(approved=True, reasoning="OK"),
+            "review": ReviewVerdict(status=ReviewStatus.APPROVED, reasoning="OK"),
             "review_attempts": 1,
             "fatal_error": None,
         }
-        assert trading_graph._review_to_decide(state) == "end"
+        assert trading_graph._review_router(state) == "continue_enforcement"
 
     def test_review_to_retry_when_not_approved(self, trading_graph):
         state = {
-            "review": ReviewVerdict(approved=False, reasoning="Bad"),
+            "review": ReviewVerdict(status=ReviewStatus.REJECTED, reasoning="Bad"),
             "review_attempts": 1,
             "fatal_error": None,
         }
-        assert trading_graph._review_to_decide(state) == "retry"
+        assert trading_graph._review_router(state) == "retry_decide"
 
     def test_review_to_end_when_max_attempts(self, trading_graph):
         state = {
-            "review": ReviewVerdict(approved=False, reasoning="Bad"),
+            "review": ReviewVerdict(status=ReviewStatus.REJECTED, reasoning="Bad"),
             "review_attempts": trading_graph.max_review_attempts + 1,
             "fatal_error": None,
         }
-        assert trading_graph._review_to_decide(state) == "end"
+        assert trading_graph._review_router(state) == "continue_enforcement"
+
+    def test_review_not_required_goes_to_enforcement(self, trading_graph):
+        state = {
+            "review": ReviewVerdict(status=ReviewStatus.NOT_REQUIRED, reasoning="Deterministic"),
+            "review_attempts": 0,
+            "fatal_error": None,
+        }
+        assert trading_graph._review_router(state) == "continue_enforcement"
 
     def test_review_retries_when_no_review_and_attempts_remaining(self, trading_graph):
         state = {
@@ -249,7 +320,7 @@ class TestReviewRouting:
             "review_attempts": 0,
             "fatal_error": None,
         }
-        assert trading_graph._review_to_decide(state) == "retry"
+        assert trading_graph._review_router(state) == "retry_decide"
 
     def test_review_ends_when_no_review_and_max_attempts(self, trading_graph):
         state = {
@@ -257,7 +328,7 @@ class TestReviewRouting:
             "review_attempts": trading_graph.max_review_attempts + 1,
             "fatal_error": None,
         }
-        assert trading_graph._review_to_decide(state) == "end"
+        assert trading_graph._review_router(state) == "continue_enforcement"
 
 
 class TestMaxReviewAttempts:
@@ -343,9 +414,9 @@ def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     for tf in ("D1", "H4", "H1"):
         assert tf in engine_snapshots
 
-    # Per-timeframe keys present in result
+    # Per-timeframe keys present in result under 'timeframes'
     for tf in ("D1", "H4", "H1"):
-        assert tf in result["structure_analysis"]
+        assert tf in result["structure_analysis"]["timeframes"]
 
 
 def test_analyze_structure_fetches_all_when_no_cache(tmp_path, monkeypatch):
@@ -409,7 +480,7 @@ def test_analyze_structure_fetches_all_when_no_cache(tmp_path, monkeypatch):
     # No cache exists → all 3 TFs fetched fresh
     assert mock_data_provider.get_candles.call_count == 3
     mock_data_provider.get_candles.assert_any_call("XAUUSD", "H1", 1000, broker_now=broker_time)
-    assert result["structure_analysis"].get("H1", {}).get("fresh") is True
+    assert result["structure_analysis"]["timeframes"].get("H1", {}).get("fresh") is True
 
 
 def test_analyze_structure_converts_csv_to_snapshots(tmp_path, monkeypatch):
@@ -538,9 +609,9 @@ def test_analyze_structure_uses_preferred_bars(tmp_path, monkeypatch):
     mock_data_provider.get_candles.assert_any_call("EURUSD", "H4", 750, broker_now=broker_time)
     mock_data_provider.get_candles.assert_any_call("EURUSD", "H1", 1000, broker_now=broker_time)
 
-    # All timeframes present in result
+    # All timeframes present in result under 'timeframes'
     for tf in ("D1", "H4", "H1"):
-        assert tf in result["structure_analysis"]
+        assert tf in result["structure_analysis"]["timeframes"]
 
 
 def test_analyze_structure_uses_broker_time_not_utc(tmp_path, monkeypatch):
@@ -682,7 +753,10 @@ def test_analyze_structure_full_cache_hit(tmp_path, monkeypatch):
     # Confluence from MTF cache
     assert result["structure_analysis"]["confluence"]["status"] == "NO_VALID_CANDIDATE"
     # Per-TF data from cache
-    assert result["structure_analysis"]["D1"]["market_structure"]["primary_structure"] == "BULLISH"
+    assert (
+        result["structure_analysis"]["timeframes"]["D1"]["market_structure"]["primary_structure"]
+        == "BULLISH"
+    )
 
 
 def test_analyze_structure_cache_hit_confluence_correct(tmp_path, monkeypatch):
@@ -912,7 +986,7 @@ def test_analyze_structure_partial_cache_miss(tmp_path, monkeypatch):
     # Engine called
     mock_structure_analyzer.analyze.assert_called_once()
     # H1 has fresh data
-    assert result["structure_analysis"]["H1"].get("fresh") is True
+    assert result["structure_analysis"]["timeframes"]["H1"].get("fresh") is True
 
 
 def test_analyze_structure_corrupt_cache_fallback(tmp_path, monkeypatch):
@@ -1461,21 +1535,13 @@ def test_full_retry_cycle_gives_max_plus_one_decisions(
 
     # Reviewer always rejects → triggers retry loop
     mock_reviewer.review.return_value = ReviewVerdict(
-        approved=False,
+        status=ReviewStatus.REJECTED,
         reasoning="Risk too high",
-        concerns=["Position size exceeds limits"],
+        concerns=("Position size exceeds limits",),
         suggested_improvements="Reduce position size by 50%",
     )
 
-    # Structure analyzer returns valid multi-timeframe result
-    mock_structure_analyzer.analyze.return_value = {
-        "timeframes": {
-            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
-            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
-            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
-        },
-        "confluence": {"status": "NO_VALID_CANDIDATE"},
-    }
+    mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
     graph = TradingGraph(
         data_provider=mock_data_provider,
@@ -1519,20 +1585,13 @@ def test_feedback_sent_on_all_retries(
     mock_data_provider.get_broker_time.return_value = broker_time
 
     mock_reviewer.review.return_value = ReviewVerdict(
-        approved=False,
+        status=ReviewStatus.REJECTED,
         reasoning="Risk too high",
-        concerns=["Position size exceeds limits"],
+        concerns=("Position size exceeds limits",),
         suggested_improvements="Reduce position size by 50%",
     )
 
-    mock_structure_analyzer.analyze.return_value = {
-        "timeframes": {
-            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
-            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
-            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
-        },
-        "confluence": {"status": "NO_VALID_CANDIDATE"},
-    }
+    mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
     graph = TradingGraph(
         data_provider=mock_data_provider,
@@ -1583,14 +1642,7 @@ def test_first_decide_has_no_feedback(
     broker_time = datetime(2026, 7, 21, 14, 0)
     mock_data_provider.get_broker_time.return_value = broker_time
 
-    mock_structure_analyzer.analyze.return_value = {
-        "timeframes": {
-            "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
-            "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
-            "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
-        },
-        "confluence": {"status": "NO_VALID_CANDIDATE"},
-    }
+    mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
     graph = TradingGraph(
         data_provider=mock_data_provider,
@@ -1737,14 +1789,7 @@ class TestCostTrackerWiring:
             "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
         )
 
-        mock_structure_analyzer.analyze.return_value = {
-            "timeframes": {
-                "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
-                "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
-                "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
-            },
-            "confluence": {"status": "NO_VALID_CANDIDATE"},
-        }
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         # Create a shared CostTracker with pricing and wire it to all 3 mock agents
         ct = CostTracker(
@@ -2007,7 +2052,7 @@ class TestCostLimitReRaise:
         broker_time = datetime(2026, 7, 25, 14, 0)
         mock_data_provider.get_broker_time.return_value = broker_time
         mock_data_provider.get_candles.return_value = self._CSV_DATA
-        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         # Synthesizer must succeed so _decide is reached
         mock_synthesizer = MagicMock()
@@ -2050,7 +2095,7 @@ class TestCostLimitReRaise:
         broker_time = datetime(2026, 7, 25, 14, 0)
         mock_data_provider.get_broker_time.return_value = broker_time
         mock_data_provider.get_candles.return_value = self._CSV_DATA
-        mock_structure_analyzer.analyze.return_value = self._VALID_MTF_RESULT
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         mock_synthesizer = MagicMock()
         mock_synthesizer.synthesize.return_value = MarketContextSummary(
@@ -2064,11 +2109,7 @@ class TestCostLimitReRaise:
         mock_decider.decide.return_value = DecisionOutput(
             symbol="EURUSD",
             action=DecisionAction.BUY_SETUP,
-            entry_price=1.0875,
-            stop_loss=1.0825,
-            take_profit=1.0975,
             reasoning="Good setup",
-            risk_reward_ratio=2.0,
         )
 
         mock_reviewer = MagicMock()
@@ -2224,3 +2265,196 @@ class TestCostLimitReRaise:
             f"Expected fatal_error in result dict, got keys: {list(result.keys())}"
         )
         assert "Something bad" in result["fatal_error"]
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: Strict error handling
+# ---------------------------------------------------------------------------
+
+
+class TestGradeSetupSchemaValidation:
+    """Tests for _grade_setup schema validation (Phase 2.2)."""
+
+    def test_missing_timeframes_is_fatal(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """Missing 'timeframes' key in structure analysis → INVALID_STRUCTURE_SCHEMA."""
+        mock_structure_analyzer.analyze.return_value = {
+            "confluence": {"status": "NO_VALID_CANDIDATE"},
+        }
+
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": {"confluence": {}},
+            "errors": [],
+            "fatal_error": None,
+        }
+        result = graph._grade_setup(state)
+
+        assert "fatal_error" in result
+        assert result["fatal_error_code"] == "INVALID_STRUCTURE_SCHEMA"
+        assert "timeframes" in result["fatal_error"]
+
+    def test_empty_timeframes_is_fatal(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """Empty 'timeframes' dict → INVALID_STRUCTURE_SCHEMA."""
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": {"timeframes": {}},
+            "errors": [],
+            "fatal_error": None,
+        }
+        result = graph._grade_setup(state)
+
+        assert "fatal_error" in result
+        assert result["fatal_error_code"] == "INVALID_STRUCTURE_SCHEMA"
+
+    def test_none_timeframes_is_fatal(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """None value for 'timeframes' → INVALID_STRUCTURE_SCHEMA."""
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": {"timeframes": None},
+            "errors": [],
+            "fatal_error": None,
+        }
+        result = graph._grade_setup(state)
+
+        assert "fatal_error" in result
+        assert result["fatal_error_code"] == "INVALID_STRUCTURE_SCHEMA"
+
+    def test_empty_structure_analysis_is_fatal(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """Empty structure_analysis → INVALID_STRUCTURE_SCHEMA."""
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": {},
+            "errors": [],
+            "fatal_error": None,
+        }
+        result = graph._grade_setup(state)
+
+        assert "fatal_error" in result
+        assert result["fatal_error_code"] == "INVALID_STRUCTURE_SCHEMA"
+
+    def test_valid_timeframes_proceeds_to_grading(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """Valid timeframes dict → grading proceeds (no fatal_error)."""
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": _directional_structure_analysis(),
+            "errors": [],
+            "fatal_error": None,
+        }
+        result = graph._grade_setup(state)
+
+        assert "fatal_error" not in result
+        assert "deterministic_setup" in result
+
+    def test_skipped_when_fatal_error_already_set(
+        self,
+        mock_data_provider,
+        mock_structure_analyzer,
+        mock_calendar_provider,
+        mock_synthesizer,
+        mock_decider,
+        mock_reviewer,
+    ):
+        """_grade_setup returns empty dict when fatal_error is already set."""
+        graph = TradingGraph(
+            data_provider=mock_data_provider,
+            structure_analyzer=mock_structure_analyzer,
+            calendar_provider=mock_calendar_provider,
+            synthesizer=mock_synthesizer,
+            decider=mock_decider,
+            reviewer=mock_reviewer,
+        )
+
+        state = {
+            "symbol": "EURUSD",
+            "structure_analysis": {},
+            "errors": [],
+            "fatal_error": "Previous error",
+        }
+        result = graph._grade_setup(state)
+
+        assert result == {}

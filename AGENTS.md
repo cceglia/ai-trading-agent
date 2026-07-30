@@ -123,3 +123,17 @@ docker compose -f docker-compose.devel.yml exec trading-agent bash \
 - Synthesizer caching is content-addressable: identical structure analysis + calendar events skip the LLM call.
 - Candle caching is disk-backed, keyed by `symbol/timeframe/candle_close_time`, with broker-local time alignment.
 - The `/data/` directory tree stores versioned JSON results (`<symbol>/<year>/<month>/<day>/result-<time>.json`).
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked on GitHub Issues for this repo. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical triage labels, each matching its name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout — one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.

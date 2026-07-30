@@ -43,3 +43,15 @@ class ExternalDerivedValuesError(ValidationError):
 
 class ParentContextError(ValidationError):
     code = "INVALID_PARENT_CONTEXT"
+
+
+class StructureSchemaError(EngineError):
+    """Structure analysis missing required 'timeframes' schema."""
+
+    code = "INVALID_STRUCTURE_SCHEMA"
+
+
+class InvalidTradeDirectionError(EngineError):
+    """Trade direction string does not map to a valid TradeDirection."""
+
+    code = "INVALID_TRADE_DIRECTION"

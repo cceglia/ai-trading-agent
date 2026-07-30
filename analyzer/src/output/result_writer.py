@@ -11,6 +11,10 @@ from src.output.result_models import AnalysisResult, OHLCBar, OHLCData, SLTPOver
 logger = logging.getLogger(__name__)
 
 
+class ResultWriterContractError(Exception):
+    """Raised when ResultWriter receives an invalid or incomplete result."""
+
+
 class ResultWriter:
     """Writes analysis results to JSON files in the data/ directory tree."""
 
@@ -62,14 +66,24 @@ class ResultWriter:
             H1=ohlc.get("H1", []),
         )
 
-        # Build SL/TP overlay from decision if available
-        decision = result.get("decision")
-        sl_tp_overlay = SLTPOverlay()
-        if decision is not None:
-            sl_tp_overlay.entry_price = getattr(decision, "entry_price", None)
-            sl_tp_overlay.stop_loss = getattr(decision, "stop_loss", None)
-            sl_tp_overlay.take_profit = getattr(decision, "take_profit", None)
+        # Build SL/TP overlay from analysis_result (deterministic engine)
+        analysis_result_obj = result.get("analysis_result")
+        if analysis_result_obj is not None:
+            overlay = getattr(analysis_result_obj, "sl_tp_overlay", None)
+            if overlay is not None:
+                sl_tp_overlay = overlay
+            else:
+                sl_tp_overlay = SLTPOverlay()
+        else:
+            # No analysis_result available (e.g. fatal error before output assembly).
+            # Use empty overlay — trade levels are not meaningful in error results.
+            if fatal_error is None and not errors:
+                raise ResultWriterContractError(
+                    "AnalysisResult is required to write deterministic trade levels"
+                )
+            sl_tp_overlay = SLTPOverlay()
 
+        decision = result.get("decision")
         analysis_result = AnalysisResult(
             symbol=symbol,
             run_id=run_id,

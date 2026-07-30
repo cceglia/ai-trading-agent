@@ -22,6 +22,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.cost_tracker import CostTracker
 from src.decision.models import (
     BiasLevel,
@@ -31,6 +32,72 @@ from src.decision.models import (
     ReviewVerdict,
 )
 from src.orchestrator.graph import AgentState, TradingGraph
+
+
+# ---------------------------------------------------------------------------
+# Helper: structure analysis that produces a directional classified setup
+# so the deterministic pipeline routes through the LLM path.
+# ---------------------------------------------------------------------------
+def _directional_structure_analysis() -> dict:
+    """Return a multi-timeframe engine output that results in a CLASSIFIED
+    AAA-grade BULLISH setup.  Each timeframe carries ``analysis_context``
+    with the nested keys the grading engine expects."""
+    return {
+        "timeframes": {
+            "D1": {
+                "timeframe": "D1",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T00:00:00"},
+                "technical_context": {"close": 1.10},
+                "analysis_context": {
+                    "strategic_bias": {
+                        "bias": "BULLISH",
+                        "confidence_score": 75,
+                        "primary_structure": "BULLISH",
+                        "structural_bias": "BULLISH",
+                        "previous_primary_structure": "BULLISH",
+                        "internal_structure": "BULLISH",
+                        "operational_status": "LOOK_FOR_LONGS_ON_LOWER_TIMEFRAMES",
+                        "lower_timeframe_confirmation_required": True,
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+            "H4": {
+                "timeframe": "H4",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T12:00:00"},
+                "technical_context": {"close": 1.11},
+                "analysis_context": {
+                    "operational_context": {
+                        "alignment_status": "ALIGNED_CONTINUATION",
+                        "preferred_direction": "BULLISH",
+                        "h4_structure": "BULLISH",
+                        "h4_internal_structure": {"phase": "EXPANSION"},
+                        "parent_daily_bias": "BULLISH",
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+            "H1": {
+                "timeframe": "H1",
+                "market_structure": {"primary_structure": "BULLISH"},
+                "source_audit": {"latest_closed_candle_time": "2024-01-03T20:00:00"},
+                "technical_context": {"close": 1.12},
+                "analysis_context": {
+                    "setup_context": {
+                        "setup_status": "VALID_SETUP",
+                        "preferred_direction": "BULLISH",
+                        "room_to_target_passed": True,
+                        "reward_risk_filter_passed": True,
+                        "latest_trigger_event": {"event_type": "BULLISH_BOS"},
+                    },
+                    "approved_for_decision_agent": True,
+                },
+            },
+        },
+        "confluence": {"status": "ALIGNED", "entry_authorized": False},
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -80,11 +147,7 @@ def mock_decider():
     decider.decide.return_value = DecisionOutput(
         symbol="EURUSD",
         action=DecisionAction.BUY_SETUP,
-        entry_price=1.0875,
-        stop_loss=1.0825,
-        take_profit=1.0975,
         reasoning="Good setup",
-        risk_reward_ratio=2.0,
     )
     return decider
 
@@ -93,7 +156,7 @@ def mock_decider():
 def mock_reviewer():
     reviewer = MagicMock()
     reviewer.review.return_value = ReviewVerdict(
-        approved=True,
+        status=ReviewStatus.APPROVED,
         reasoning="All criteria met",
     )
     return reviewer
@@ -143,7 +206,7 @@ def _make_cached_summary(**overrides: object) -> MarketContextSummary:
     """Build a ``MarketContextSummary`` that looks like it came from the cache."""
     defaults: dict[str, object] = {
         "symbol": "EURUSD",
-        "bias": "bullish",
+        "bias": "BULLISH",
         "confidence": 80.0,
         "reasoning": "Cached analysis \u2014 no LLM call",
         "key_levels": ["1.0850", "1.0900"],
@@ -330,23 +393,7 @@ class TestCacheHit:
         mock_data_provider.get_candles.return_value = (
             "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
         )
-        mock_structure_analyzer.analyze.return_value = {
-            "timeframes": {
-                "D1": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "D1",
-                },
-                "H4": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "H4",
-                },
-                "H1": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "H1",
-                },
-            },
-            "confluence": {"status": "NO_VALID_CANDIDATE"},
-        }
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         # Pre-populate synthesizer cache
         from src.decision.synthesizer_cache import save_synthesis
@@ -388,23 +435,7 @@ class TestCacheHit:
         mock_data_provider.get_candles.return_value = (
             "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
         )
-        mock_structure_analyzer.analyze.return_value = {
-            "timeframes": {
-                "D1": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "D1",
-                },
-                "H4": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "H4",
-                },
-                "H1": {
-                    "market_structure": {"primary_structure": "BULLISH"},
-                    "timeframe": "H1",
-                },
-            },
-            "confluence": {"status": "NO_VALID_CANDIDATE"},
-        }
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         from src.decision.synthesizer_cache import save_synthesis
 

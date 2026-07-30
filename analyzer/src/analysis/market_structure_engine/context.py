@@ -211,11 +211,15 @@ def build_timeframe_context(
     invalidation_price = nearest_invalidation.get("price") if nearest_invalidation else None
     rr = None
     if close is not None and target_price is not None and invalidation_price is not None:
-        reward = abs(target_price - close)
-        risk = abs(close - invalidation_price)
+        if preferred == "BULLISH":
+            reward = target_price - close
+            risk = close - invalidation_price
+        else:  # BEARISH
+            reward = close - target_price
+            risk = invalidation_price - close
         rr = safe_div(reward, risk, 0.0)
     room_ok = nearest_target is not None and nearest_target.get("distance_atr", 0) >= 0.75
-    rr_ok = rr is None or rr >= 1.5
+    rr_ok = rr is not None and rr >= 1.5
     if blocker:
         setup_status = "CONFLICT_WITH_HIGHER_TIMEFRAME"
     elif trigger and room_ok and rr_ok:

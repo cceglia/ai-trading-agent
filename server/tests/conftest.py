@@ -67,7 +67,7 @@ def sample_full_result() -> dict[str, Any]:
             "entry_authorized": False,
         },
         "review": {
-            "approved": True,
+            "status": "APPROVED",
             "reasoning": "Good setup",
             "concerns": [],
             "suggested_improvements": None,

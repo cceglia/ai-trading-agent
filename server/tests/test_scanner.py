@@ -15,7 +15,7 @@ def _write_result(fpath: Path, data: dict | None = None) -> None:
         data = {
             "market_context": {"current_price": 2400.0, "bias": "bullish"},
             "decision": {"action": "buy_setup", "confidence": 0.85},
-            "review": {"approved": True},
+            "review": {"status": "APPROVED"},
         }
     fpath.parent.mkdir(parents=True, exist_ok=True)
     fpath.write_text(json.dumps(data))
@@ -161,7 +161,7 @@ class TestListRuns:
                 "symbol": "GOLD",
                 "market_context": {"current_price": 2400.0, "bias": "bullish"},
                 "decision": {"action": "buy_setup", "confidence": 0.85},
-                "review": {"approved": True},
+                "review": {"status": "APPROVED"},
             },
         )
 
@@ -210,6 +210,118 @@ class TestGetRun:
         result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
 
         assert result is None
+
+
+class TestLegacyNormalization:
+    """Tests for legacy result normalization in get_run()."""
+
+    def test_legacy_approved_derives_status(self, tmp_path: Path):
+        """Legacy review.approved is converted to review.status."""
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "market_context": {"bias": "bullish"},
+                "decision": {"action": "buy_setup"},
+                "review": {"approved": True, "reasoning": "good"},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        assert result["review"]["status"] == "APPROVED"
+        # approved key is preserved for backward compat
+        assert result["review"]["approved"] is True
+
+    def test_legacy_rejected_derives_status(self, tmp_path: Path):
+        """Legacy review.approved=False becomes REJECTED."""
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "market_context": {"bias": "bearish"},
+                "decision": {"action": "no_trade"},
+                "review": {"approved": False, "reasoning": "bad"},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        assert result["review"]["status"] == "REJECTED"
+
+    def test_existing_status_not_overwritten(self, tmp_path: Path):
+        """When review.status already exists, it is not overwritten."""
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "market_context": {"bias": "bullish"},
+                "decision": {"action": "buy_setup"},
+                "review": {"status": "REVISION_REQUIRED", "approved": True},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        assert result["review"]["status"] == "REVISION_REQUIRED"
+
+    def test_legacy_decision_prices_create_overlay(self, tmp_path: Path):
+        """Legacy decision price fields create sl_tp_overlay."""
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "market_context": {"bias": "bullish"},
+                "decision": {
+                    "action": "buy_setup",
+                    "entry_price": 2400.0,
+                    "stop_loss": 2380.0,
+                    "take_profit": 2440.0,
+                },
+                "review": {"status": "APPROVED"},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        assert result["sl_tp_overlay"]["entry_price"] == 2400.0
+        assert result["sl_tp_overlay"]["stop_loss"] == 2380.0
+        assert result["sl_tp_overlay"]["take_profit"] == 2440.0
+
+    def test_existing_overlay_not_overwritten(self, tmp_path: Path):
+        """When sl_tp_overlay already exists, it is not overwritten."""
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "market_context": {"bias": "bullish"},
+                "decision": {
+                    "action": "buy_setup",
+                    "entry_price": 2400.0,
+                },
+                "sl_tp_overlay": {
+                    "entry_price": 2500.0,
+                    "stop_loss": 2480.0,
+                    "take_profit": 2540.0,
+                },
+                "review": {"status": "APPROVED"},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        # Overlay values preserved, not overwritten from decision
+        assert result["sl_tp_overlay"]["entry_price"] == 2500.0
 
 
 class TestListRunsPruning:

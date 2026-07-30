@@ -1,23 +1,27 @@
 from __future__ import annotations
 
 import logging
-from enum import StrEnum
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, computed_field
+
+from src.analysis.market_structure_engine.models import (
+    BiasLevel,
+    DecisionAction,
+    ReviewStatus,
+)
 
 logger = logging.getLogger(__name__)
 
-
-class BiasLevel(StrEnum):
-    """Structural bias levels."""
-
-    STRONG_BULLISH = "strong_bullish"
-    BULLISH = "bullish"
-    NEUTRAL_BULLISH = "neutral_bullish"
-    NEUTRAL = "neutral"
-    NEUTRAL_BEARISH = "neutral_bearish"
-    BEARISH = "bearish"
-    STRONG_BEARISH = "strong_bearish"
+# Re-export engine enums for backward compatibility — consumers can continue
+# to import BiasLevel, DecisionAction from this module.
+__all__ = [
+    "BiasLevel",
+    "DecisionAction",
+    "MarketContextSummary",
+    "DecisionOutput",
+    "ReviewVerdict",
+    "ReviewStatus",
+]
 
 
 class MarketContextSummary(BaseModel):
@@ -42,47 +46,62 @@ class MarketContextSummary(BaseModel):
     model_config = {"use_enum_values": True}
 
 
-class DecisionAction(StrEnum):
-    """Decision actions."""
-
-    NO_TRADE = "no_trade"
-    WAIT_FOR_SETUP = "wait_for_setup"
-    BUY_SETUP = "buy_setup"
-    SELL_SETUP = "sell_setup"
-
-
 class DecisionOutput(BaseModel):
-    """Decision output from decider agent."""
+    """Decision output from decider agent.
+
+    The LLM selects an action and explains its reasoning.  Deterministic
+    values (entry price, stop-loss, take-profit) are computed by the
+    engine and are **not** part of the LLM output.
+    """
 
     symbol: str = Field(description="Trading symbol")
     action: DecisionAction = Field(description="Decision action")
-    entry_price: float | None = Field(default=None, description="Suggested entry price")
-    stop_loss: float | None = Field(default=None, description="Suggested stop loss")
-    take_profit: float | None = Field(default=None, description="Suggested take profit")
     reasoning: str = Field(description="Reasoning for the decision")
-    risk_reward_ratio: float | None = Field(default=None, description="Risk/reward ratio")
-    entry_authorized: bool = Field(default=False, description="Always false - advisory only")
-
-    @field_validator("entry_authorized", mode="after")
-    @classmethod
-    def _enforce_entry_authorized(cls, v: bool) -> bool:
-        if v is not False:
-            logger.warning("entry_authorized forced to False — advisory only")
-        return False
 
     model_config = {"use_enum_values": True}
 
 
 class ReviewVerdict(BaseModel):
-    """Review verdict from reviewer agent."""
+    """Review verdict from reviewer agent.
 
-    approved: bool = Field(description="Whether decision is approved")
+    The ``approved`` property derives from ``status`` so that existing
+    code checking ``verdict.approved`` continues to work.
+    """
+
+    status: ReviewStatus = Field(description="Review status")
     reasoning: str = Field(description="Reasoning for the verdict")
-    concerns: list[str] = Field(default_factory=list, description="List of concerns")
+    concerns: tuple[str, ...] = Field(
+        default=(),
+        description="Tuple of concerns",
+    )
     suggested_improvements: str | None = Field(
         default=None,
         description="Suggested improvements",
     )
+    deterministic_compliance_ok: bool = Field(
+        default=True,
+        description="Deterministic compliance check passed",
+    )
     risk_management_ok: bool = Field(default=True, description="Risk management compliance")
     htf_alignment_ok: bool = Field(default=True, description="Higher-timeframe alignment")
     calendar_clear: bool = Field(default=True, description="No blocking calendar events")
+    grade_violation_detected: bool = Field(
+        default=False,
+        description="Grade violation detected during review",
+    )
+    blocker_violation_detected: bool = Field(
+        default=False,
+        description="Blocker violation detected during review",
+    )
+    geometry_violation_detected: bool = Field(
+        default=False,
+        description="Geometry violation detected during review",
+    )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def approved(self) -> bool:
+        """Compatibility field — canonical source is ``status``."""
+        return self.status == ReviewStatus.APPROVED
+
+    model_config = {"use_enum_values": True}

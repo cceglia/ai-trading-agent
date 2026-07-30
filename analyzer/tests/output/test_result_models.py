@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
@@ -81,7 +82,7 @@ class TestAnalysisResult:
             market_context=ctx,
         )
         assert result.market_context is not None
-        assert result.market_context.bias == "bullish"
+        assert result.market_context.bias == "BULLISH"
 
     def test_with_decision(self):
         dec = DecisionOutput(symbol="XAUUSD", action=DecisionAction.BUY_SETUP, reasoning="test")
@@ -97,7 +98,7 @@ class TestAnalysisResult:
         assert result.decision.action == "buy_setup"
 
     def test_with_review(self):
-        rev = ReviewVerdict(approved=True, reasoning="test")
+        rev = ReviewVerdict(status=ReviewStatus.APPROVED, reasoning="test")
         result = AnalysisResult(
             symbol="XAUUSD",
             run_id="test",
@@ -126,34 +127,6 @@ class TestAnalysisResult:
         assert deserialized.symbol == "XAUUSD"
         assert deserialized.version == "1.0"
         assert deserialized.market_context is not None
-
-    def test_entry_authorized_always_false(self):
-        """Critical invariant: entry_authorized must always be False."""
-        # Test direct DecisionOutput enforcement
-        decision = DecisionOutput(
-            symbol="XAUUSD",
-            action="buy_setup",
-            reasoning="test",
-            entry_authorized=True,  # Try to set True
-        )
-        assert decision.entry_authorized is False
-
-        # Test via AnalysisResult
-        result = AnalysisResult(
-            symbol="XAUUSD",
-            run_id="test",
-            started_at=datetime.now(),
-            completed_at=datetime.now(),
-            status="success",
-            decision=DecisionOutput(
-                symbol="XAUUSD",
-                action="buy_setup",
-                reasoning="test",
-                entry_authorized=True,
-            ),
-        )
-        assert result.decision is not None
-        assert result.decision.entry_authorized is False
 
     def test_status_enum_values(self):
         result = AnalysisResult(
@@ -200,16 +173,12 @@ class TestAnalysisResult:
         dec = DecisionOutput(
             symbol="XAUUSD",
             action=DecisionAction.BUY_SETUP,
-            entry_price=2350.0,
-            stop_loss=2320.0,
-            take_profit=2410.0,
             reasoning="Good R/R",
-            risk_reward_ratio=2.0,
         )
         rev = ReviewVerdict(
-            approved=True,
+            status=ReviewStatus.APPROVED,
             reasoning="Looks good",
-            concerns=["Spread a bit wide"],
+            concerns=("Spread a bit wide",),
         )
         ohlc = OHLCData(
             D1=[
@@ -235,8 +204,48 @@ class TestAnalysisResult:
         )
 
         assert result.version == "2.0"
-        assert result.market_context.bias == "bullish"
+        assert result.market_context.bias == "BULLISH"
         assert result.decision.action == "buy_setup"
         assert result.review.approved is True
         assert len(result.ohlc.D1) == 1
         assert result.sl_tp_overlay.entry_price == 2350.0
+
+
+class TestRejectionCodes:
+    """rejection_codes must survive model_dump() round-trip."""
+
+    def test_rejection_codes_in_serialized_output(self):
+        result = AnalysisResult(
+            symbol="EURUSD",
+            run_id="test-001",
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+            status="success",
+            rejection_codes=["INVALID_TRADE_DIRECTION"],
+        )
+        payload = result.model_dump(mode="json")
+        assert payload["rejection_codes"] == ["INVALID_TRADE_DIRECTION"]
+
+    def test_rejection_codes_defaults_to_empty_list(self):
+        result = AnalysisResult(
+            symbol="EURUSD",
+            run_id="test-002",
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+            status="success",
+        )
+        payload = result.model_dump(mode="json")
+        assert payload["rejection_codes"] == []
+
+    def test_rejection_codes_round_trip(self):
+        result = AnalysisResult(
+            symbol="EURUSD",
+            run_id="test-003",
+            started_at=datetime.now(),
+            completed_at=datetime.now(),
+            status="success",
+            rejection_codes=["INVALID_TRADE_DIRECTION", "INSUFFICIENT_DATA"],
+        )
+        payload = result.model_dump(mode="json")
+        restored = AnalysisResult.model_validate(payload)
+        assert restored.rejection_codes == ["INVALID_TRADE_DIRECTION", "INSUFFICIENT_DATA"]

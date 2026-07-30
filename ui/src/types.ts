@@ -10,6 +10,14 @@ export interface RunSummary {
   file_path: string;   // relative path from data/runs/
 }
 
+export type ReviewStatus =
+  | "APPROVED"
+  | "REJECTED"
+  | "REVISION_REQUIRED"
+  | "NOT_REQUIRED"
+  | "REVIEW_UNAVAILABLE"
+  | "REVIEW_ERROR";
+
 export interface FullResult {
   version: string;
   symbol: string;
@@ -24,6 +32,8 @@ export interface FullResult {
   review: Review;
   ohlc: OHLCData;
   sl_tp_overlay: SLTPOverlay;
+  estimated_reward_risk: number | null;
+  rejection_codes: string[];
 }
 
 export interface MarketContext {
@@ -41,16 +51,12 @@ export interface MarketContext {
 export interface Decision {
   symbol: string;
   action: string;
-  entry_price: number | null;
-  stop_loss: number | null;
-  take_profit: number | null;
   reasoning: string;
-  risk_reward_ratio: number | null;
-  entry_authorized: false;  // always false — advisory only
 }
 
 export interface Review {
-  approved: boolean;
+  status: ReviewStatus;
+  approved?: boolean;  // backward compat — canonical source is status
   reasoning: string;
   concerns: string[];
   suggested_improvements: string | null;

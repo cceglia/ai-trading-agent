@@ -24,6 +24,7 @@ class TestMainErrorDuplication:
     @patch("src.analysis.structure_analyzer.MarketStructureEngine")
     @patch("src.calendar.forexfactory.ForexFactoryCalendar")
     @patch("src.data.terminal_data_provider.TerminalDataProvider")
+    @patch("main.LLMCommunicationClient")
     @patch("src.decision.agents.SynthesizerAgent")
     @patch("src.decision.agents.DeciderAgent")
     @patch("src.decision.agents.ReviewerAgent")
@@ -34,6 +35,7 @@ class TestMainErrorDuplication:
         mock_reviewer_cls: MagicMock,
         mock_decider_cls: MagicMock,
         mock_synth_cls: MagicMock,
+        mock_llm_client_cls: MagicMock,
         mock_provider_cls: MagicMock,
         mock_calendar_cls: MagicMock,
         mock_analyzer_cls: MagicMock,
@@ -59,6 +61,7 @@ class TestMainErrorDuplication:
         mock_settings.openai_reasoning_effort = ""
         mock_settings.terminal_server_url = ""
         mock_settings.terminal_api_key = ""
+        mock_settings.reviewer_llm_provider = "openai"
         mock_settings.cost_per_symbol_limit = 0.05
 
         # ── Configure TradingGraph mock ──────────────────────────────

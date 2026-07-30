@@ -14,6 +14,8 @@ from src.calendar.forexfactory import ForexFactoryCalendar
 from src.data.terminal_data_provider import TerminalDataProvider
 from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
 from src.decision.cost_tracker import CostLimitExceeded, CostTracker
+from src.decision.llm_client import LLMCommunicationClient
+from src.decision.llm_config import ProviderKind, resolve_model_identity
 from src.logging_config import setup_logging
 from src.notification.telegram_sender import send_trade_notification
 from src.orchestrator.graph import TradingGraph
@@ -71,6 +73,8 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     decision = result.get("decision")
     context = result.get("market_context")
     review = result.get("review")
+    analysis_result = result.get("analysis_result")
+    final_output = result.get("final_output")
 
     fatal_error = result.get("fatal_error")
     errors = result.get("errors") or []
@@ -101,18 +105,36 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     print(f"    Confidence : {confidence_val}%")
     print(f"    Action     : {action_str}{review_mark}")
 
-    # Show key decision details when available
-    entry_price = _get_decision_field(decision, "entry_price")
-    stop_loss = _get_decision_field(decision, "stop_loss")
-    take_profit = _get_decision_field(decision, "take_profit")
-    rr = _get_decision_field(decision, "risk_reward_ratio")
+    # Show price fields from analysis_result (deterministic engine).
+    # DecisionOutput no longer carries entry_price / stop_loss / take_profit;
+    # they are on the SLTPOverlay sub-model within the AnalysisResult.
+    if analysis_result is not None:
+        sl_tp = analysis_result.sl_tp_overlay if hasattr(analysis_result, "sl_tp_overlay") else None
+        if sl_tp is not None:
+            entry_price = sl_tp.entry_price
+            stop_loss = sl_tp.stop_loss
+            take_profit = sl_tp.take_profit
+        else:
+            entry_price = stop_loss = take_profit = None
+        rr = _format_field(analysis_result, "estimated_reward_risk") if analysis_result else None
+    elif final_output is not None:
+        # Fallback to model_dump(mode="json") dict when AnalysisResult is
+        # not available (e.g. with serialised results from disk).
+        sl_tp = final_output.get("sl_tp_overlay") or {}
+        entry_price = sl_tp.get("entry_price")
+        stop_loss = sl_tp.get("stop_loss")
+        take_profit = sl_tp.get("take_profit")
+        rr = final_output.get("estimated_reward_risk")
+    else:
+        entry_price = stop_loss = take_profit = rr = None
+
     if entry_price:
         print(f"    Entry      : {entry_price}")
     if stop_loss:
         print(f"    Stop Loss  : {stop_loss}")
     if take_profit:
         print(f"    Take Profit: {take_profit}")
-    if rr:
+    if rr and rr != "N/A":
         print(f"    R/R        : {rr}")
 
     # Show reasoning snippets
@@ -176,6 +198,10 @@ def _create_agents(
 ) -> Any:
     """Create the three LLM agents used in the pipeline.
 
+    Each agent receives its own :class:`LLMCommunicationClient` so that
+    different model / reasoning-effort settings can be assigned per role
+    in future.
+
     Args:
         settings: Application settings.
         cost_tracker: Cost tracker instance.
@@ -183,29 +209,65 @@ def _create_agents(
     Returns:
         Tuple of (synthesizer, decider, reviewer).
     """
-    api_key = settings.openai_api_key or None
+    api_key = settings.openai_api_key or ""
     base_url = settings.openai_base_url or None
+    model = settings.openai_model
     reasoning_effort = settings.openai_reasoning_effort or None
 
+    client_kwargs: dict[str, Any] = {
+        "api_key": api_key,
+        "base_url": base_url,
+        "model": model,
+        "provider": ProviderKind.OPENAI,
+        "reasoning_effort": reasoning_effort,
+    }
+
+    # Resolve model identity for logging and diagnostics.
+    model_identity = resolve_model_identity(model, ProviderKind.OPENAI)
+    logger.info(
+        "Resolved model identity: provider=%s family=%s version=%s status=%s",
+        model_identity.provider.value,
+        model_identity.model_family,
+        model_identity.model_version or "N/A",
+        model_identity.resolution_status.value,
+    )
+
+    # Primary LLM client shared by synthesizer and decider; reviewer gets
+    # its own instance with optional reviewer-specific overrides.
+    primary_client = LLMCommunicationClient(**client_kwargs)
+
+    # Build reviewer client kwargs, overriding with reviewer-specific settings
+    # when they are explicitly configured.  The provider setting controls
+    # which transport is used — only OPENAI is supported; any other value
+    # causes UnsupportedLLMProviderError at construction time.
+    reviewer_kwargs: dict[str, Any] = dict(client_kwargs)
+    reviewer_provider = ProviderKind(settings.reviewer_llm_provider)
+    reviewer_kwargs["provider"] = reviewer_provider
+    if settings.reviewer_llm_model:
+        reviewer_kwargs["model"] = settings.reviewer_llm_model
+    if settings.reviewer_llm_api_key:
+        reviewer_kwargs["api_key"] = settings.reviewer_llm_api_key
+    if settings.reviewer_llm_base_url:
+        reviewer_kwargs["base_url"] = settings.reviewer_llm_base_url
+    if settings.reviewer_llm_reasoning_effort:
+        reviewer_kwargs["reasoning_effort"] = settings.reviewer_llm_reasoning_effort
+    if settings.reviewer_llm_model_family_override:
+        reviewer_kwargs["family_override"] = settings.reviewer_llm_model_family_override
+    if settings.reviewer_llm_model_version_override:
+        reviewer_kwargs["version_override"] = settings.reviewer_llm_model_version_override
+
+    reviewer_client = LLMCommunicationClient(**reviewer_kwargs)
+
     synthesizer = SynthesizerAgent(
-        model=settings.openai_model,
-        api_key=api_key,
-        base_url=base_url,
-        reasoning_effort=reasoning_effort,
+        llm_client=primary_client,
         cost_tracker=cost_tracker,
     )
     decider = DeciderAgent(
-        model=settings.openai_model,
-        api_key=api_key,
-        base_url=base_url,
-        reasoning_effort=reasoning_effort,
+        llm_client=primary_client,
         cost_tracker=cost_tracker,
     )
     reviewer = ReviewerAgent(
-        model=settings.openai_model,
-        api_key=api_key,
-        base_url=base_url,
-        reasoning_effort=reasoning_effort,
+        llm_client=reviewer_client,
         cost_tracker=cost_tracker,
     )
     return synthesizer, decider, reviewer
@@ -304,7 +366,7 @@ def _send_telegram_notification(
     )
     review = review_raw.model_dump() if hasattr(review_raw, "model_dump") else (review_raw or {})
 
-    if review.get("approved") and decision.get("action") in (
+    if review.get("status") == "APPROVED" and decision.get("action") in (
         "buy_setup",
         "sell_setup",
     ):
@@ -316,6 +378,7 @@ def _send_telegram_notification(
             web_ui_base_url=settings.web_ui_base_url,
             bot_token=settings.telegram_bot_token,
             chat_id=settings.telegram_chat_id,
+            result=result,
         )
 
 

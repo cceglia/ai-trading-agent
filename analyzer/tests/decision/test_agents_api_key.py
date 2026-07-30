@@ -1,547 +1,157 @@
-"""Tests for API key and base_url passthrough in agents."""
+"""Tests for LLM client injection in agents.
 
-from unittest.mock import MagicMock, patch
+After refactoring, agent classes accept ``LLMClientProtocol`` via
+constructor instead of creating their own OpenAI/instructor clients.
+These tests verify the new DI contract.
+"""
 
-from tests.conftest import make_raw_response
+from unittest.mock import MagicMock
+
+from src.decision.usage import LLMUsage
 
 
-class TestAgentApiKey:
-    def test_synthesizer_passes_api_key_to_client(self):
-        """SynthesizerAgent must pass api_key to OpenAI constructor."""
+def _mock_client() -> MagicMock:
+    """Build a minimal mock ``LLMClientProtocol``."""
+    client = MagicMock()
+    client.generate_structured_sync.return_value = (MagicMock(), LLMUsage())
+    client.model_identity.raw_model_identifier = "gpt-4o"
+    return client
+
+
+class TestAgentLlmClientInjection:
+    """Agents accept an ``LLMClientProtocol`` in their constructor."""
+
+    def test_synthesizer_accepts_llm_client(self):
+        """SynthesizerAgent must accept ``llm_client`` as mandatory first arg."""
         from src.decision.agents import SynthesizerAgent
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(api_key="test-key-123")
-            # Verify OpenAI was called with api_key kwarg
-            call_args = mock_from.call_args
-            openai_client = call_args[0][0]
-            assert openai_client.api_key == "test-key-123"
+        agent = SynthesizerAgent(llm_client=_mock_client())
+        assert agent._llm_client is not None
 
-    def test_decider_passes_api_key_to_client(self):
-        """DeciderAgent must pass api_key to OpenAI constructor."""
+    def test_decider_accepts_llm_client(self):
+        """DeciderAgent must accept ``llm_client`` as mandatory first arg."""
         from src.decision.agents import DeciderAgent
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            DeciderAgent(api_key="test-key-456")
-            call_args = mock_from.call_args
-            openai_client = call_args[0][0]
-            assert openai_client.api_key == "test-key-456"
+        agent = DeciderAgent(llm_client=_mock_client())
+        assert agent._llm_client is not None
 
-    def test_reviewer_passes_api_key_to_client(self):
-        """ReviewerAgent must pass api_key to OpenAI constructor."""
+    def test_reviewer_accepts_llm_client(self):
+        """ReviewerAgent must accept ``llm_client`` as mandatory first arg."""
         from src.decision.agents import ReviewerAgent
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            ReviewerAgent(api_key="test-key-789")
-            call_args = mock_from.call_args
-            openai_client = call_args[0][0]
-            assert openai_client.api_key == "test-key-789"
+        agent = ReviewerAgent(llm_client=_mock_client())
+        assert agent._llm_client is not None
 
-    def test_agents_default_to_none_api_key(self):
-        """When no api_key given, OpenAI() uses its own default."""
+    def test_agents_use_injected_client_for_llm_calls(self):
+        """Agent must call ``generate_structured_sync`` on the injected client."""
+        from src.decision.agents import SynthesizerAgent
+        from src.decision.models import MarketContextSummary
+
+        client = _mock_client()
+        expected_result = MarketContextSummary(
+            symbol="EURUSD",
+            bias="BULLISH",
+            confidence=75.0,
+            reasoning="Injected client test",
+        )
+        client.generate_structured_sync.return_value = (
+            expected_result,
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
+
+        agent = SynthesizerAgent(llm_client=client)
+        result = agent.synthesize({"test": True}, [], "EURUSD")
+
+        # The injected client's method was called
+        client.generate_structured_sync.assert_called_once()
+        # The result comes from the injected client
+        assert result is expected_result
+
+    def test_agent_raises_when_no_llm_client(self):
+        """Omitting ``llm_client`` must raise a ``TypeError``."""
         from src.decision.agents import SynthesizerAgent
 
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI") as mock_openai_cls,
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent()  # No api_key
-            mock_openai_cls.assert_called_once()
+        try:
+            SynthesizerAgent()  # type: ignore[call-arg]
+            assert False, "Expected TypeError when llm_client is missing"
+        except TypeError:
+            pass
 
-
-class TestAgentBaseUrl:
-    def test_synthesizer_passes_base_url_to_client(self):
-        """SynthesizerAgent must pass base_url to OpenAI constructor."""
+    def test_agents_default_cost_tracker(self):
+        """When ``cost_tracker`` is omitted, a default ``CostTracker`` is created."""
         from src.decision.agents import SynthesizerAgent
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(base_url="http://localhost:8080/v1", api_key="test")
-            client = mock_from.call_args[0][0]
-            assert str(client.base_url) == "http://localhost:8080/v1/"
+        agent = SynthesizerAgent(llm_client=_mock_client())
+        assert agent.cost_tracker is not None
+        assert agent.cost_tracker.call_count == 0
 
-    def test_decider_passes_base_url_to_client(self):
-        """DeciderAgent must pass base_url to OpenAI constructor."""
-        from src.decision.agents import DeciderAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            DeciderAgent(base_url="http://localhost:8080/v1", api_key="test")
-            client = mock_from.call_args[0][0]
-            assert str(client.base_url) == "http://localhost:8080/v1/"
-
-    def test_reviewer_passes_base_url_to_client(self):
-        """ReviewerAgent must pass base_url to OpenAI constructor."""
-        from src.decision.agents import ReviewerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            ReviewerAgent(base_url="http://localhost:8080/v1", api_key="test")
-            client = mock_from.call_args[0][0]
-            assert str(client.base_url) == "http://localhost:8080/v1/"
-
-    def test_agents_default_to_none_base_url(self):
-        """When no base_url given, OpenAI() uses its own default."""
+    def test_agents_cost_tracker_counts_calls(self):
+        """Cost tracker records calls made through the injected client."""
         from src.decision.agents import SynthesizerAgent
+        from src.decision.models import MarketContextSummary
 
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI") as mock_openai_cls,
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent()  # No base_url
-            mock_openai_cls.assert_called_once()
-            assert "base_url" not in mock_openai_cls.call_args.kwargs
-
-    def test_base_url_ignored_when_client_provided(self):
-        """When a pre-built client is provided, base_url must be ignored."""
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            prebuilt_client = MagicMock()
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(client=prebuilt_client, base_url="http://localhost:8080/v1")
-            assert mock_from.call_args[0][0] is prebuilt_client
-
-    def test_base_url_and_api_key_together(self):
-        """SynthesizerAgent must pass both api_key and base_url when provided."""
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(api_key="key-123", base_url="http://localhost:8080/v1")
-            client = mock_from.call_args[0][0]
-            assert client.api_key == "key-123"
-            assert str(client.base_url) == "http://localhost:8080/v1/"
-
-
-class TestReasoningEffortConstructor:
-    def test_synthesizer_accepts_reasoning_effort(self):
-        """SynthesizerAgent must accept reasoning_effort param."""
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort="high")
-            assert agent.reasoning_effort == "high"
-
-    def test_synthesizer_defaults_reasoning_effort_to_none(self):
-        """When not specified, reasoning_effort defaults to None."""
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent()
-            assert agent.reasoning_effort is None
-
-    def test_decider_accepts_reasoning_effort(self):
-        """DeciderAgent must accept reasoning_effort param."""
-        from src.decision.agents import DeciderAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = DeciderAgent(reasoning_effort="low")
-            assert agent.reasoning_effort == "low"
-
-    def test_reviewer_accepts_reasoning_effort(self):
-        """ReviewerAgent must accept reasoning_effort param."""
-        from src.decision.agents import ReviewerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = ReviewerAgent(reasoning_effort="medium")
-            assert agent.reasoning_effort == "medium"
-
-
-class TestReasoningEffortPassthrough:
-    """reasoning_effort is a create()-level kwarg, not an OpenAI() constructor arg."""
-
-    def test_create_includes_reasoning_effort_when_set(self):
-        """When reasoning_effort is set, it must appear in client.create() kwargs."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort="high", api_key="test")
-            # Trigger create() via synthesize; we just need to intercept the call
-            # We mock client.create to return a proper response
-            mock_client.create.return_value = MagicMock()
-            from src.decision.models import MarketContextSummary
-
-            agent.client.create(
-                model="test-model",
-                response_model=MarketContextSummary,
-                messages=[{"role": "user", "content": "test"}],
-                reasoning_effort=agent.reasoning_effort,  # This is what we're testing
-            )
-            # Verify reasoning_effort was passed
-            call_kwargs = mock_client.create.call_args.kwargs
-            assert "reasoning_effort" in call_kwargs
-            assert call_kwargs["reasoning_effort"] == "high"
-
-    def test_create_omits_reasoning_effort_when_none(self):
-        """When reasoning_effort is None, the key must be absent from create() kwargs."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent()  # No reasoning_effort → None
-            # Verify it's None
-            assert agent.reasoning_effort is None
-
-    def test_create_omits_reasoning_effort_when_none_explicit(self):
-        """When reasoning_effort is explicitly None, key absent from create() kwargs."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort=None)
-            # Verify it's None
-            assert agent.reasoning_effort is None
-
-    def test_decider_create_passes_reasoning_effort(self):
-        """DeciderAgent passes reasoning_effort to create()."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import DeciderAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = DeciderAgent(reasoning_effort="low", api_key="test")
-            assert agent.reasoning_effort == "low"
-
-    def test_reviewer_create_passes_reasoning_effort(self):
-        """ReviewerAgent passes reasoning_effort to create()."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import ReviewerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = ReviewerAgent(reasoning_effort="medium", api_key="test")
-            assert agent.reasoning_effort == "medium"
-
-
-class TestReasoningEffortNilConversion:
-    """Empty string → None conversion in main.py (same pattern as api_key/base_url)."""
-
-    def test_agents_accept_none_reasoning_effort(self):
-        """Agent must accept None reasoning_effort without error."""
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort=None)
-            assert agent.reasoning_effort is None
-
-    def test_agents_accept_empty_string_reasoning_effort(self):
-        """Agent must accept empty string reasoning_effort (though main.py converts it)."""
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort="")
-            assert agent.reasoning_effort == ""
-
-
-class TestReasoningEffortIntegration:
-    """End-to-end: reasoning_effort flows from constructor → create() kwargs."""
-
-    def test_synthesizer_synthesize_passes_reasoning_effort(self):
-        """synthesize() must include reasoning_effort in create_with_completion kwargs when set."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-            mock_client.create_with_completion.return_value = (
-                MagicMock(),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(reasoning_effort="high", api_key="test")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
+        client = _mock_client()
+        client.generate_structured_sync.return_value = (
+            MarketContextSummary(
                 symbol="EURUSD",
-            )
-            call_kwargs = mock_client.create_with_completion.call_args.kwargs
-            assert "reasoning_effort" in call_kwargs
-            assert call_kwargs["reasoning_effort"] == "high"
+                bias="BULLISH",
+                confidence=75.0,
+                reasoning="Cost test",
+            ),
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
 
-    def test_synthesizer_synthesize_omits_reasoning_effort_when_none(self):
-        """Must NOT include reasoning_effort in create_with_completion kwargs when None."""
-        from unittest.mock import MagicMock, patch
+        agent = SynthesizerAgent(llm_client=client)
+        agent.synthesize({"test": True}, [], "EURUSD")
 
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-            mock_client.create_with_completion.return_value = (
-                MagicMock(),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(api_key="test")  # reasoning_effort defaults to None
-            assert agent.reasoning_effort is None
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-            call_kwargs = mock_client.create_with_completion.call_args.kwargs
-            assert "reasoning_effort" not in call_kwargs
-
-    def test_decider_decide_passes_reasoning_effort(self, sample_market_context):
-        """decide() must include reasoning_effort in create_with_completion() kwargs when set."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import DeciderAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-            mock_client.create_with_completion.return_value = (
-                MagicMock(),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            agent = DeciderAgent(reasoning_effort="low", api_key="test")
-            agent.decide(
-                context=sample_market_context,
-                positions=[],
-                pending_orders=[],
-            )
-            call_kwargs = mock_client.create_with_completion.call_args.kwargs
-            assert "reasoning_effort" in call_kwargs
-            assert call_kwargs["reasoning_effort"] == "low"
-
-    def test_reviewer_review_passes_reasoning_effort(self, sample_decision, sample_market_context):
-        """review() must include reasoning_effort in create_with_completion() kwargs when set."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import ReviewerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-            mock_client.create_with_completion.return_value = (
-                MagicMock(),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            agent = ReviewerAgent(reasoning_effort="medium", api_key="test")
-            agent.review(
-                decision=sample_decision,
-                context=sample_market_context,
-                calendar_events=[],
-            )
-            call_kwargs = mock_client.create_with_completion.call_args.kwargs
-            assert "reasoning_effort" in call_kwargs
-            assert call_kwargs["reasoning_effort"] == "medium"
-
-    def test_client_provided_still_respects_reasoning_effort(self):
-        """Pre-built client: reasoning_effort still flows to create_with_completion()."""
-        from unittest.mock import MagicMock, patch
-
-        from src.decision.agents import SynthesizerAgent
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            prebuilt = MagicMock()
-            mock_client = MagicMock()
-            raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-            mock_client.create_with_completion.return_value = (
-                MagicMock(),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            agent = SynthesizerAgent(client=prebuilt, reasoning_effort="high")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-            call_kwargs = mock_client.create_with_completion.call_args.kwargs
-            assert "reasoning_effort" in call_kwargs
-            assert call_kwargs["reasoning_effort"] == "high"
+        assert agent.cost_tracker.call_count == 1
 
 
-class TestReasoningEffortLogging:
-    """Tests for reasoning_effort logging in agent __init__ methods."""
+class TestAgentLogging:
+    """Agent init logging still works with injected client."""
 
-    def test_synthesizer_logs_reasoning_effort_at_init(self, caplog):
-        """SynthesizerAgent must log reasoning_effort at init."""
+    def test_synthesizer_logs_model_at_init(self, caplog):
+        """SynthesizerAgent must log model info at init."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
 
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(reasoning_effort="high")
+        SynthesizerAgent(llm_client=_mock_client())
 
-            assert any("reasoning_effort=high" in record.message for record in caplog.records), (
-                "Expected log message containing 'reasoning_effort=high' "
-                "to be emitted during SynthesizerAgent.__init__"
-            )
+        assert any("SynthesizerAgent" in record.message for record in caplog.records), (
+            "Expected log message containing 'SynthesizerAgent' "
+            "to be emitted during SynthesizerAgent.__init__"
+        )
+        assert any("gpt-4o" in record.message for record in caplog.records), (
+            "Expected log message containing model 'gpt-4o'"
+        )
 
-    def test_synthesizer_logs_none_reasoning_effort(self, caplog):
-        """SynthesizerAgent must log reasoning_effort even when None."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(reasoning_effort=None)
-
-            assert any("reasoning_effort=None" in record.message for record in caplog.records), (
-                "Expected log message containing 'reasoning_effort=None' "
-                "to be emitted during SynthesizerAgent.__init__"
-            )
-
-    def test_decider_logs_reasoning_effort(self, caplog):
-        """DeciderAgent must log reasoning_effort at init."""
+    def test_decider_logs_model_at_init(self, caplog):
+        """DeciderAgent must log model info at init."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import DeciderAgent
 
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            DeciderAgent(reasoning_effort="low")
+        DeciderAgent(llm_client=_mock_client())
 
-            assert any("reasoning_effort=low" in record.message for record in caplog.records), (
-                "Expected log message containing 'reasoning_effort=low' "
-                "to be emitted during DeciderAgent.__init__"
-            )
+        assert any("DeciderAgent" in record.message for record in caplog.records)
 
-    def test_reviewer_logs_reasoning_effort(self, caplog):
-        """ReviewerAgent must log reasoning_effort at init."""
+    def test_reviewer_logs_model_at_init(self, caplog):
+        """ReviewerAgent must log model info at init."""
         import logging
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import ReviewerAgent
 
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            ReviewerAgent(reasoning_effort="medium")
+        ReviewerAgent(llm_client=_mock_client())
 
-            assert any("reasoning_effort=medium" in record.message for record in caplog.records), (
-                "Expected log message containing 'reasoning_effort=medium' "
-                "to be emitted during ReviewerAgent.__init__"
-            )
-
-    def test_reasoning_effort_log_contains_agent_name(self, caplog):
-        """Log message must include the agent class name."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import SynthesizerAgent
-
-        with (
-            patch("src.decision.agents.instructor.from_openai") as mock_from,
-            patch("src.decision.agents.OpenAI"),
-        ):
-            mock_client = MagicMock()
-            mock_from.return_value = mock_client
-            SynthesizerAgent(reasoning_effort="high")
-
-            assert any("SynthesizerAgent" in record.message for record in caplog.records), (
-                "Expected log message containing class name 'SynthesizerAgent' "
-                "to be emitted during SynthesizerAgent.__init__"
-            )
+        assert any("ReviewerAgent" in record.message for record in caplog.records)
 
 
 class TestAgentCostLogging:
-    """Per-call cost logging for synthesizer, decider, and reviewer agents.
-
-    These tests verify that agents:
-    - Use create_with_completion() instead of create()
-    - Extract token usage from raw_response via parse_usage()
-    - Call CostTracker.record_call(model, LLMUsage) — note the new LLMUsage arg
-    - Log token usage and cost per call at INFO level
-    - Still return the correct model when usage is missing
-    """
-
-    # ------------------------------------------------------------------
-    # Test 1 — Synthesizer logs token usage (new field names)
-    # ------------------------------------------------------------------
+    """Cost logging tests that verify generate_structured_sync is used correctly."""
 
     def test_synthesizer_logs_token_usage(self, caplog):
         """SynthesizerAgent must log input, output and total_tokens."""
@@ -549,36 +159,26 @@ class TestAgentCostLogging:
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
+        from src.decision.models import MarketContextSummary
 
-        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = SynthesizerAgent(api_key="test")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
+        client = _mock_client()
+        client.generate_structured_sync.return_value = (
+            MarketContextSummary(
                 symbol="EURUSD",
-            )
+                bias="BULLISH",
+                confidence=75.0,
+                reasoning="Test reasoning",
+            ),
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
 
-            records_text = " ".join(r.message for r in caplog.records)
-            assert "input=100" in records_text, (
-                f"Expected log to contain 'input=100'. Logs: {records_text}"
-            )
-            assert "output=50" in records_text, (
-                f"Expected log to contain 'output=50'. Logs: {records_text}"
-            )
-            assert "total=150" in records_text, (
-                f"Expected log to contain 'total=150'. Logs: {records_text}"
-            )
+        agent = SynthesizerAgent(llm_client=client)
+        agent.synthesize({"test": True}, [], "EURUSD")
 
-    # ------------------------------------------------------------------
-    # Test 2 — Synthesizer logs cost
-    # ------------------------------------------------------------------
+        records_text = " ".join(r.message for r in caplog.records)
+        assert "input=100" in records_text
+        assert "output=50" in records_text
+        assert "total=150" in records_text
 
     def test_synthesizer_logs_cost(self, caplog):
         """SynthesizerAgent must log cost=$ with a numeric value."""
@@ -587,439 +187,173 @@ class TestAgentCostLogging:
 
         caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
+        from src.decision.models import MarketContextSummary
 
-        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = SynthesizerAgent(api_key="test")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
+        client = _mock_client()
+        client.generate_structured_sync.return_value = (
+            MarketContextSummary(
                 symbol="EURUSD",
-            )
+                bias="BULLISH",
+                confidence=75.0,
+                reasoning="Test reasoning",
+            ),
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
 
-            records_text = " ".join(r.message for r in caplog.records)
-            # Look for something like "cost=$0.0005" or "cost=$0.00..."
-            assert re.search(r"cost=\$[\d.]+", records_text), (
-                f"Expected log to contain 'cost=$<number>'. Logs: {records_text}"
-            )
+        agent = SynthesizerAgent(llm_client=client)
+        agent.synthesize({"test": True}, [], "EURUSD")
 
-    # ------------------------------------------------------------------
-    # Test 3 — Decider logs token usage
-    # ------------------------------------------------------------------
+        records_text = " ".join(r.message for r in caplog.records)
+        assert re.search(r"cost=\$[\d.]+", records_text)
 
-    def test_decider_logs_token_usage(self, caplog, sample_market_context):
-        """DeciderAgent must log token usage after decide()."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import DeciderAgent
-
-        raw_response = make_raw_response(input_tokens=200, output_tokens=80, total_tokens=280)
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = DeciderAgent(api_key="test")
-            agent.decide(
-                context=sample_market_context,
-                positions=[],
-                pending_orders=[],
-            )
-
-            records_text = " ".join(r.message for r in caplog.records)
-            assert "input=200" in records_text
-            assert "output=80" in records_text
-            assert "total=280" in records_text
-
-    # ------------------------------------------------------------------
-    # Test 4 — Reviewer logs token usage
-    # ------------------------------------------------------------------
-
-    def test_reviewer_logs_token_usage(self, caplog, sample_decision, sample_market_context):
-        """ReviewerAgent must log token usage after review()."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import ReviewerAgent
-
-        raw_response = make_raw_response(input_tokens=150, output_tokens=60, total_tokens=210)
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = ReviewerAgent(api_key="test")
-            agent.review(
-                decision=sample_decision,
-                context=sample_market_context,
-                calendar_events=[],
-            )
-
-            records_text = " ".join(r.message for r in caplog.records)
-            assert "input=150" in records_text
-            assert "output=60" in records_text
-            assert "total=210" in records_text
-
-    # ------------------------------------------------------------------
-    # Test 5 — create_with_completion is used instead of create
-    # ------------------------------------------------------------------
-
-    def test_create_with_completion_used(self, caplog):
-        """Agents must call create_with_completion, not create."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
+    def test_create_with_completion_not_called(self, caplog):
+        """Agents must call generate_structured_sync, not create_with_completion."""
         from src.decision.agents import SynthesizerAgent
+        from src.decision.models import MarketContextSummary
 
-        raw_response = make_raw_response()
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = SynthesizerAgent(api_key="test")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
+        client = _mock_client()
+        client.generate_structured_sync.return_value = (
+            MarketContextSummary(
                 symbol="EURUSD",
-            )
+                bias="BULLISH",
+                confidence=75.0,
+                reasoning="Test reasoning",
+            ),
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
 
-            # create_with_completion must have been called
-            assert mock_client.create_with_completion.called, (
-                "Expected create_with_completion to be called, but it was not"
-            )
-            # Plain create must NOT have been called
-            assert not mock_client.create.called, (
-                "Expected create NOT to be called, but it was — "
-                "agents should use create_with_completion"
-            )
+        agent = SynthesizerAgent(llm_client=client)
+        agent.synthesize({"test": True}, [], "EURUSD")
 
-    # ------------------------------------------------------------------
-    # Test 6 — Log when usage is None (all-zero)
-    # ------------------------------------------------------------------
+        assert client.generate_structured_sync.called, (
+            "Expected generate_structured_sync to be called, but it was not"
+        )
 
-    def test_log_when_usage_none(self, caplog):
-        """When raw_response.usage is None, agents must log zero cost gracefully."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import SynthesizerAgent
-
-        raw_response = make_raw_response(usage_none=True)
-        mock_result = MagicMock()
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (mock_result, raw_response)
-            mock_from.return_value = mock_client
-
-            agent = SynthesizerAgent(api_key="test")
-            agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-
-            records_text = " ".join(r.message for r in caplog.records)
-            # Should contain zero cost
-            assert "cost=$0.000000" in records_text, (
-                f"Expected log to contain 'cost=$0.000000' when usage is None. Logs: {records_text}"
-            )
-
-    # ------------------------------------------------------------------
-    # Test 7 — cost_tracker=None does not crash
-    # ------------------------------------------------------------------
-
-    def test_agent_no_cost_tracker_does_not_crash(self, caplog):
+    def test_cost_tracker_none_does_not_crash(self):
         """Agents with cost_tracker=None default to CostTracker() and work normally."""
-        import logging
-        import re
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
         from src.decision.agents import SynthesizerAgent
         from src.decision.models import MarketContextSummary
 
-        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
-        # First element must be a real model instance — synthesize() returns it directly
+        client = _mock_client()
         expected_result = MarketContextSummary(
             symbol="EURUSD",
-            bias="bullish",
+            bias="BULLISH",
             confidence=75.0,
             reasoning="Test reasoning",
         )
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (expected_result, raw_response)
-            mock_from.return_value = mock_client
-
-            # Explicitly pass cost_tracker=None
-            agent = SynthesizerAgent(api_key="test", cost_tracker=None)
-            result = agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-
-            # Must not crash; return type preserved
-            assert isinstance(result, MarketContextSummary)
-            assert result is expected_result
-
-            # Logs must contain token and cost info (default CostTracker works)
-            records_text = " ".join(r.message for r in caplog.records)
-            assert "input=100" in records_text
-            assert "output=50" in records_text
-            assert "total=150" in records_text
-            assert re.search(r"cost=\$[\d.]+", records_text)
-
-    # ------------------------------------------------------------------
-    # Test 8 — Empty CostTracker pricing with usage=None does not crash
-    # ------------------------------------------------------------------
-
-    def test_agent_with_empty_pricing_works(self, caplog):
-        """Agents with empty pricing dict still work when usage is None."""
-        import logging
-
-        caplog.set_level(logging.INFO, logger="src.decision.agents")
-        from src.decision.agents import SynthesizerAgent
-        from src.decision.cost_tracker import CostTracker
-        from src.decision.models import MarketContextSummary
-
-        raw_response = make_raw_response(usage_none=True)
-        expected_result = MarketContextSummary(
-            symbol="EURUSD",
-            bias="bullish",
-            confidence=75.0,
-            reasoning="Test reasoning",
+        client.generate_structured_sync.return_value = (
+            expected_result,
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
         )
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (expected_result, raw_response)
-            mock_from.return_value = mock_client
+        agent = SynthesizerAgent(llm_client=client, cost_tracker=None)
+        result = agent.synthesize({"test": True}, [], "EURUSD")
 
-            agent = SynthesizerAgent(
-                api_key="test",
-                cost_tracker=CostTracker(pricing={}),
-            )
-            result = agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
+        assert isinstance(result, MarketContextSummary)
+        assert result is expected_result
 
-            assert isinstance(result, MarketContextSummary)
-            assert result is expected_result
-
-            # Logs should indicate zero cost since usage was not available
-            records_text = " ".join(r.message for r in caplog.records)
-            assert "cost=$0.000000" in records_text
-
-            # verify the cost_tracker was untouched (usage=None → all-zero LLMUsage)
-            assert agent.cost_tracker.call_count == 1  # call IS counted
-            assert agent.cost_tracker.total_cost == 0.0
-
-    # ------------------------------------------------------------------
-    # Test 9 — Return types unaffected by cost logging
-    # ------------------------------------------------------------------
-
-    def test_return_type_unaffected(self, caplog):
+    def test_return_types_unaffected(self):
         """Agent public methods must still return correct model types."""
         from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
 
-        raw_response = make_raw_response()
+        usage = LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150)
 
         # --- Synthesizer ---
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                MarketContextSummary(
-                    symbol="EURUSD",
-                    bias="bullish",
-                    confidence=75.0,
-                    reasoning="Test reasoning",
-                    key_levels=["1.0800"],
-                    structural_events=["BOS"],
-                ),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import SynthesizerAgent
-
-            agent_syn = SynthesizerAgent(api_key="test")
-            result_syn = agent_syn.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
+        syn_client = _mock_client()
+        syn_client.generate_structured_sync.return_value = (
+            MarketContextSummary(
                 symbol="EURUSD",
-            )
-            assert isinstance(result_syn, MarketContextSummary), (
-                f"synthesize() must return MarketContextSummary, got {type(result_syn)}"
-            )
+                bias="BULLISH",
+                confidence=75.0,
+                reasoning="Test reasoning",
+                key_levels=["1.0800"],
+                structural_events=["BOS"],
+            ),
+            usage,
+        )
+        from src.decision.agents import SynthesizerAgent
+
+        agent_syn = SynthesizerAgent(llm_client=syn_client)
+        result_syn = agent_syn.synthesize({"test": True}, [], "EURUSD")
+        assert isinstance(result_syn, MarketContextSummary)
 
         # --- Decider ---
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                DecisionOutput(
-                    symbol="EURUSD",
-                    action="no_trade",
-                    reasoning="Test reasoning",
-                ),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import DeciderAgent
-            from src.decision.models import MarketContextSummary
-
-            context = MarketContextSummary(
+        dec_client = _mock_client()
+        dec_client.generate_structured_sync.return_value = (
+            DecisionOutput(
                 symbol="EURUSD",
-                bias="bullish",
-                confidence=50.0,
-                reasoning="Test",
-            )
-            agent_dec = DeciderAgent(api_key="test")
-            result_dec = agent_dec.decide(
-                context=context,
-                positions=[],
-                pending_orders=[],
-            )
-            assert isinstance(result_dec, DecisionOutput), (
-                f"decide() must return DecisionOutput, got {type(result_dec)}"
-            )
+                action="no_trade",
+                reasoning="Test reasoning",
+            ),
+            usage,
+        )
+        from src.decision.agents import DeciderAgent
+
+        context = MarketContextSummary(
+            symbol="EURUSD",
+            bias="BULLISH",
+            confidence=50.0,
+            reasoning="Test",
+        )
+        agent_dec = DeciderAgent(llm_client=dec_client)
+        result_dec = agent_dec.decide(context=context, positions=[], pending_orders=[])
+        assert isinstance(result_dec, DecisionOutput)
 
         # --- Reviewer ---
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                ReviewVerdict(
-                    approved=True,
-                    reasoning="All good",
-                ),
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import ReviewerAgent
+        from src.analysis.market_structure_engine.models import ReviewStatus
 
-            agent_rev = ReviewerAgent(api_key="test")
-            result_rev = agent_rev.review(
-                decision=DecisionOutput(symbol="EURUSD", action="no_trade", reasoning="R"),
-                context=MarketContextSummary(
-                    symbol="EURUSD",
-                    bias="bullish",
-                    confidence=50.0,
-                    reasoning="R",
-                ),
-                calendar_events=[],
-            )
-            assert isinstance(result_rev, ReviewVerdict), (
-                f"review() must return ReviewVerdict, got {type(result_rev)}"
-            )
+        rev_client = _mock_client()
+        rev_client.generate_structured_sync.return_value = (
+            ReviewVerdict(
+                status=ReviewStatus.APPROVED,
+                reasoning="All good",
+            ),
+            usage,
+        )
+        from src.decision.agents import ReviewerAgent
 
-    # ------------------------------------------------------------------
-    # Test 10 — Agent returns content even when usage is None
-    # ------------------------------------------------------------------
+        agent_rev = ReviewerAgent(llm_client=rev_client)
+        result_rev = agent_rev.review(
+            decision=DecisionOutput(symbol="EURUSD", action="no_trade", reasoning="R"),
+            context=MarketContextSummary(
+                symbol="EURUSD",
+                bias="BULLISH",
+                confidence=50.0,
+                reasoning="R",
+            ),
+            calendar_events=[],
+        )
+        assert isinstance(result_rev, ReviewVerdict)
 
     def test_agent_returns_content_when_usage_none(self):
         """Agent returns the generated model content even without usage data."""
+        from src.decision.agents import SynthesizerAgent
         from src.decision.models import MarketContextSummary
 
-        raw_response = make_raw_response(usage_none=True)
+        client = _mock_client()
         expected_result = MarketContextSummary(
             symbol="EURUSD",
-            bias="bullish",
+            bias="BULLISH",
             confidence=75.0,
             reasoning="Test reasoning",
         )
-
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                expected_result,
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import SynthesizerAgent
-
-            agent = SynthesizerAgent(api_key="test")
-            result = agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-
-            assert result is expected_result
-            assert result.symbol == "EURUSD"
-            assert result.bias == "bullish"
-
-    # ------------------------------------------------------------------
-    # Test 11 — Agent returns content when usage has partial fields
-    # ------------------------------------------------------------------
-
-    def test_agent_returns_content_when_partial_usage(self):
-        """Agent returns content when usage has some fields but not others."""
-        # Missing output_tokens_details
-        from types import SimpleNamespace
-
-        from src.decision.models import MarketContextSummary
-
-        raw_response = SimpleNamespace(
-            usage=SimpleNamespace(
-                input_tokens=100,
-                output_tokens=50,
-                total_tokens=150,
-                input_tokens_details=None,
-                output_tokens_details=None,
-            )
-        )
-        expected_result = MarketContextSummary(
-            symbol="EURUSD",
-            bias="neutral",
-            confidence=50.0,
-            reasoning="Partial usage test",
+        client.generate_structured_sync.return_value = (
+            expected_result,
+            LLMUsage(),  # all-zero usage — simulates no usage data
         )
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                expected_result,
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import SynthesizerAgent
+        agent = SynthesizerAgent(llm_client=client)
+        result = agent.synthesize({"test": True}, [], "EURUSD")
 
-            agent = SynthesizerAgent(api_key="test")
-            result = agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
-
-            assert result is expected_result
-            assert result.bias == "neutral"
-
-    # ------------------------------------------------------------------
-    # Test 12 — Unknown model in pricing does not crash
-    # ------------------------------------------------------------------
+        assert result is expected_result
+        assert result.symbol == "EURUSD"
+        assert result.bias == "BULLISH"
 
     def test_agent_unknown_model_pricing_returns_content(self):
         """Agent works when model is not in pricing table."""
         from src.decision.cost_tracker import CostTracker
         from src.decision.models import MarketContextSummary
 
-        # Pricing only has gpt-4o, but agent uses a different model
         cost_tracker = CostTracker(
             pricing={
                 "gpt-4o": {
@@ -1030,35 +364,24 @@ class TestAgentCostLogging:
             }
         )
 
-        raw_response = make_raw_response(input_tokens=100, output_tokens=50, total_tokens=150)
+        client = _mock_client()
+        client.model_identity.raw_model_identifier = "gpt-4-unknown"
         expected_result = MarketContextSummary(
             symbol="EURUSD",
-            bias="bullish",
+            bias="BULLISH",
             confidence=75.0,
             reasoning="Test unknown model",
         )
+        client.generate_structured_sync.return_value = (
+            expected_result,
+            LLMUsage(input_tokens=100, output_tokens=50, total_tokens=150),
+        )
 
-        with patch("src.decision.agents.instructor.from_openai") as mock_from:
-            mock_client = MagicMock()
-            mock_client.create_with_completion.return_value = (
-                expected_result,
-                raw_response,
-            )
-            mock_from.return_value = mock_client
-            from src.decision.agents import SynthesizerAgent
+        from src.decision.agents import SynthesizerAgent
 
-            agent = SynthesizerAgent(
-                api_key="test",
-                model="gpt-4-unknown",
-                cost_tracker=cost_tracker,
-            )
-            result = agent.synthesize(
-                structure_analysis={"test": True},
-                calendar_events=[],
-                symbol="EURUSD",
-            )
+        agent = SynthesizerAgent(llm_client=client, cost_tracker=cost_tracker)
+        result = agent.synthesize({"test": True}, [], "EURUSD")
 
-            assert result is expected_result
-            # Call counted, cost is zero
-            assert cost_tracker.call_count == 1
-            assert cost_tracker.total_cost == 0.0
+        assert result is expected_result
+        assert cost_tracker.call_count == 1
+        assert cost_tracker.total_cost == 0.0
