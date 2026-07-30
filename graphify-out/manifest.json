@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "ui/vite.config.ts": {
-    "mtime": 1785390514.0938668,
-    "ast_hash": "b964cfbaa1239694d82ef0f0fb55b576",
+    "mtime": 1785398322.205902,
+    "ast_hash": "c31b935dcfc7101820d3a44637a46749",
     "semantic_hash": ""
   },
   ".pre-commit-config.yaml": {
@@ -470,13 +470,13 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1785333821.701745,
-    "ast_hash": "1470122ab2dc6de8a62c21b7a717c6df",
+    "mtime": 1785402815.0182161,
+    "ast_hash": "652ef3a7d61a537b9bc681d19d76152b",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1785391179.0168455,
-    "ast_hash": "e6c89110a844ccbd505bb4a85a513388",
+    "mtime": 1785402841.7388315,
+    "ast_hash": "a4727e37a33ca95da520d18bbe053367",
     "semantic_hash": ""
   },
   "ui/index.html": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "docker-compose.devel.yml": {
-    "mtime": 1785327737.4710405,
-    "ast_hash": "1e4bb99499eb48391e64b57f71fa0718",
+    "mtime": 1785398313.682894,
+    "ast_hash": "be45c87c1b838da8b4e4225c347963d7",
     "semantic_hash": ""
   },
   "docker-compose.prod.yml": {
@@ -627,6 +627,11 @@
   "analyzer/tests/decision/test_usage.py": {
     "mtime": 1785356424.1193655,
     "ast_hash": "82cfc0cf418e78828ac3ba08480162eb",
+    "semantic_hash": ""
+  },
+  "scripts/start-dev.sh": {
+    "mtime": 1785398392.4428296,
+    "ast_hash": "2d02e36bdfab0d84fd1ea456e9ecf002",
     "semantic_hash": ""
   }
 }

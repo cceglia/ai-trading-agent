@@ -21,8 +21,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_config_settings",
-      "community": 28,
-      "community_name": "TestGetPositions",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "config/settings.py"
     },
     {
@@ -32,8 +32,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "analyzer_config_settings_settings",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "settings"
     },
     {
@@ -43,8 +43,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_config_settings_py_basesettings",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "basesettings"
     },
     {
@@ -76,8 +76,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "analyzer_config_settings_rationale_11",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "trading agent configuration."
     },
     {
@@ -607,8 +607,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_candle_cache_py_any",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "any"
     },
     {
@@ -618,8 +618,8 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "analyzer_src_analysis_candle_cache_load_cached_analysis",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "load_cached_analysis()"
     },
     {
@@ -695,8 +695,8 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "analyzer_src_analysis_candle_cache_rationale_159",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "load cached analysis from disk if available.      args:         timeframe: \"d1\","
     },
     {
@@ -761,8 +761,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "config.py"
     },
     {
@@ -772,8 +772,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config_timeframeprofile",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 48,
+      "community_name": "test_analyze_structure_fetches_all_timeframes",
       "norm_label": "timeframeprofile"
     },
     {
@@ -783,8 +783,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config_timeframeprofile_to_dict",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 48,
+      "community_name": "test_analyze_structure_fetches_all_timeframes",
       "norm_label": ".to_dict()"
     },
     {
@@ -794,8 +794,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config_py_any",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 48,
+      "community_name": "test_analyze_structure_fetches_all_timeframes",
       "norm_label": "any"
     },
     {
@@ -805,8 +805,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config_timeframeprofile_with_overrides",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 48,
+      "community_name": "test_analyze_structure_fetches_all_timeframes",
       "norm_label": ".with_overrides()"
     },
     {
@@ -816,8 +816,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_config_get_profile",
-      "community": 0,
-      "community_name": "TestFatalError",
+      "community": 14,
+      "community_name": "src/calendar/__init__.py",
       "norm_label": "get_profile()"
     },
     {
@@ -970,8 +970,8 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_engineerror",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": "engineerror"
     },
     {
@@ -981,8 +981,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_py_exception",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": "exception"
     },
     {
@@ -992,8 +992,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_engineerror_init",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": ".__init__()"
     },
     {
@@ -1003,8 +1003,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_py_any",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": "any"
     },
     {
@@ -1014,8 +1014,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_engineerror_to_dict",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": ".to_dict()"
     },
     {
@@ -1102,8 +1102,8 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_errors_rationale_7",
-      "community": 10,
-      "community_name": "orchestrator/test_synthesizer_cache.py",
+      "community": 122,
+      "community_name": "test_d1_candle_period_after_close",
       "norm_label": "base class for deterministic engine errors."
     },
     {
@@ -1773,8 +1773,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "utils.py"
     },
     {
@@ -1784,8 +1784,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils_canonical_json",
-      "community": 14,
-      "community_name": "src/calendar/__init__.py",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "canonical_json()"
     },
     {
@@ -1795,8 +1795,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils_py_any",
-      "community": 14,
-      "community_name": "src/calendar/__init__.py",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "any"
     },
     {
@@ -1861,8 +1861,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils_parse_iso_timestamp",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "parse_iso_timestamp()"
     },
     {
@@ -1872,8 +1872,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils_py_datetime",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "datetime"
     },
     {
@@ -1883,8 +1883,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "analyzer_src_analysis_market_structure_engine_utils_last_non_none",
-      "community": 31,
-      "community_name": "TestGetSymbolPrice",
+      "community": 10,
+      "community_name": "orchestrator/test_synthesizer_cache.py",
       "norm_label": "last_non_none()"
     },
     {
@@ -2389,8 +2389,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "agents.py"
     },
     {
@@ -2400,8 +2400,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_log_llm_call",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "_log_llm_call()"
     },
     {
@@ -2422,8 +2422,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_synthesizeragent_init",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".__init__()"
     },
     {
@@ -2433,8 +2433,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "openai",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "openai"
     },
     {
@@ -2444,8 +2444,8 @@
       "source_location": "L69",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_synthesizeragent_synthesize",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".synthesize()"
     },
     {
@@ -2455,8 +2455,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_py_any",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "any"
     },
     {
@@ -2466,8 +2466,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_decideragent",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "decideragent"
     },
     {
@@ -2477,8 +2477,8 @@
       "source_location": "L110",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_decideragent_init",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".__init__()"
     },
     {
@@ -2488,8 +2488,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_decideragent_decide",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".decide()"
     },
     {
@@ -2499,8 +2499,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "revieweragent"
     },
     {
@@ -2510,8 +2510,8 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent_init",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".__init__()"
     },
     {
@@ -2521,8 +2521,8 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_revieweragent_review",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": ".review()"
     },
     {
@@ -2532,8 +2532,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_rationale_25",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 26,
+      "community_name": "test_terminal_data_provider.py",
       "norm_label": "record an llm call and log its cost. returns enriched usage with costs."
     },
     {
@@ -2554,8 +2554,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_rationale_108",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "makes trading decisions based on market context."
     },
     {
@@ -2565,8 +2565,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "analyzer_src_decision_agents_rationale_173",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "reviews trading decisions and provides feedback."
     },
     {
@@ -2620,8 +2620,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "costtracker"
     },
     {
@@ -2642,8 +2642,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker_set_limit",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".set_limit()"
     },
     {
@@ -2653,8 +2653,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker_set_symbol",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".set_symbol()"
     },
     {
@@ -2675,8 +2675,8 @@
       "source_location": "L155",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker_total_cost",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".total_cost()"
     },
     {
@@ -2686,8 +2686,8 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker_call_count",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".call_count()"
     },
     {
@@ -2697,8 +2697,8 @@
       "source_location": "L164",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_costtracker_reset",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".reset()"
     },
     {
@@ -2730,8 +2730,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_34",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "tracks llm api call costs using per-model token pricing.      each instance is i"
     },
     {
@@ -2741,8 +2741,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_59",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set a per-symbol cost limit.          when *limit* is ``<= 0`` or ``none`` the l"
     },
     {
@@ -2752,8 +2752,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_71",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set the current symbol for error context.          the symbol is used by :meth:`"
     },
     {
@@ -2774,8 +2774,8 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_156",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "accumulated cost across all recorded calls."
     },
     {
@@ -2785,8 +2785,8 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_161",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "number of calls recorded."
     },
     {
@@ -2796,8 +2796,8 @@
       "source_location": "L165",
       "_origin": "ast",
       "id": "analyzer_src_decision_cost_tracker_rationale_165",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "reset accumulated cost and call count to zero."
     },
     {
@@ -3511,8 +3511,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "analyzer_src_decision_usage_parse_usage",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 96,
+      "community_name": "test_save_h4_creates_hour_suffixed_file",
       "norm_label": "parse_usage()"
     },
     {
@@ -3599,8 +3599,8 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "analyzer_src_decision_usage_rationale_175",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 96,
+      "community_name": "test_save_h4_creates_hour_suffixed_file",
       "norm_label": "extract an ``llmusage`` from a provider response.      handles:     * ``none`` r"
     },
     {
@@ -3742,8 +3742,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "graph.py"
     },
     {
@@ -3753,8 +3753,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_summarize_timeframe",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "_summarize_timeframe()"
     },
     {
@@ -3775,8 +3775,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_select_canonical_current_price",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "_select_canonical_current_price()"
     },
     {
@@ -3786,8 +3786,8 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_summarize_structure_analysis",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "_summarize_structure_analysis()"
     },
     {
@@ -3874,8 +3874,8 @@
       "source_location": "L353",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_tradinggraph_analyze_structure",
-      "community": 81,
-      "community_name": ".write",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "._analyze_structure()"
     },
     {
@@ -3896,8 +3896,8 @@
       "source_location": "L526",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_tradinggraph_synthesize_context",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "._synthesize_context()"
     },
     {
@@ -3951,8 +3951,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_43",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "extract compact analytical fields from a single timeframe engine output.      th"
     },
     {
@@ -3962,8 +3962,8 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_136",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "select the canonical current price across timeframes.      the canonical current"
     },
     {
@@ -3973,8 +3973,8 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_196",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "build a compact version of structure analysis suitable for llm prompts.      the"
     },
     {
@@ -4039,8 +4039,8 @@
       "source_location": "L354",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_354",
-      "community": 81,
-      "community_name": ".write",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "analyze market structure with candle-aligned caching.          the multi-timefra"
     },
     {
@@ -4061,8 +4061,8 @@
       "source_location": "L527",
       "_origin": "ast",
       "id": "analyzer_src_orchestrator_graph_rationale_527",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 1,
+      "community_name": "Mt5DataProvider",
       "norm_label": "synthesize market context."
     },
     {
@@ -4127,8 +4127,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "ohlc_cache.py"
     },
     {
@@ -4138,8 +4138,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_get_settings",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "_get_settings()"
     },
     {
@@ -4149,8 +4149,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_ohlc_cache_path",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "ohlc_cache_path()"
     },
     {
@@ -4160,8 +4160,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_py_datetime",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "datetime"
     },
     {
@@ -4204,8 +4204,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "analyzer_src_output_ohlc_cache_rationale_26",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "compute ohlc cache file path, parallel to analysis cache.      cache path conven"
     },
     {
@@ -4314,8 +4314,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "result_models.py"
     },
     {
@@ -4336,8 +4336,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_py_basemodel",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "basemodel"
     },
     {
@@ -4347,8 +4347,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_ohlcdata",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "ohlcdata"
     },
     {
@@ -4358,8 +4358,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_sltpoverlay",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "sltpoverlay"
     },
     {
@@ -4369,8 +4369,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_analysisresult",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "analysisresult"
     },
     {
@@ -4391,8 +4391,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_21",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "ohlc data keyed by timeframe."
     },
     {
@@ -4402,8 +4402,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_29",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "entry, stop-loss and take-profit overlay for charts."
     },
     {
@@ -4413,8 +4413,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "analyzer_src_output_result_models_rationale_37",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "top-level pipeline output serialized to json for the web viewer."
     },
     {
@@ -4919,8 +4919,8 @@
       "source_location": "L565",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_market_structure_engine_test_structure_testcalculatescorestructuralbias",
-      "community": 101,
-      "community_name": "structure.py",
+      "community": 31,
+      "community_name": "TestGetSymbolPrice",
       "norm_label": "testcalculatescorestructuralbias"
     },
     {
@@ -4930,8 +4930,8 @@
       "source_location": "L568",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_market_structure_engine_test_structure_testcalculatescorestructuralbias_test_neutral_becomes_neutral_bearish_with_bearish_bias",
-      "community": 101,
-      "community_name": "structure.py",
+      "community": 31,
+      "community_name": "TestGetSymbolPrice",
       "norm_label": ".test_neutral_becomes_neutral_bearish_with_bearish_bias()"
     },
     {
@@ -5062,8 +5062,8 @@
       "source_location": "L566",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_market_structure_engine_test_structure_rationale_566",
-      "community": 101,
-      "community_name": "structure.py",
+      "community": 31,
+      "community_name": "TestGetSymbolPrice",
       "norm_label": "calculate_score produces correct bias when structural_bias modifies votes."
     },
     {
@@ -5106,8 +5106,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_d1_no_hour_suffix",
-      "community": 116,
-      "community_name": "TestGetRunIntegration",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_cache_path_d1_no_hour_suffix()"
     },
     {
@@ -5139,8 +5139,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_zero_padded_hour",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_cache_path_zero_padded_hour()"
     },
     {
@@ -5150,8 +5150,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_h4_hour_04_is_zero_padded",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 130,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "test_cache_path_h4_hour_04_is_zero_padded()"
     },
     {
@@ -5161,8 +5161,8 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_d1_candle_period_before_close",
-      "community": 118,
-      "community_name": "test_cache_path_mtf_uses_d1_date",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_d1_candle_period_before_close()"
     },
     {
@@ -5172,8 +5172,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_d1_candle_period_after_close",
-      "community": 92,
-      "community_name": "test_runner.py",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_d1_candle_period_after_close()"
     },
     {
@@ -5183,8 +5183,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_h4_candle_period",
-      "community": 106,
-      "community_name": "TestListRunsPruning",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_h4_candle_period()"
     },
     {
@@ -5205,8 +5205,8 @@
       "source_location": "L137",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_h1_candle_period",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_h1_candle_period()"
     },
     {
@@ -5238,8 +5238,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_testget_cache_date_d1_before_close",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "testget_cache_date_d1_before_close()"
     },
     {
@@ -5249,8 +5249,8 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_testget_cache_date_d1_after_close",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 126,
+      "community_name": "test_h1_candle_period_at_boundary",
       "norm_label": "testget_cache_date_d1_after_close()"
     },
     {
@@ -5271,8 +5271,8 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_d1_without_cache",
-      "community": 107,
-      "community_name": "TestListRunsIntegration",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_should_run_d1_without_cache()"
     },
     {
@@ -5293,8 +5293,8 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_h4_without_cache",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_should_run_h4_without_cache()"
     },
     {
@@ -5315,8 +5315,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_d1_after_close_with_cache",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 127,
+      "community_name": "testget_cache_date_d1_after_close",
       "norm_label": "test_should_run_d1_after_close_with_cache()"
     },
     {
@@ -5326,8 +5326,8 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_d1_after_close_without_cache",
-      "community": 114,
-      "community_name": "TestFatalError",
+      "community": 129,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": "test_should_run_d1_after_close_without_cache()"
     },
     {
@@ -5348,8 +5348,8 @@
       "source_location": "L304",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_h1_without_cache",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 128,
+      "community_name": "test_should_run_d1_without_cache",
       "norm_label": "test_should_run_h1_without_cache()"
     },
     {
@@ -5359,8 +5359,8 @@
       "source_location": "L314",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_should_run_h1_with_cache",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_should_run_h1_with_cache()"
     },
     {
@@ -5381,8 +5381,8 @@
       "source_location": "L348",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_and_load_d1_round_trip",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_save_and_load_d1_round_trip()"
     },
     {
@@ -5392,8 +5392,8 @@
       "source_location": "L360",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_and_load_h4_round_trip",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_save_and_load_h4_round_trip()"
     },
     {
@@ -5403,8 +5403,8 @@
       "source_location": "L372",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_and_load_h1_round_trip",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_save_and_load_h1_round_trip()"
     },
     {
@@ -5414,8 +5414,8 @@
       "source_location": "L384",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_load_returns_none_when_missing",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_load_returns_none_when_missing()"
     },
     {
@@ -5436,8 +5436,8 @@
       "source_location": "L403",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_h1_creates_hour_suffixed_file",
-      "community": 126,
-      "community_name": "test_h1_candle_period_at_boundary",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_save_h1_creates_hour_suffixed_file()"
     },
     {
@@ -5447,8 +5447,8 @@
       "source_location": "L414",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_save_h4_creates_hour_suffixed_file",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "test_save_h4_creates_hour_suffixed_file()"
     },
     {
@@ -5458,8 +5458,8 @@
       "source_location": "L425",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_load_handles_corrupt_json",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_load_handles_corrupt_json()"
     },
     {
@@ -5469,8 +5469,8 @@
       "source_location": "L437",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_midnight_boundary_h4_save_and_load",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_midnight_boundary_h4_save_and_load()"
     },
     {
@@ -5480,8 +5480,8 @@
       "source_location": "L453",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_midnight_boundary_h1_save_and_load",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_midnight_boundary_h1_save_and_load()"
     },
     {
@@ -5502,8 +5502,8 @@
       "source_location": "L483",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_cache_path_mtf_uses_d1_date",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "test_cache_path_mtf_uses_d1_date()"
     },
     {
@@ -5513,8 +5513,8 @@
       "source_location": "L499",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_settings_has_d1_close_time",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "test_settings_has_d1_close_time()"
     },
     {
@@ -5524,8 +5524,8 @@
       "source_location": "L509",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_settings_has_h4_close_time",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "test_settings_has_h4_close_time()"
     },
     {
@@ -5535,8 +5535,8 @@
       "source_location": "L517",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_settings_has_h4_close_interval_hours",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "test_settings_has_h4_close_interval_hours()"
     },
     {
@@ -5546,8 +5546,8 @@
       "source_location": "L525",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_test_settings_has_analysis_cache_dir",
-      "community": 102,
-      "community_name": "_log_llm_call",
+      "community": 2,
+      "community_name": "DataSource",
       "norm_label": "test_settings_has_analysis_cache_dir()"
     },
     {
@@ -5612,8 +5612,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_28",
-      "community": 116,
-      "community_name": "TestGetRunIntegration",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "d1 cache filename has no hour suffix \u2014 always d1-analysis.json."
     },
     {
@@ -5645,8 +5645,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_65",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "midnight-boundary candles use 00 as the hour suffix (h4-00, h1-00)."
     },
     {
@@ -5656,8 +5656,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_80",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 130,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "h4 hour 04 is zero-padded to two digits (h4-04, not h4-4)."
     },
     {
@@ -5667,8 +5667,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_95",
-      "community": 118,
-      "community_name": "test_cache_path_mtf_uses_d1_date",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "before d1 close (17:00), the last closed candle is yesterday's."
     },
     {
@@ -5678,8 +5678,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_107",
-      "community": 92,
-      "community_name": "test_runner.py",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "after d1 close (17:00), the current candle is today's."
     },
     {
@@ -5689,8 +5689,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_118",
-      "community": 106,
-      "community_name": "TestListRunsPruning",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h4 period containing the given time, anchored at 00:00."
     },
     {
@@ -5711,8 +5711,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_138",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h1 period is floored to the current hour."
     },
     {
@@ -5744,8 +5744,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_173",
-      "community": 87,
-      "community_name": "test_result_pipeline_writes_json",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "before d1 close, cache date is yesterday's date (from period_start)."
     },
     {
@@ -5755,8 +5755,8 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_184",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 126,
+      "community_name": "test_h1_candle_period_at_boundary",
       "norm_label": "after d1 close, cache date is today's date (from period_start)."
     },
     {
@@ -5777,8 +5777,8 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_209",
-      "community": 107,
-      "community_name": "TestListRunsIntegration",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "d1 should run analysis when no cache file exists."
     },
     {
@@ -5799,8 +5799,8 @@
       "source_location": "L233",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_233",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h4 should run analysis when no cache file exists."
     },
     {
@@ -5821,8 +5821,8 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_259",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 127,
+      "community_name": "testget_cache_date_d1_after_close",
       "norm_label": "d1 after close with existing cache should skip analysis."
     },
     {
@@ -5832,8 +5832,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_274",
-      "community": 114,
-      "community_name": "TestFatalError",
+      "community": 129,
+      "community_name": "test_should_run_d1_after_close_with_cache",
       "norm_label": "d1 after close without cache should run analysis."
     },
     {
@@ -5854,8 +5854,8 @@
       "source_location": "L305",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_305",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 128,
+      "community_name": "test_should_run_d1_without_cache",
       "norm_label": "h1 should run analysis when no h1 cache file exists."
     },
     {
@@ -5865,8 +5865,8 @@
       "source_location": "L315",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_315",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h1 should skip analysis when cache file exists for that period."
     },
     {
@@ -5887,8 +5887,8 @@
       "source_location": "L349",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_349",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "d1 save then load returns identical dict (round-trip fidelity)."
     },
     {
@@ -5898,8 +5898,8 @@
       "source_location": "L361",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_361",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "h4 save then load returns identical dict."
     },
     {
@@ -5909,8 +5909,8 @@
       "source_location": "L373",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_373",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "h1 save then load returns identical dict."
     },
     {
@@ -5920,8 +5920,8 @@
       "source_location": "L385",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_385",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "load returns none when no cache file exists."
     },
     {
@@ -5942,8 +5942,8 @@
       "source_location": "L404",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_404",
-      "community": 126,
-      "community_name": "test_h1_candle_period_at_boundary",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h1 save creates a file with the hour suffix."
     },
     {
@@ -5953,8 +5953,8 @@
       "source_location": "L415",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_415",
-      "community": 5,
-      "community_name": "Evaluator",
+      "community": 125,
+      "community_name": "testget_cache_date_d1_before_close",
       "norm_label": "h4 save creates a file with the hour suffix."
     },
     {
@@ -5964,8 +5964,8 @@
       "source_location": "L426",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_426",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "load returns none for corrupt json (does not raise)."
     },
     {
@@ -5975,8 +5975,8 @@
       "source_location": "L438",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_438",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "h4 period ending at 00:00 stores under that date with h4-00 filename."
     },
     {
@@ -5986,8 +5986,8 @@
       "source_location": "L454",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_454",
-      "community": 123,
-      "community_name": "test_h4_candle_period",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "h1 period ending at 00:00 stores under that date with h1-00 filename."
     },
     {
@@ -6008,8 +6008,8 @@
       "source_location": "L484",
       "_origin": "ast",
       "id": "analyzer_tests_analysis_test_candle_cache_rationale_484",
-      "community": 125,
-      "community_name": "testget_cache_date_d1_before_close",
+      "community": 5,
+      "community_name": "Evaluator",
       "norm_label": "mtf cache path must use the same date as d1 cache path."
     },
     {
@@ -6690,8 +6690,8 @@
       "source_location": "",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_py_monkeypatch",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 93,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "monkeypatch"
     },
     {
@@ -6767,8 +6767,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testreasoningeffortsettings_test_reasoning_effort_from_env",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 28,
+      "community_name": "TestGetPositions",
       "norm_label": ".test_reasoning_effort_from_env()"
     },
     {
@@ -6866,8 +6866,8 @@
       "source_location": "L144",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_testmodelpricingsettings_test_model_pricing_from_env_json",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 93,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": ".test_model_pricing_from_env_json()"
     },
     {
@@ -7130,8 +7130,8 @@
       "source_location": "L90",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_90",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 28,
+      "community_name": "TestGetPositions",
       "norm_label": "trading_openai_reasoning_effort env var overrides the default."
     },
     {
@@ -7229,8 +7229,8 @@
       "source_location": "L145",
       "_origin": "ast",
       "id": "analyzer_tests_config_test_settings_rationale_145",
-      "community": 56,
-      "community_name": "TestSynthesizeContextCanonicalPrice",
+      "community": 93,
+      "community_name": "test_should_run_h1_different_period",
       "norm_label": "trading_model_pricing json env var overrides the default (new format)."
     },
     {
@@ -7460,8 +7460,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "analyzer_tests_conftest_make_raw_response",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "make_raw_response()"
     },
     {
@@ -7482,8 +7482,8 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "analyzer_tests_conftest_dict_to_sns",
-      "community": 60,
-      "community_name": "test_analyze_structure_uses_broker_time_not_utc",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "_dict_to_sns()"
     },
     {
@@ -7515,8 +7515,8 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "analyzer_tests_conftest_rationale_104",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "build a mock provider response with controlled usage fields.      the returned o"
     },
     {
@@ -7526,8 +7526,8 @@
       "source_location": "L183",
       "_origin": "ast",
       "id": "analyzer_tests_conftest_rationale_183",
-      "community": 60,
-      "community_name": "test_analyze_structure_uses_broker_time_not_utc",
+      "community": 32,
+      "community_name": "setup_logging",
       "norm_label": "recursively convert a dict to a simplenamespace."
     },
     {
@@ -7658,8 +7658,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "test_agents_api_key.py"
     },
     {
@@ -7669,8 +7669,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentapikey",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "testagentapikey"
     },
     {
@@ -7680,8 +7680,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentapikey_test_synthesizer_passes_api_key_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_synthesizer_passes_api_key_to_client()"
     },
     {
@@ -7691,8 +7691,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentapikey_test_decider_passes_api_key_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_decider_passes_api_key_to_client()"
     },
     {
@@ -7702,8 +7702,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentapikey_test_reviewer_passes_api_key_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_reviewer_passes_api_key_to_client()"
     },
     {
@@ -7713,8 +7713,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentapikey_test_agents_default_to_none_api_key",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_agents_default_to_none_api_key()"
     },
     {
@@ -7724,8 +7724,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "testagentbaseurl"
     },
     {
@@ -7735,8 +7735,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_synthesizer_passes_base_url_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_synthesizer_passes_base_url_to_client()"
     },
     {
@@ -7746,8 +7746,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_decider_passes_base_url_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_decider_passes_base_url_to_client()"
     },
     {
@@ -7757,8 +7757,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_reviewer_passes_base_url_to_client",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_reviewer_passes_base_url_to_client()"
     },
     {
@@ -7768,8 +7768,8 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_agents_default_to_none_base_url",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_agents_default_to_none_base_url()"
     },
     {
@@ -7779,8 +7779,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_ignored_when_client_provided",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_base_url_ignored_when_client_provided()"
     },
     {
@@ -7790,8 +7790,8 @@
       "source_location": "L119",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentbaseurl_test_base_url_and_api_key_together",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": ".test_base_url_and_api_key_together()"
     },
     {
@@ -7801,8 +7801,8 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": "testreasoningeffortconstructor"
     },
     {
@@ -7812,8 +7812,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_synthesizer_accepts_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": ".test_synthesizer_accepts_reasoning_effort()"
     },
     {
@@ -7823,8 +7823,8 @@
       "source_location": "L146",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_synthesizer_defaults_reasoning_effort_to_none",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": ".test_synthesizer_defaults_reasoning_effort_to_none()"
     },
     {
@@ -7834,8 +7834,8 @@
       "source_location": "L159",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_decider_accepts_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": ".test_decider_accepts_reasoning_effort()"
     },
     {
@@ -7845,8 +7845,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortconstructor_test_reviewer_accepts_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": ".test_reviewer_accepts_reasoning_effort()"
     },
     {
@@ -7856,8 +7856,8 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "testreasoningeffortpassthrough"
     },
     {
@@ -7867,8 +7867,8 @@
       "source_location": "L189",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_includes_reasoning_effort_when_set",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".test_create_includes_reasoning_effort_when_set()"
     },
     {
@@ -7878,8 +7878,8 @@
       "source_location": "L215",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".test_create_omits_reasoning_effort_when_none()"
     },
     {
@@ -7889,8 +7889,8 @@
       "source_location": "L231",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_create_omits_reasoning_effort_when_none_explicit",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".test_create_omits_reasoning_effort_when_none_explicit()"
     },
     {
@@ -7900,8 +7900,8 @@
       "source_location": "L247",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_decider_create_passes_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".test_decider_create_passes_reasoning_effort()"
     },
     {
@@ -7911,8 +7911,8 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortpassthrough_test_reviewer_create_passes_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": ".test_reviewer_create_passes_reasoning_effort()"
     },
     {
@@ -7922,8 +7922,8 @@
       "source_location": "L272",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortnilconversion",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "testreasoningeffortnilconversion"
     },
     {
@@ -7933,8 +7933,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortnilconversion_test_agents_accept_none_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": ".test_agents_accept_none_reasoning_effort()"
     },
     {
@@ -7944,8 +7944,8 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortnilconversion_test_agents_accept_empty_string_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": ".test_agents_accept_empty_string_reasoning_effort()"
     },
     {
@@ -7955,8 +7955,8 @@
       "source_location": "L302",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "testreasoningeffortintegration"
     },
     {
@@ -7966,8 +7966,8 @@
       "source_location": "L305",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration_test_synthesizer_synthesize_passes_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": ".test_synthesizer_synthesize_passes_reasoning_effort()"
     },
     {
@@ -7977,8 +7977,8 @@
       "source_location": "L329",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration_test_synthesizer_synthesize_omits_reasoning_effort_when_none",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": ".test_synthesizer_synthesize_omits_reasoning_effort_when_none()"
     },
     {
@@ -7988,8 +7988,8 @@
       "source_location": "L353",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration_test_decider_decide_passes_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": ".test_decider_decide_passes_reasoning_effort()"
     },
     {
@@ -7999,8 +7999,8 @@
       "source_location": "L377",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration_test_reviewer_review_passes_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": ".test_reviewer_review_passes_reasoning_effort()"
     },
     {
@@ -8010,8 +8010,8 @@
       "source_location": "L401",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortintegration_test_client_provided_still_respects_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": ".test_client_provided_still_respects_reasoning_effort()"
     },
     {
@@ -8021,8 +8021,8 @@
       "source_location": "L427",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "testreasoningeffortlogging"
     },
     {
@@ -8032,8 +8032,8 @@
       "source_location": "L430",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging_test_synthesizer_logs_reasoning_effort_at_init",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": ".test_synthesizer_logs_reasoning_effort_at_init()"
     },
     {
@@ -8043,8 +8043,8 @@
       "source_location": "L450",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging_test_synthesizer_logs_none_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": ".test_synthesizer_logs_none_reasoning_effort()"
     },
     {
@@ -8054,8 +8054,8 @@
       "source_location": "L470",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging_test_decider_logs_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": ".test_decider_logs_reasoning_effort()"
     },
     {
@@ -8065,8 +8065,8 @@
       "source_location": "L490",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging_test_reviewer_logs_reasoning_effort",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": ".test_reviewer_logs_reasoning_effort()"
     },
     {
@@ -8076,8 +8076,8 @@
       "source_location": "L510",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testreasoningeffortlogging_test_reasoning_effort_log_contains_agent_name",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": ".test_reasoning_effort_log_contains_agent_name()"
     },
     {
@@ -8120,8 +8120,8 @@
       "source_location": "L616",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentcostlogging_test_decider_logs_token_usage",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_decider_logs_token_usage()"
     },
     {
@@ -8131,8 +8131,8 @@
       "source_location": "L647",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentcostlogging_test_reviewer_logs_token_usage",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_reviewer_logs_token_usage()"
     },
     {
@@ -8186,8 +8186,8 @@
       "source_location": "L839",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_testagentcostlogging_test_return_type_unaffected",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": ".test_return_type_unaffected()"
     },
     {
@@ -8230,8 +8230,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_1",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "tests for api key and base_url passthrough in agents."
     },
     {
@@ -8241,8 +8241,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_10",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "synthesizeragent must pass api_key to openai constructor."
     },
     {
@@ -8252,8 +8252,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_23",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "decideragent must pass api_key to openai constructor."
     },
     {
@@ -8263,8 +8263,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_35",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "revieweragent must pass api_key to openai constructor."
     },
     {
@@ -8274,8 +8274,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_47",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "when no api_key given, openai() uses its own default."
     },
     {
@@ -8285,8 +8285,8 @@
       "source_location": "L62",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_62",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "synthesizeragent must pass base_url to openai constructor."
     },
     {
@@ -8296,8 +8296,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_73",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "decideragent must pass base_url to openai constructor."
     },
     {
@@ -8307,8 +8307,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_84",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "revieweragent must pass base_url to openai constructor."
     },
     {
@@ -8318,8 +8318,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_95",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "when no base_url given, openai() uses its own default."
     },
     {
@@ -8329,8 +8329,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_109",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "when a pre-built client is provided, base_url must be ignored."
     },
     {
@@ -8340,8 +8340,8 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_120",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 107,
+      "community_name": "TestListRunsIntegration",
       "norm_label": "synthesizeragent must pass both api_key and base_url when provided."
     },
     {
@@ -8351,8 +8351,8 @@
       "source_location": "L134",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_134",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": "synthesizeragent must accept reasoning_effort param."
     },
     {
@@ -8362,8 +8362,8 @@
       "source_location": "L147",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_147",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": "when not specified, reasoning_effort defaults to none."
     },
     {
@@ -8373,8 +8373,8 @@
       "source_location": "L160",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_160",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": "decideragent must accept reasoning_effort param."
     },
     {
@@ -8384,8 +8384,8 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_173",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 118,
+      "community_name": "test_cache_path_mtf_uses_d1_date",
       "norm_label": "revieweragent must accept reasoning_effort param."
     },
     {
@@ -8395,8 +8395,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_187",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "reasoning_effort is a create()-level kwarg, not an openai() constructor arg."
     },
     {
@@ -8406,8 +8406,8 @@
       "source_location": "L190",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_190",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "when reasoning_effort is set, it must appear in client.create() kwargs."
     },
     {
@@ -8417,8 +8417,8 @@
       "source_location": "L216",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_216",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "when reasoning_effort is none, the key must be absent from create() kwargs."
     },
     {
@@ -8428,8 +8428,8 @@
       "source_location": "L232",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_232",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "when reasoning_effort is explicitly none, key absent from create() kwargs."
     },
     {
@@ -8439,8 +8439,8 @@
       "source_location": "L248",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_248",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "decideragent passes reasoning_effort to create()."
     },
     {
@@ -8450,8 +8450,8 @@
       "source_location": "L260",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_260",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 87,
+      "community_name": "test_result_pipeline_writes_json",
       "norm_label": "revieweragent passes reasoning_effort to create()."
     },
     {
@@ -8461,8 +8461,8 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_273",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "empty string \u2192 none conversion in main.py (same pattern as api_key/base_url)."
     },
     {
@@ -8472,8 +8472,8 @@
       "source_location": "L276",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_276",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "agent must accept none reasoning_effort without error."
     },
     {
@@ -8483,8 +8483,8 @@
       "source_location": "L289",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_289",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 119,
+      "community_name": "TestParseUsageChatCompletions",
       "norm_label": "agent must accept empty string reasoning_effort (though main.py converts it)."
     },
     {
@@ -8494,8 +8494,8 @@
       "source_location": "L303",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_303",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "end-to-end: reasoning_effort flows from constructor \u2192 create() kwargs."
     },
     {
@@ -8505,8 +8505,8 @@
       "source_location": "L306",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_306",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "synthesize() must include reasoning_effort in create_with_completion kwargs when"
     },
     {
@@ -8516,8 +8516,8 @@
       "source_location": "L330",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_330",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "must not include reasoning_effort in create_with_completion kwargs when none."
     },
     {
@@ -8527,8 +8527,8 @@
       "source_location": "L354",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_354",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "decide() must include reasoning_effort in create_with_completion() kwargs when s"
     },
     {
@@ -8538,8 +8538,8 @@
       "source_location": "L378",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_378",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "review() must include reasoning_effort in create_with_completion() kwargs when s"
     },
     {
@@ -8549,8 +8549,8 @@
       "source_location": "L402",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_402",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 92,
+      "community_name": "test_runner.py",
       "norm_label": "pre-built client: reasoning_effort still flows to create_with_completion()."
     },
     {
@@ -8560,8 +8560,8 @@
       "source_location": "L428",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_428",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "tests for reasoning_effort logging in agent __init__ methods."
     },
     {
@@ -8571,8 +8571,8 @@
       "source_location": "L431",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_431",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "synthesizeragent must log reasoning_effort at init."
     },
     {
@@ -8582,8 +8582,8 @@
       "source_location": "L451",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_451",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "synthesizeragent must log reasoning_effort even when none."
     },
     {
@@ -8593,8 +8593,8 @@
       "source_location": "L471",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_471",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "decideragent must log reasoning_effort at init."
     },
     {
@@ -8604,8 +8604,8 @@
       "source_location": "L491",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_491",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "revieweragent must log reasoning_effort at init."
     },
     {
@@ -8615,8 +8615,8 @@
       "source_location": "L511",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_511",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 106,
+      "community_name": "TestListRunsPruning",
       "norm_label": "log message must include the agent class name."
     },
     {
@@ -8659,8 +8659,8 @@
       "source_location": "L617",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_617",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "decideragent must log token usage after decide()."
     },
     {
@@ -8670,8 +8670,8 @@
       "source_location": "L648",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_648",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "revieweragent must log token usage after review()."
     },
     {
@@ -8725,8 +8725,8 @@
       "source_location": "L840",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_agents_api_key_rationale_840",
-      "community": 22,
-      "community_name": "tests/__init__.py",
+      "community": 23,
+      "community_name": "tests/orchestrator/__init__.py",
       "norm_label": "agent public methods must still return correct model types."
     },
     {
@@ -9066,8 +9066,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_usage",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "._usage()"
     },
     {
@@ -9088,8 +9088,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_returns_cost",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_returns_cost()"
     },
     {
@@ -9099,8 +9099,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_updates_total",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_updates_total()"
     },
     {
@@ -9110,8 +9110,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_increments_call_count",
-      "community": 128,
-      "community_name": "test_should_run_d1_without_cache",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_increments_call_count()"
     },
     {
@@ -9121,8 +9121,8 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_reset_zeroes_state",
-      "community": 129,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_reset_zeroes_state()"
     },
     {
@@ -9132,8 +9132,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_unknown_model_preserves_tokens_and_returns_zero_cost",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_unknown_model_preserves_tokens_and_returns_zero_cost()"
     },
     {
@@ -9143,8 +9143,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_missing_cached_input_price",
-      "community": 132,
-      "community_name": "test_cache_path_h4_hour_04_is_zero_padded",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_missing_cached_input_price()"
     },
     {
@@ -9154,8 +9154,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_missing_input_price",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_missing_input_price()"
     },
     {
@@ -9165,8 +9165,8 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_zero_tokens_zero_cost",
-      "community": 135,
-      "community_name": ".test_zero_tokens_zero_cost",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_zero_tokens_zero_cost()"
     },
     {
@@ -9176,8 +9176,8 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_empty_pricing_table",
-      "community": 136,
-      "community_name": ".test_empty_pricing_table",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_empty_pricing_table()"
     },
     {
@@ -9187,8 +9187,8 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_multiple_calls_accumulate",
-      "community": 138,
-      "community_name": ".test_multiple_calls_accumulate",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_multiple_calls_accumulate()"
     },
     {
@@ -9198,8 +9198,8 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_missing_output_price",
-      "community": 139,
-      "community_name": ".test_missing_output_price",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_missing_output_price()"
     },
     {
@@ -9209,8 +9209,8 @@
       "source_location": "L230",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_cost_limit_exceeded_is_exception",
-      "community": 9,
-      "community_name": "ForexFactoryCalendar",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": ".test_cost_limit_exceeded_is_exception()"
     },
     {
@@ -9231,8 +9231,8 @@
       "source_location": "L248",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_raises_when_exceeds_limit",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_raises_when_exceeds_limit()"
     },
     {
@@ -9242,8 +9242,8 @@
       "source_location": "L265",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_does_not_raise_when_equal_to_limit",
-      "community": 140,
-      "community_name": ".test_record_call_does_not_raise_when_equal_to_limit",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_does_not_raise_when_equal_to_limit()"
     },
     {
@@ -9253,8 +9253,8 @@
       "source_location": "L278",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_does_not_raise_when_below_limit",
-      "community": 141,
-      "community_name": ".test_record_call_does_not_raise_when_below_limit",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_does_not_raise_when_below_limit()"
     },
     {
@@ -9264,8 +9264,8 @@
       "source_location": "L288",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_zero_limit_disables_enforcement",
-      "community": 142,
-      "community_name": ".test_zero_limit_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_zero_limit_disables_enforcement()"
     },
     {
@@ -9275,8 +9275,8 @@
       "source_location": "L299",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_negative_limit_disables_enforcement",
-      "community": 143,
-      "community_name": ".test_negative_limit_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_negative_limit_disables_enforcement()"
     },
     {
@@ -9286,8 +9286,8 @@
       "source_location": "L310",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_no_limit_set_does_not_raise",
-      "community": 144,
-      "community_name": ".test_no_limit_set_does_not_raise",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_no_limit_set_does_not_raise()"
     },
     {
@@ -9297,8 +9297,8 @@
       "source_location": "L321",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_set_limit_does_not_check_existing_cost",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_set_limit_does_not_check_existing_cost()"
     },
     {
@@ -9308,8 +9308,8 @@
       "source_location": "L338",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_cost_limit_exceeded_message",
-      "community": 9,
-      "community_name": "ForexFactoryCalendar",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": ".test_cost_limit_exceeded_message()"
     },
     {
@@ -9330,8 +9330,8 @@
       "source_location": "L365",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_raises_with_symbol",
-      "community": 119,
-      "community_name": "TestParseUsageChatCompletions",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_raises_with_symbol()"
     },
     {
@@ -9341,8 +9341,8 @@
       "source_location": "L380",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_record_call_raises_without_symbol",
-      "community": 122,
-      "community_name": "test_d1_candle_period_after_close",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_record_call_raises_without_symbol()"
     },
     {
@@ -9352,8 +9352,8 @@
       "source_location": "L394",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_set_limit_none_disables_enforcement",
-      "community": 145,
-      "community_name": ".test_set_limit_none_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_set_limit_none_disables_enforcement()"
     },
     {
@@ -9374,8 +9374,8 @@
       "source_location": "L417",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_cached_tokens_cost",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_cached_tokens_cost()"
     },
     {
@@ -9385,8 +9385,8 @@
       "source_location": "L438",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_testcosttracker_test_default_no_pricing",
-      "community": 127,
-      "community_name": "testget_cache_date_d1_after_close",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": ".test_default_no_pricing()"
     },
     {
@@ -9418,8 +9418,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_36",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "build an llmusage with computed uncached and total."
     },
     {
@@ -9440,8 +9440,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_60",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call returns the per-call cost in llmusage.total_cost."
     },
     {
@@ -9451,8 +9451,8 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_74",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call accumulates total_cost across calls."
     },
     {
@@ -9462,8 +9462,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_84",
-      "community": 128,
-      "community_name": "test_should_run_d1_without_cache",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call increments call_count."
     },
     {
@@ -9473,8 +9473,8 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_96",
-      "community": 129,
-      "community_name": "test_should_run_d1_after_close_with_cache",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "after reset(), total_cost=0 and call_count=0."
     },
     {
@@ -9484,8 +9484,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_107",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "unknown model logs warning, preserves token fields, cost fields zero."
     },
     {
@@ -9495,8 +9495,8 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_136",
-      "community": 132,
-      "community_name": "test_cache_path_h4_hour_04_is_zero_padded",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "missing cached_input_per_million \u2192 cached_input_cost = 0.0."
     },
     {
@@ -9506,8 +9506,8 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_152",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "missing input_per_million \u2192 input_cost = 0.0."
     },
     {
@@ -9517,8 +9517,8 @@
       "source_location": "L170",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_170",
-      "community": 135,
-      "community_name": ".test_zero_tokens_zero_cost",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "zero tokens result in zero cost but call is counted."
     },
     {
@@ -9528,8 +9528,8 @@
       "source_location": "L182",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_182",
-      "community": 136,
-      "community_name": ".test_empty_pricing_table",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "costtracker(pricing={}) \u2014 record_call warns and returns zero costs."
     },
     {
@@ -9539,8 +9539,8 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_194",
-      "community": 138,
-      "community_name": ".test_multiple_calls_accumulate",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "many calls accumulate total_cost correctly."
     },
     {
@@ -9550,8 +9550,8 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_208",
-      "community": 139,
-      "community_name": ".test_missing_output_price",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "missing output_per_million \u2192 output_cost = 0.0."
     },
     {
@@ -9561,8 +9561,8 @@
       "source_location": "L231",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_231",
-      "community": 9,
-      "community_name": "ForexFactoryCalendar",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "costlimitexceeded is a subclass of exception."
     },
     {
@@ -9583,8 +9583,8 @@
       "source_location": "L249",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_249",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call raises costlimitexceeded when total_cost > limit."
     },
     {
@@ -9594,8 +9594,8 @@
       "source_location": "L266",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_266",
-      "community": 140,
-      "community_name": ".test_record_call_does_not_raise_when_equal_to_limit",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "total_cost == limit does not raise (strict > comparison)."
     },
     {
@@ -9605,8 +9605,8 @@
       "source_location": "L279",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_279",
-      "community": 141,
-      "community_name": ".test_record_call_does_not_raise_when_below_limit",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "total_cost < limit does not raise."
     },
     {
@@ -9616,8 +9616,8 @@
       "source_location": "L289",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_289",
-      "community": 142,
-      "community_name": ".test_zero_limit_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set_limit(0) disables enforcement."
     },
     {
@@ -9627,8 +9627,8 @@
       "source_location": "L300",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_300",
-      "community": 143,
-      "community_name": ".test_negative_limit_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set_limit(-1) disables enforcement."
     },
     {
@@ -9638,8 +9638,8 @@
       "source_location": "L311",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_311",
-      "community": 144,
-      "community_name": ".test_no_limit_set_does_not_raise",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "default costtracker without set_limit() never raises."
     },
     {
@@ -9649,8 +9649,8 @@
       "source_location": "L322",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_322",
-      "community": 19,
-      "community_name": "tests/calendar/__init__.py",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set_limit() after calls already recorded does not retroactively raise."
     },
     {
@@ -9660,8 +9660,8 @@
       "source_location": "L339",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_339",
-      "community": 9,
-      "community_name": "ForexFactoryCalendar",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "exception string representation includes limit, total_cost, and symbol."
     },
     {
@@ -9682,8 +9682,8 @@
       "source_location": "L366",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_366",
-      "community": 119,
-      "community_name": "TestParseUsageChatCompletions",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call raises costlimitexceeded with symbol in message."
     },
     {
@@ -9693,8 +9693,8 @@
       "source_location": "L381",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_381",
-      "community": 122,
-      "community_name": "test_d1_candle_period_after_close",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "record_call raises without symbol when not set."
     },
     {
@@ -9704,8 +9704,8 @@
       "source_location": "L395",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_395",
-      "community": 145,
-      "community_name": ".test_set_limit_none_disables_enforcement",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "set_limit(none) disables enforcement."
     },
     {
@@ -9726,8 +9726,8 @@
       "source_location": "L418",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_418",
-      "community": 58,
-      "community_name": "test_h4_candle_period_at_boundary",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "cached input tokens are priced at cached_input_per_million."
     },
     {
@@ -9737,8 +9737,8 @@
       "source_location": "L439",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_cost_tracker_rationale_439",
-      "community": 127,
-      "community_name": "testget_cache_date_d1_after_close",
+      "community": 9,
+      "community_name": "ForexFactoryCalendar",
       "norm_label": "costtracker() with no args uses empty pricing \u2192 zero costs."
     },
     {
@@ -10991,8 +10991,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage",
-      "community": 96,
-      "community_name": "test_save_h4_creates_hour_suffixed_file",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "test_usage.py"
     },
     {
@@ -11211,8 +11211,8 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "testparseusageresponsesapi"
     },
     {
@@ -11222,8 +11222,8 @@
       "source_location": "L116",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi_test_complete_usage",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".test_complete_usage()"
     },
     {
@@ -11233,8 +11233,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi_test_with_cached_tokens",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".test_with_cached_tokens()"
     },
     {
@@ -11244,8 +11244,8 @@
       "source_location": "L149",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi_test_without_cached_token_details",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".test_without_cached_token_details()"
     },
     {
@@ -11255,8 +11255,8 @@
       "source_location": "L162",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi_test_without_reasoning_tokens",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".test_without_reasoning_tokens()"
     },
     {
@@ -11288,8 +11288,8 @@
       "source_location": "L208",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_testparseusageresponsesapi_test_cached_greater_than_input_clamps",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": ".test_cached_greater_than_input_clamps()"
     },
     {
@@ -11530,8 +11530,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_rationale_1",
-      "community": 96,
-      "community_name": "test_save_h4_creates_hour_suffixed_file",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "tests for usage.py \u2014 llmusage, safe_non_negative_int, and parse_usage.  no exter"
     },
     {
@@ -11541,8 +11541,8 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_rationale_114",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "primary field names: input_tokens / output_tokens."
     },
     {
@@ -11574,8 +11574,8 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "analyzer_tests_decision_test_usage_rationale_209",
-      "community": 32,
-      "community_name": "setup_logging",
+      "community": 86,
+      "community_name": "TestAgentApiKey",
       "norm_label": "cached_input_tokens > input_tokens \u2192 clamped to input, uncached = 0."
     },
     {
@@ -11684,8 +11684,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_test_result_pipeline_writes_json",
-      "community": 46,
-      "community_name": "BiasLevel",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "test_result_pipeline_writes_json()"
     },
     {
@@ -11739,8 +11739,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "analyzer_tests_integration_test_result_pipeline_rationale_19",
-      "community": 46,
-      "community_name": "BiasLevel",
+      "community": 27,
+      "community_name": "TestGetCandlesBrokerNow",
       "norm_label": "full pipeline simulation writes valid json result."
     },
     {
@@ -12751,8 +12751,8 @@
       "source_location": "L1618",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_make_tracking_side_effect",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "_make_tracking_side_effect()"
     },
     {
@@ -12762,8 +12762,8 @@
       "source_location": "L1639",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_testcosttrackerwiring",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "testcosttrackerwiring"
     },
     {
@@ -12773,8 +12773,8 @@
       "source_location": "L1651",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_testcosttrackerwiring_test_graph_run_logs_total_cost",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": ".test_graph_run_logs_total_cost()"
     },
     {
@@ -12784,8 +12784,8 @@
       "source_location": "L1719",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_testcosttrackerwiring_test_main_wires_cost_tracker",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": ".test_main_wires_cost_tracker()"
     },
     {
@@ -12795,8 +12795,8 @@
       "source_location": "L1809",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_test_summarize_timeframe_logs_warning_on_non_dict",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "test_summarize_timeframe_logs_warning_on_non_dict()"
     },
     {
@@ -13158,8 +13158,8 @@
       "source_location": "L1619",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1619",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "create a side effect that records an llm call on the shared costtracker.      th"
     },
     {
@@ -13169,8 +13169,8 @@
       "source_location": "L1640",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1640",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "tests for costtracker wiring in tradinggraph.run().      these tests verify that"
     },
     {
@@ -13180,8 +13180,8 @@
       "source_location": "L1660",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1660",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "run tradinggraph with mocked agents that have a shared costtracker,         asse"
     },
     {
@@ -13191,8 +13191,8 @@
       "source_location": "L1727",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1727",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 114,
+      "community_name": "TestFatalError",
       "norm_label": "verify that a costtracker instance can be shared across all 3 agents         and"
     },
     {
@@ -13202,8 +13202,8 @@
       "source_location": "L1810",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_graph_rationale_1810",
-      "community": 3,
-      "community_name": "AgentState",
+      "community": 58,
+      "community_name": "test_h4_candle_period_at_boundary",
       "norm_label": "_summarize_timeframe should log a warning when nested fields     (events, levels"
     },
     {
@@ -13356,8 +13356,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "analyzer_tests_orchestrator_test_synthesizer_cache_mock_synthesizer",
-      "community": 8,
-      "community_name": "TestCostTracking",
+      "community": 13,
+      "community_name": "trading-ai-agent",
       "norm_label": "mock_synthesizer()"
     },
     {
@@ -14126,8 +14126,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "test_ohlc_cache.py"
     },
     {
@@ -14137,8 +14137,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "testohlccachepath"
     },
     {
@@ -14148,8 +14148,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_d1",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_path_format_d1()"
     },
     {
@@ -14159,8 +14159,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_h4",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_path_format_h4()"
     },
     {
@@ -14170,8 +14170,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_path_format_h1",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_path_format_h1()"
     },
     {
@@ -14181,8 +14181,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_testohlccachepath_test_directory_structure",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": ".test_directory_structure()"
     },
     {
@@ -14302,8 +14302,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_1",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "tests for ohlc bar cache."
     },
     {
@@ -14313,8 +14313,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_ohlc_cache_rationale_31",
-      "community": 23,
-      "community_name": "tests/orchestrator/__init__.py",
+      "community": 81,
+      "community_name": ".write",
       "norm_label": "full path follows analysis/yyyy/mm/dd/symbol/ pattern."
     },
     {
@@ -14610,8 +14610,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "test_result_models.py"
     },
     {
@@ -14621,8 +14621,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "testohlcbar"
     },
     {
@@ -14632,8 +14632,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar_test_create",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_create()"
     },
     {
@@ -14643,8 +14643,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcbar_test_float_coercion",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_float_coercion()"
     },
     {
@@ -14654,8 +14654,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "testohlcdata"
     },
     {
@@ -14665,8 +14665,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata_test_default_empty_lists",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_default_empty_lists()"
     },
     {
@@ -14676,8 +14676,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testohlcdata_test_with_bars",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_with_bars()"
     },
     {
@@ -14687,8 +14687,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "testsltpoverlay"
     },
     {
@@ -14698,8 +14698,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay_test_default_nulls",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_default_nulls()"
     },
     {
@@ -14709,8 +14709,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testsltpoverlay_test_with_values",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_with_values()"
     },
     {
@@ -14720,8 +14720,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "testanalysisresult"
     },
     {
@@ -14731,8 +14731,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_version_default",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_version_default()"
     },
     {
@@ -14742,8 +14742,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_market_context",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_with_market_context()"
     },
     {
@@ -14753,8 +14753,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_decision",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_with_decision()"
     },
     {
@@ -14764,8 +14764,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_with_review",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_with_review()"
     },
     {
@@ -14775,8 +14775,8 @@
       "source_location": "L112",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_serialization_roundtrip",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_serialization_roundtrip()"
     },
     {
@@ -14786,8 +14786,8 @@
       "source_location": "L130",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_entry_authorized_always_false",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_entry_authorized_always_false()"
     },
     {
@@ -14797,8 +14797,8 @@
       "source_location": "L158",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_status_enum_values",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_status_enum_values()"
     },
     {
@@ -14808,8 +14808,8 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_fatal_error_and_errors",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_fatal_error_and_errors()"
     },
     {
@@ -14819,8 +14819,8 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_ohlc_and_sl_tp_defaults",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_ohlc_and_sl_tp_defaults()"
     },
     {
@@ -14830,8 +14830,8 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_testanalysisresult_test_all_fields_populated",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": ".test_all_fields_populated()"
     },
     {
@@ -14841,8 +14841,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_1",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "tests for output result models."
     },
     {
@@ -14852,8 +14852,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_25",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "ints passed to float fields are promoted to float."
     },
     {
@@ -14863,8 +14863,8 @@
       "source_location": "L131",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_131",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "critical invariant: entry_authorized must always be false."
     },
     {
@@ -14874,8 +14874,8 @@
       "source_location": "L195",
       "_origin": "ast",
       "id": "analyzer_tests_output_test_result_models_rationale_195",
-      "community": 27,
-      "community_name": "TestGetCandlesBrokerNow",
+      "community": 34,
+      "community_name": "setup_logging",
       "norm_label": "full-featured analysisresult with all optional fields set."
     },
     {
@@ -15545,8 +15545,8 @@
       "source_location": "L583",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testmainintegrationcostlimit",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "testmainintegrationcostlimit"
     },
     {
@@ -15556,8 +15556,8 @@
       "source_location": "L602",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testmainintegrationcostlimit_test_cost_limit_stops_remaining_symbols",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": ".test_cost_limit_stops_remaining_symbols()"
     },
     {
@@ -15567,8 +15567,8 @@
       "source_location": "L663",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testmainintegrationcostlimit_test_cost_limit_on_first_symbol_aborts_immediately",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": ".test_cost_limit_on_first_symbol_aborts_immediately()"
     },
     {
@@ -15578,8 +15578,8 @@
       "source_location": "L716",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_testmainintegrationcostlimit_test_integration_cost_tracker_wired_through_pipeline",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": ".test_integration_cost_tracker_wired_through_pipeline()"
     },
     {
@@ -15875,8 +15875,8 @@
       "source_location": "L584",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_584",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "end-to-end cost limit abort integration tests (task-4).      these tests exercis"
     },
     {
@@ -15886,8 +15886,8 @@
       "source_location": "L613",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_613",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "3 symbols: first two succeed, third exceeds limit \u2192 sys.exit(1).          verifi"
     },
     {
@@ -15897,8 +15897,8 @@
       "source_location": "L674",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_674",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "first symbol exceeds limit \u2192 sys.exit(1), no subsequent symbols.          verifi"
     },
     {
@@ -15908,8 +15908,8 @@
       "source_location": "L726",
       "_origin": "ast",
       "id": "analyzer_tests_test_main_multi_symbol_rationale_726",
-      "community": 34,
-      "community_name": "setup_logging",
+      "community": 19,
+      "community_name": "tests/calendar/__init__.py",
       "norm_label": "real costtracker wired through _run_pipeline with a very low limit.          use"
     },
     {
@@ -16128,6 +16128,51 @@
       "community": 137,
       "community_name": "create-user.sh",
       "norm_label": "create-user.sh script"
+    },
+    {
+      "label": "start-dev.sh",
+      "file_type": "code",
+      "source_file": "scripts/start-dev.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "file"
+      },
+      "_origin": "ast",
+      "id": "scripts_start_dev",
+      "community": 123,
+      "community_name": "test_h4_candle_period",
+      "norm_label": "start-dev.sh"
+    },
+    {
+      "label": "start-dev.sh script",
+      "file_type": "code",
+      "source_file": "scripts/start-dev.sh",
+      "source_location": "L1",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_entrypoint"
+      },
+      "_origin": "ast",
+      "id": "scripts_start_dev_sh__entry",
+      "community": 123,
+      "community_name": "test_h4_candle_period",
+      "norm_label": "start-dev.sh script"
+    },
+    {
+      "label": "cleanup()",
+      "file_type": "code",
+      "source_file": "scripts/start-dev.sh",
+      "source_location": "L7",
+      "metadata": {
+        "language": "bash",
+        "kind": "bash_function"
+      },
+      "_origin": "ast",
+      "id": "scripts_start_dev_cleanup",
+      "community": 123,
+      "community_name": "test_h4_candle_period",
+      "norm_label": "cleanup()"
     },
     {
       "label": "trading-server",
@@ -20451,8 +20496,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_src_components_symbolsidebar",
-      "community": 6,
-      "community_name": "Trading AI Agent",
+      "community": 136,
+      "community_name": ".test_empty_pricing_table",
       "norm_label": "symbolsidebar.vue"
     },
     {
@@ -20462,8 +20507,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "ui_src_components_symbolsidebar_emit",
-      "community": 6,
-      "community_name": "Trading AI Agent",
+      "community": 136,
+      "community_name": ".test_empty_pricing_table",
       "norm_label": "emit"
     },
     {
@@ -20473,20 +20518,64 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "ui_src_components_timelinebar",
-      "community": 6,
-      "community_name": "Trading AI Agent",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
       "norm_label": "timelinebar.vue"
+    },
+    {
+      "label": "props",
+      "file_type": "code",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "ui_src_components_timelinebar_props",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
+      "norm_label": "props"
     },
     {
       "label": "emit",
       "file_type": "code",
       "source_file": "ui/src/components/TimelineBar.vue",
-      "source_location": "L7",
+      "source_location": "L13",
       "_origin": "ast",
       "id": "ui_src_components_timelinebar_emit",
-      "community": 6,
-      "community_name": "Trading AI Agent",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
       "norm_label": "emit"
+    },
+    {
+      "label": "localYear",
+      "file_type": "code",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "ui_src_components_timelinebar_localyear",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
+      "norm_label": "localyear"
+    },
+    {
+      "label": "localMonth",
+      "file_type": "code",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "ui_src_components_timelinebar_localmonth",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
+      "norm_label": "localmonth"
+    },
+    {
+      "label": "localDay",
+      "file_type": "code",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "ui_src_components_timelinebar_localday",
+      "community": 116,
+      "community_name": "TestGetRunIntegration",
+      "norm_label": "localday"
     },
     {
       "label": "useRun.ts",
@@ -20701,7 +20790,7 @@
       "label": "router",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L12",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_router",
       "community": 6,
@@ -20712,7 +20801,7 @@
       "label": "{ runs, loading: runsLoading, error: runsError, reload }",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L13",
+      "source_location": "L19",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_runs_loading_runsloading_error_runserror_reload",
       "community": 6,
@@ -20723,7 +20812,7 @@
       "label": "selectedSymbol",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L15",
+      "source_location": "L21",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_selectedsymbol",
       "community": 6,
@@ -20734,7 +20823,7 @@
       "label": "runNowLoading",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L16",
+      "source_location": "L22",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_runnowloading",
       "community": 6,
@@ -20745,7 +20834,7 @@
       "label": "runNowError",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L17",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_runnowerror",
       "community": 6,
@@ -20756,7 +20845,7 @@
       "label": "symbols",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L20",
+      "source_location": "L26",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_symbols",
       "community": 6,
@@ -20764,32 +20853,142 @@
       "norm_label": "symbols"
     },
     {
-      "label": "dates",
+      "label": "today",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L26",
+      "source_location": "L32",
       "_origin": "ast",
-      "id": "ui_src_views_dashboard_dates",
+      "id": "ui_src_views_dashboard_today",
       "community": 6,
       "community_name": "Trading AI Agent",
-      "norm_label": "dates"
+      "norm_label": "today"
     },
     {
-      "label": "selectedDate",
+      "label": "todayYear",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L31",
+      "source_location": "L33",
       "_origin": "ast",
-      "id": "ui_src_views_dashboard_selecteddate",
+      "id": "ui_src_views_dashboard_todayyear",
       "community": 6,
       "community_name": "Trading AI Agent",
-      "norm_label": "selecteddate"
+      "norm_label": "todayyear"
+    },
+    {
+      "label": "todayMonth",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_todaymonth",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "todaymonth"
+    },
+    {
+      "label": "todayDay",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_todayday",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "todayday"
+    },
+    {
+      "label": "selectedYear",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L37",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_selectedyear",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "selectedyear"
+    },
+    {
+      "label": "selectedMonth",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_selectedmonth",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "selectedmonth"
+    },
+    {
+      "label": "selectedDay",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_selectedday",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "selectedday"
+    },
+    {
+      "label": "dateSourceRuns",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_datesourceruns",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "datesourceruns"
+    },
+    {
+      "label": "allDates",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_alldates",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "alldates"
+    },
+    {
+      "label": "years",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L49",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_years",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "years"
+    },
+    {
+      "label": "months",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L50",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_months",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "months"
+    },
+    {
+      "label": "days",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_days",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "days"
     },
     {
       "label": "filteredRuns",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L34",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_filteredruns",
       "community": 6,
@@ -20800,7 +20999,7 @@
       "label": "handleRunNow()",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L45",
+      "source_location": "L63",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_handlerunnow",
       "community": 6,
@@ -20811,7 +21010,7 @@
       "label": "selectRun()",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L59",
+      "source_location": "L77",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_selectrun",
       "community": 6,
@@ -20822,7 +21021,7 @@
       "label": "selectSymbol()",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L64",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_selectsymbol",
       "community": 6,
@@ -20830,21 +21029,54 @@
       "norm_label": "selectsymbol()"
     },
     {
-      "label": "selectDate()",
+      "label": "selectYear()",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L68",
+      "source_location": "L86",
       "_origin": "ast",
-      "id": "ui_src_views_dashboard_selectdate",
+      "id": "ui_src_views_dashboard_selectyear",
       "community": 6,
       "community_name": "Trading AI Agent",
-      "norm_label": "selectdate()"
+      "norm_label": "selectyear()"
+    },
+    {
+      "label": "selectMonth()",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L87",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_selectmonth",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "selectmonth()"
+    },
+    {
+      "label": "selectDay()",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L88",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_selectday",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "selectday()"
+    },
+    {
+      "label": "clampDateSelection()",
+      "file_type": "code",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L91",
+      "_origin": "ast",
+      "id": "ui_src_views_dashboard_clampdateselection",
+      "community": 6,
+      "community_name": "Trading AI Agent",
+      "norm_label": "clampdateselection()"
     },
     {
       "label": "runCountBySymbol",
       "file_type": "code",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L72",
+      "source_location": "L142",
       "_origin": "ast",
       "id": "ui_src_views_dashboard_runcountbysymbol",
       "community": 6,
@@ -21438,7 +21670,7 @@
       "label": "Setup",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L43",
+      "source_location": "L44",
       "_origin": "ast",
       "id": "agents_setup",
       "community": 82,
@@ -21449,7 +21681,7 @@
       "label": "Starting the container",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "agents_starting_the_container",
       "community": 82,
@@ -21460,7 +21692,7 @@
       "label": "Stopping",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L61",
+      "source_location": "L62",
       "_origin": "ast",
       "id": "agents_stopping",
       "community": 82,
@@ -21471,7 +21703,7 @@
       "label": "Quick commands (run inside container)",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L67",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "agents_quick_commands_run_inside_container",
       "community": 82,
@@ -21482,7 +21714,7 @@
       "label": "Running from Docker (host \u2192 container)",
       "file_type": "document",
       "source_file": "AGENTS.md",
-      "source_location": "L86",
+      "source_location": "L90",
       "_origin": "ast",
       "id": "agents_running_from_docker_host_container",
       "community": 82,
@@ -57394,6 +57626,28 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "defines",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/start-dev.sh",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "scripts_start_dev",
+      "target": "scripts_start_dev_cleanup",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/start-dev.sh",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "scripts_start_dev",
+      "target": "scripts_start_dev_sh__entry",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -63896,7 +64150,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L7",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -63919,7 +64173,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L8",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -63930,7 +64184,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/components/TimelineBar.vue",
-      "source_location": "L7",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_components_timelinebar",
@@ -63938,11 +64192,55 @@
       "confidence_score": 1.0
     },
     {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_components_timelinebar",
+      "target": "ui_src_components_timelinebar_localday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_components_timelinebar",
+      "target": "ui_src_components_timelinebar_localmonth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_components_timelinebar",
+      "target": "ui_src_components_timelinebar_localyear",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/components/TimelineBar.vue",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_components_timelinebar",
+      "target": "ui_src_components_timelinebar_props",
+      "confidence_score": 1.0
+    },
+    {
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L9",
+      "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64241,7 +64539,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L10",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64253,7 +64551,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L10",
+      "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64264,18 +64562,51 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L26",
+      "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
-      "target": "ui_src_views_dashboard_dates",
+      "target": "ui_src_views_dashboard_alldates",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L34",
+      "source_location": "L91",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_clampdateselection",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_datesourceruns",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_days",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64286,7 +64617,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L45",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64297,7 +64628,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L12",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_months",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64308,7 +64650,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L72",
+      "source_location": "L142",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64319,7 +64661,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L17",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64330,7 +64672,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L16",
+      "source_location": "L22",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64341,7 +64683,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L13",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64352,29 +64694,40 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L68",
+      "source_location": "L88",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
-      "target": "ui_src_views_dashboard_selectdate",
+      "target": "ui_src_views_dashboard_selectday",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L31",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
-      "target": "ui_src_views_dashboard_selecteddate",
+      "target": "ui_src_views_dashboard_selectedday",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L15",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_selectedmonth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64385,7 +64738,29 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L59",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_selectedyear",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L87",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_selectmonth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64396,7 +64771,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L64",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
@@ -64407,11 +64782,77 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ui/src/views/Dashboard.vue",
-      "source_location": "L20",
+      "source_location": "L86",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_selectyear",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast",
       "source": "ui_src_views_dashboard",
       "target": "ui_src_views_dashboard_symbols",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_today",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_todayday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_todaymonth",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_todayyear",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ui/src/views/Dashboard.vue",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "ui_src_views_dashboard",
+      "target": "ui_src_views_dashboard_years",
       "confidence_score": 1.0
     },
     {
@@ -64903,7 +65344,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L45",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents",
@@ -65002,7 +65443,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L67",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents_development_environment_docker",
@@ -65013,7 +65454,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L86",
+      "source_location": "L90",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents_development_environment_docker",
@@ -65024,7 +65465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L43",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents_development_environment_docker",
@@ -65035,7 +65476,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents_development_environment_docker",
@@ -65046,7 +65487,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "AGENTS.md",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast",
       "source": "agents_development_environment_docker",
@@ -65638,5 +66079,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "7118c16de0e0814acd9172a04bebfb27aa95f5f3"
+  "built_at_commit": "92fa21e4dcde04f5703bc16fe23ef43eec88b72a"
 }

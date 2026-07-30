@@ -16,15 +16,28 @@ COPY scripts/create-user.sh /tmp/
 RUN USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} /tmp/create-user.sh && \
     rm /tmp/create-user.sh
 
-# Switch to non-root user for everything below
-USER app
+# Copy and fix permissions for the startup script (while still root)
+COPY scripts/start-dev.sh /app/scripts/start-dev.sh
+RUN chmod +x /app/scripts/start-dev.sh
 
-# Create virtual environment and auto-activate on shell login
-RUN python3 -m venv /app/.venv && \
-    echo "source /app/.venv/bin/activate" >> /home/app/.bashrc
-
-# Make venv binaries available in PATH (so python/pip resolve to venv)
+# Create virtual environment and install Python dependencies (as root,
+# because pip install -e writes egg-info into the source directory).
+RUN python3 -m venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Container stays alive — you run commands via docker exec
-CMD ["sleep", "infinity"]
+COPY server/pyproject.toml /app/server/pyproject.toml
+COPY analyzer/pyproject.toml /app/analyzer/pyproject.toml
+RUN pip install -e /app/server -e /app/analyzer
+
+# Install UI frontend dependencies (as root)
+COPY ui/package.json ui/package-lock.json* /app/ui/
+RUN cd /app/ui && npm ci
+
+# Make venv owned by app user so it can be activated at runtime
+RUN chown -R app:app /app/.venv
+
+# Switch to non-root user for runtime
+USER app
+
+# Launch both FastAPI (reload) and Vite dev server (HMR) on startup
+CMD ["/app/scripts/start-dev.sh"]

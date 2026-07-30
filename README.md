@@ -375,7 +375,6 @@ result = graph.run("EURUSD")
 ├── README.md
 ├── docker-compose.devel.yml                 # Development Compose
 ├── docker-compose.prod.yml                  # Production Compose
-├── rules.json                               # Bias calculation rules
 │
 ├── analyzer/                                # Python analysis engine
 │   ├── main.py                              # CLI entry point

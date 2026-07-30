@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "ui/src/components/TimelineBar.vue": {
-    "mtime": 1785079284.04331,
-    "ast_hash": "5271d5cf12d24ddc49f5962cf6f84918",
+    "mtime": 1785397020.0415661,
+    "ast_hash": "d7bf1b7f14086b7c81b4d131281ca43e",
     "semantic_hash": ""
   },
   "ui/src/composables/useRun.ts": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "ui/src/views/Dashboard.vue": {
-    "mtime": 1785390591.9117198,
-    "ast_hash": "148e96e960dda4d27aadfb72eac88f2c",
+    "mtime": 1785397054.1283789,
+    "ast_hash": "b728be4bdfbacddddf472d93d1e983c5",
     "semantic_hash": ""
   },
   "ui/src/views/Detail.vue": {
@@ -460,8 +460,8 @@
     "semantic_hash": ""
   },
   "ui/vite.config.ts": {
-    "mtime": 1785390514.0938668,
-    "ast_hash": "b964cfbaa1239694d82ef0f0fb55b576",
+    "mtime": 1785398322.205902,
+    "ast_hash": "c31b935dcfc7101820d3a44637a46749",
     "semantic_hash": ""
   },
   ".pre-commit-config.yaml": {
@@ -470,8 +470,8 @@
     "semantic_hash": ""
   },
   "AGENTS.md": {
-    "mtime": 1785333821.701745,
-    "ast_hash": "1470122ab2dc6de8a62c21b7a717c6df",
+    "mtime": 1785398637.772439,
+    "ast_hash": "57edfd09873d0ddeb588679875de4d00",
     "semantic_hash": ""
   },
   "README.md": {
@@ -485,8 +485,8 @@
     "semantic_hash": ""
   },
   "docker-compose.devel.yml": {
-    "mtime": 1785327737.4710405,
-    "ast_hash": "1e4bb99499eb48391e64b57f71fa0718",
+    "mtime": 1785398313.682894,
+    "ast_hash": "be45c87c1b838da8b4e4225c347963d7",
     "semantic_hash": ""
   },
   "docker-compose.prod.yml": {
@@ -627,6 +627,11 @@
   "analyzer/tests/decision/test_usage.py": {
     "mtime": 1785356424.1193655,
     "ast_hash": "82cfc0cf418e78828ac3ba08480162eb",
+    "semantic_hash": ""
+  },
+  "scripts/start-dev.sh": {
+    "mtime": 1785398392.4428296,
+    "ast_hash": "2d02e36bdfab0d84fd1ea456e9ecf002",
     "semantic_hash": ""
   }
 }

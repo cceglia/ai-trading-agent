@@ -130,11 +130,7 @@
   "128": "test_should_run_d1_without_cache",
   "129": "test_should_run_d1_after_close_with_cache",
   "130": "test_should_run_h1_different_period",
-  "131": "test_save_h4_creates_hour_suffixed_file",
-  "132": "test_cache_path_h4_hour_04_is_zero_padded",
   "133": ".invalidate_cache",
-  "134": "test_cache_path_mtf_uses_d1_date",
-  "135": ".test_zero_tokens_zero_cost",
   "136": ".test_empty_pricing_table",
   "137": "create-user.sh"
 }

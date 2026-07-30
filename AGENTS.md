@@ -25,7 +25,6 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 - `analyzer/src/analysis/structure_analyzer.py` — Delegates to `market_structure_engine/` (16-module deterministic engine)
 - `analyzer/src/calendar/forexfactory.py` — ForexFactory scraper with 4h cache
 - `analyzer/src/decision/agents.py` — LLM agents using `instructor` for structured output
-- `rules.json` — Bias calculation rules and evidence hierarchy
 
 ## Critical invariants
 
@@ -38,7 +37,8 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 All commands below **must be run inside the developer Docker container**. The container runs as
 a non-root user matching your host UID/GID (set in `.env` as `UID`/`GID`). The container
 provides Ubuntu 26.04 with Node.js, Python 3, and a virtual environment at `/app/.venv`
-(auto-activated). Source code is mounted live from the host so changes take effect immediately.
+(auto-activated by the startup script). Source code is mounted live from the host so changes
+take effect immediately.
 
 ### Setup
 
@@ -51,7 +51,7 @@ first-time setup guide (build, start, install dependencies).
 # Build (first time or after dependency changes)
 docker compose -f docker-compose.devel.yml build
 
-# Start the container (daemonized)
+# Start the container — auto-launches FastAPI (reload) + Vite (HMR)
 docker compose -f docker-compose.devel.yml up -d
 
 # Open a shell inside the running container
@@ -73,26 +73,25 @@ cd analyzer && mypy src/ && ruff check src/ && pytest
 # Single test
 cd analyzer && pytest tests/decision/test_models.py -v
 
-# Server
+# Server tests
 cd server && python -m pytest
-cd server && python src/main.py          # runs uvicorn on :3000
 
-# UI
-cd ui && npm run dev                     # Vite on :5173 (proxies /api to :3000)
+# UI typecheck and build
 cd ui && npm run typecheck               # vue-tsc --noEmit
 cd ui && npm run build                   # Vite build → ui/dist/
 ```
 
+> **Note:** FastAPI and the Vite dev server **auto-start** when the container boots.
+> Access the dev UI at **http://localhost:5173**.
+> FastAPI runs internally on port 3000 — Vite proxies `/api/*` requests to it.
+> Editing `.py` files auto-reloads FastAPI; editing `.vue`/`.ts` files triggers Vite HMR.
+
 ### Running from Docker (host → container)
 
 ```bash
-# Start the API server
+# Start the API server (FastAPI auto-starts, this is for manual restart)
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/server && python -m src.main"
-
-# Start the UI dev server (needs npm install done first)
-docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/ui && npm run dev"
+  -c "pkill -f 'python -m src.main' 2>/dev/null; sleep 1; cd /app/server && python -m uvicorn src.main:app --host 0.0.0.0 --port 3000 --reload"
 
 # Run the analyzer CLI
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
@@ -124,4 +123,3 @@ docker compose -f docker-compose.devel.yml exec trading-agent bash \
 - Synthesizer caching is content-addressable: identical structure analysis + calendar events skip the LLM call.
 - Candle caching is disk-backed, keyed by `symbol/timeframe/candle_close_time`, with broker-local time alignment.
 - The `/data/` directory tree stores versioned JSON results (`<symbol>/<year>/<month>/<day>/result-<time>.json`).
-- `rules.json` at the project root is loaded by the analysis engine for bias calculation.
