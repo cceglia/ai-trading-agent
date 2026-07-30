@@ -92,6 +92,39 @@ class TestReasoningEffortSettings:
         assert Settings().openai_reasoning_effort == "high"
 
 
+class TestOpenAITemperatureSettings:
+    """Tests for the openai_temperature Settings field.
+
+    These tests verify that the field is properly defined, has the correct
+    default, and respects env-var overrides within the 0.0–2.0 range.
+    """
+
+    def test_openai_temperature_default_is_zero(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_temperature defaults to 0.0."""
+        monkeypatch.delenv("TRADING_OPENAI_TEMPERATURE", raising=False)
+        assert Settings().openai_temperature == 0.0
+
+    def test_openai_temperature_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        """TRADING_OPENAI_TEMPERATURE env var overrides the default."""
+        monkeypatch.setenv("TRADING_OPENAI_TEMPERATURE", "0.7")
+        assert Settings().openai_temperature == 0.7
+
+    def test_openai_temperature_zero(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_temperature = 0.0 is valid (lower bound)."""
+        monkeypatch.setenv("TRADING_OPENAI_TEMPERATURE", "0.0")
+        assert Settings().openai_temperature == 0.0
+
+    def test_openai_temperature_two(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_temperature = 2.0 is valid (upper bound)."""
+        monkeypatch.setenv("TRADING_OPENAI_TEMPERATURE", "2.0")
+        assert Settings().openai_temperature == 2.0
+
+    def test_openai_temperature_one(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_temperature = 1.0 is valid (mid-range)."""
+        monkeypatch.setenv("TRADING_OPENAI_TEMPERATURE", "1.0")
+        assert Settings().openai_temperature == 1.0
+
+
 class TestTerminalSettings:
     """Tests for the new terminal_server_url and terminal_api_key Settings fields.
 

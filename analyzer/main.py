@@ -221,6 +221,7 @@ def _create_agents(
         "base_url": base_url,
         "model": model,
         "reasoning_effort": reasoning_effort,
+        "default_temperature": settings.openai_temperature,
     }
 
     # Resolve model identity for logging and diagnostics.
@@ -255,6 +256,10 @@ def _create_agents(
         reviewer_kwargs["family_override"] = settings.reviewer_llm_model_family_override
     if settings.reviewer_llm_model_version_override:
         reviewer_kwargs["version_override"] = settings.reviewer_llm_model_version_override
+    # Reviewer temperature is always set explicitly as an independent setting.
+    # Unlike string-based overrides (which use "" to mean "inherit from primary"),
+    # temperature is always a meaningful float — defaulting to 0.0 for both.
+    reviewer_kwargs["default_temperature"] = settings.reviewer_llm_temperature
 
     reviewer_client = create_llm_client(provider=reviewer_provider, **reviewer_kwargs)
 

@@ -44,6 +44,13 @@ class Settings(BaseSettings):
         default="", description="OpenAI reasoning_effort (low/medium/high), empty = not set"
     )
 
+    openai_temperature: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=2.0,
+        description="Temperature for the primary LLM (synthesizer + decider)",
+    )
+
     openai_model_family_override: str | None = Field(
         default=None,
         description="Override the detected model family for the primary LLM",

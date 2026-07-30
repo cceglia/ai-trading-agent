@@ -99,6 +99,118 @@ class TestMainErrorDuplication:
         )
 
 
+class TestCreateAgentsTemperatureWiring:
+    """Tests that _create_agents wires temperature correctly to both LLM clients.
+
+    The primary client should receive settings.openai_temperature as
+    default_temperature. The reviewer client should always receive
+    settings.reviewer_llm_temperature as its own independent default_temperature
+    (even when it matches the primary — unlike string overrides that use ""
+    to mean "inherit from primary").
+    """
+
+    def test_primary_client_receives_openai_temperature(self) -> None:
+        """Primary client gets openai_temperature as default_temperature."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = MagicMock()
+        settings.openai_api_key = "test-key"
+        settings.openai_base_url = ""
+        settings.openai_model = "gpt-4o"
+        settings.openai_reasoning_effort = ""
+        settings.openai_temperature = 0.7
+        settings.primary_llm_provider = "openai"
+
+        settings.reviewer_llm_provider = "openai"
+        settings.reviewer_llm_model = ""
+        settings.reviewer_llm_api_key = ""
+        settings.reviewer_llm_base_url = ""
+        settings.reviewer_llm_reasoning_effort = ""
+        settings.reviewer_llm_model_family_override = ""
+        settings.reviewer_llm_model_version_override = ""
+        settings.reviewer_llm_temperature = 0.0
+
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        # Primary client kwargs: should include default_temperature=0.7
+        primary_call = mock_create.call_args_list[0]
+        assert primary_call.kwargs["default_temperature"] == 0.7, (
+            f"Expected default_temperature=0.7 for primary client, "
+            f"got {primary_call.kwargs.get('default_temperature')}"
+        )
+
+    def test_reviewer_client_receives_reviewer_temperature(self) -> None:
+        """Reviewer client gets reviewer_llm_temperature, independent of primary."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = MagicMock()
+        settings.openai_api_key = "test-key"
+        settings.openai_base_url = ""
+        settings.openai_model = "gpt-4o"
+        settings.openai_reasoning_effort = ""
+        settings.openai_temperature = 0.7  # different from reviewer
+        settings.primary_llm_provider = "openai"
+
+        settings.reviewer_llm_provider = "openai"
+        settings.reviewer_llm_model = ""
+        settings.reviewer_llm_api_key = ""
+        settings.reviewer_llm_base_url = ""
+        settings.reviewer_llm_reasoning_effort = ""
+        settings.reviewer_llm_model_family_override = ""
+        settings.reviewer_llm_model_version_override = ""
+        settings.reviewer_llm_temperature = 0.3  # different from primary
+
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        # Reviewer is the second call to create_llm_client
+        reviewer_call = mock_create.call_args_list[1]
+        assert reviewer_call.kwargs["default_temperature"] == 0.3, (
+            f"Expected default_temperature=0.3 for reviewer client, "
+            f"got {reviewer_call.kwargs.get('default_temperature')}"
+        )
+
+    def test_primary_and_reviewer_temperatures_are_independent(self) -> None:
+        """Changing reviewer temperature does NOT affect primary client."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = MagicMock()
+        settings.openai_api_key = "test-key"
+        settings.openai_base_url = ""
+        settings.openai_model = "gpt-4o"
+        settings.openai_reasoning_effort = ""
+        settings.openai_temperature = 0.0
+        settings.primary_llm_provider = "openai"
+
+        settings.reviewer_llm_provider = "openai"
+        settings.reviewer_llm_model = ""
+        settings.reviewer_llm_api_key = ""
+        settings.reviewer_llm_base_url = ""
+        settings.reviewer_llm_reasoning_effort = ""
+        settings.reviewer_llm_model_family_override = ""
+        settings.reviewer_llm_model_version_override = ""
+        settings.reviewer_llm_temperature = 0.9  # differs from primary
+
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        primary_call = mock_create.call_args_list[0]
+        reviewer_call = mock_create.call_args_list[1]
+
+        assert primary_call.kwargs["default_temperature"] == 0.0
+        assert reviewer_call.kwargs["default_temperature"] == 0.9
+
+
 class TestMainCostLogging:
     """main.py must not log 'Total LLM cost' — that's graph.run()'s job."""
 
