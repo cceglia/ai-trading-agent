@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "ui/src/components/TimelineBar.vue": {
-    "mtime": 1785397020.0415661,
-    "ast_hash": "d7bf1b7f14086b7c81b4d131281ca43e",
+    "mtime": 1785079284.04331,
+    "ast_hash": "5271d5cf12d24ddc49f5962cf6f84918",
     "semantic_hash": ""
   },
   "ui/src/composables/useRun.ts": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "ui/src/views/Dashboard.vue": {
-    "mtime": 1785397054.1283789,
-    "ast_hash": "b728be4bdfbacddddf472d93d1e983c5",
+    "mtime": 1785390591.9117198,
+    "ast_hash": "148e96e960dda4d27aadfb72eac88f2c",
     "semantic_hash": ""
   },
   "ui/src/views/Detail.vue": {

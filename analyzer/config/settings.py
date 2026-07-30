@@ -154,6 +154,30 @@ class Settings(BaseSettings):
         default=True, description="Enable synthesizer output caching"
     )
 
+    @property
+    def resolved_analysis_cache_dir(self) -> str:
+        """Resolve ``analysis_cache_dir`` to an absolute path.
+
+        Both the analyzer and server write/read from the same directory tree.
+        Relative paths are resolved against the **project root** (the parent
+        directory of ``analyzer/``) so that the default ``"data"`` produces
+        ``<project_root>/data`` regardless of which package is the working
+        directory.
+
+        .. code-block:: text
+
+            TRADING_ANALYSIS_CACHE_DIR=data   →  …/data
+            TRADING_ANALYSIS_CACHE_DIR=/abs   →  /abs  (unchanged)
+        """
+        from pathlib import Path
+
+        path = Path(self.analysis_cache_dir)
+        if path.is_absolute():
+            return str(path)
+        # Resolve relative to the project root (parent of analyzer/)
+        project_root = Path(__file__).resolve().parent.parent.parent
+        return str(project_root / path)
+
     model_config = {"env_prefix": "TRADING_", "env_file": ".env"}
 
 

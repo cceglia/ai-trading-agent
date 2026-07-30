@@ -55,7 +55,7 @@ def _cache_path(symbol: str, broker_now: datetime) -> Path:
     ``candle_cache.get_cache_date("H1", …)``.
     """
     settings = _get_settings()
-    base = Path(settings.analysis_cache_dir)
+    base = Path(settings.resolved_analysis_cache_dir)
     cache_date = _get_cache_date(broker_now)
     year, month, day = cache_date.split("-")
     h1_cache_date = get_cache_date("H1", broker_now)

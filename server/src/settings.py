@@ -60,24 +60,23 @@ class WebSettings(BaseSettings):
     def resolved_cache_dir(self) -> Path:
         """Resolve ``analysis_cache_dir`` to an absolute path.
 
-        The analyzer resolves its own ``analysis_cache_dir`` (a string from
-        ``config.settings.Settings``) relative to the current working directory,
-        which is the ``analyzer/`` package root.  To keep both packages writing
-        to the same directory tree, this property resolves relative paths
-        against ``<project_root>/analyzer/<path>`` rather than
-        ``<project_root>/server/<path>``.
+        Both the analyzer and server write/read from the same directory tree.
+        Relative paths are resolved against the **project root** (the parent
+        directory of both ``analyzer/`` and ``server/``) so that the default
+        ``"data"`` produces ``<project_root>/data`` regardless of which
+        package is the working directory.
 
         .. code-block:: text
 
-            TRADING_ANALYSIS_CACHE_DIR=data  →  …/analyzer/data
-            TRADING_ANALYSIS_CACHE_DIR=/abs  →  /abs  (unchanged)
+            TRADING_ANALYSIS_CACHE_DIR=data   →  …/data
+            TRADING_ANALYSIS_CACHE_DIR=/abs   →  /abs  (unchanged)
         """
         path = Path(self.analysis_cache_dir)
         if path.is_absolute():
             return path
         # Resolve relative to the project root (parent of server/)
         project_root = Path(__file__).resolve().parent.parent.parent
-        return project_root / "analyzer" / path
+        return project_root / path
 
     @classmethod
     def settings_customise_sources(

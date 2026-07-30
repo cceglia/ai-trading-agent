@@ -3,6 +3,78 @@ import pytest
 from config.settings import Settings
 
 
+class TestResolvedAnalysisCacheDir:
+    """Tests for the ``resolved_analysis_cache_dir`` property.
+
+    Both the analyzer and server write/read from the same directory tree.
+    Relative paths are resolved against the **project root** (the parent
+    directory of ``analyzer/``) so that the default ``"data"`` produces
+    ``<project_root>/data`` regardless of which package is the working
+    directory.
+    """
+
+    @staticmethod
+    def _project_root():
+        """Compute the project root from the test file location.
+
+        Mirror the same traversal the source uses:
+        ``analyzer/tests/config/test_settings.py → parent.parent.parent.parent → project root``.
+        """
+        from pathlib import Path
+
+        return Path(__file__).resolve().parent.parent.parent.parent
+
+    def test_default_resolves_to_project_root_data(self, monkeypatch: pytest.MonkeyPatch):
+        """Default ``analysis_cache_dir="data"`` resolves to ``<project_root>/data``."""
+        monkeypatch.delenv("TRADING_ANALYSIS_CACHE_DIR", raising=False)
+        settings = Settings()
+        expected = str(self._project_root() / "data")
+        assert settings.resolved_analysis_cache_dir == expected
+
+    def test_relative_path_resolves_from_project_root(self, monkeypatch: pytest.MonkeyPatch):
+        """A relative path resolves against the project root, not CWD."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "custom/cache")
+        settings = Settings()
+        expected = str(self._project_root() / "custom" / "cache")
+        assert settings.resolved_analysis_cache_dir == expected
+
+    def test_absolute_path_returned_unchanged(self, monkeypatch: pytest.MonkeyPatch):
+        """An absolute path is returned as-is."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "/tmp/test_cache")
+        settings = Settings()
+        assert settings.resolved_analysis_cache_dir == "/tmp/test_cache"
+
+    def test_absolute_path_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        """Setting ``TRADING_ANALYSIS_CACHE_DIR`` to an absolute value must
+        be returned as-is."""
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "/var/trade/cache")
+        settings = Settings()
+        assert settings.resolved_analysis_cache_dir == "/var/trade/cache"
+
+    def test_matches_server_default(self, monkeypatch: pytest.MonkeyPatch):
+        """Analyzer and server must resolve the same default to the same path."""
+        import importlib
+        import sys
+
+        monkeypatch.delenv("TRADING_ANALYSIS_CACHE_DIR", raising=False)
+        analyzer_path = Settings().resolved_analysis_cache_dir
+
+        # Import server settings from sibling package using importlib to avoid
+        # collision with the analyzer's own ``src`` package.
+        server_settings_path = str(self._project_root() / "server" / "src" / "settings.py")
+        spec = importlib.util.spec_from_file_location("server_src_settings", server_settings_path)
+        if spec is None or spec.loader is None:
+            pytest.skip("Could not load server settings module")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules["server_src_settings"] = mod
+        try:
+            spec.loader.exec_module(mod)
+            server_path = str(mod.WebSettings().resolved_cache_dir)
+            assert analyzer_path == server_path
+        finally:
+            sys.modules.pop("server_src_settings", None)
+
+
 class TestReasoningEffortSettings:
     """Tests for the new openai_reasoning_effort Settings field.
 
@@ -74,7 +146,7 @@ class TestModelPricingSettings:
         monkeypatch.setenv(
             "TRADING_MODEL_PRICING",
             '{"gpt-4o": {"input_per_million": 2.5, '
-            '"cached_input_per_million": 1.25, "output_per_million": 10.0}',
+            '"cached_input_per_million": 1.25, "output_per_million": 10.0}}',
         )
         settings = Settings()
         assert settings.model_pricing == {

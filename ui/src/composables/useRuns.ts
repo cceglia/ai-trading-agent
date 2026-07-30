@@ -1,5 +1,6 @@
 import { ref, onMounted } from "vue";
 import { fetchRuns } from "../lib/api";
+import { formatApiError } from "../lib/errors";
 import type { RunSummary } from "../types";
 
 export function useRuns() {
@@ -12,8 +13,8 @@ export function useRuns() {
     error.value = null;
     try {
       runs.value = await fetchRuns(params);
-    } catch (e: any) {
-      error.value = e?.message || "Failed to load runs";
+    } catch (e: unknown) {
+      error.value = formatApiError(e, "Failed to load runs");
     } finally {
       loading.value = false;
     }

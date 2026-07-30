@@ -35,7 +35,8 @@ def test_cache_path_d1_no_hour_suffix(monkeypatch):
     broker_now = datetime(2026, 7, 21, 14, 0)
     cache_date = get_cache_date("D1", broker_now)
     path = _cache_path("D1", "XAUUSD", cache_date)
-    assert path == f"data/{cache_date.strftime('%Y/%m/%d')}/XAUUSD/d1-analysis.json"
+    expected_suffix = f"{cache_date.strftime('%Y/%m/%d')}/XAUUSD/d1-analysis.json"
+    assert path.endswith(expected_suffix)
 
 
 def test_cache_path_h4_includes_closing_hour():

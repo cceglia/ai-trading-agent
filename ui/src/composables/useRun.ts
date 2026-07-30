@@ -1,5 +1,6 @@
 import { ref, watch } from "vue";
 import { fetchRunResult } from "../lib/api";
+import { formatApiError } from "../lib/errors";
 import type { FullResult } from "../types";
 
 export function useRun(
@@ -27,7 +28,7 @@ export function useRun(
     try {
       result.value = await fetchRunResult(s, y, m, d, f);
     } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : "Failed to load run result";
+      error.value = formatApiError(e, "Failed to load run result");
     } finally {
       loading.value = false;
     }

@@ -129,12 +129,17 @@
   "127": "testget_cache_date_d1_after_close",
   "128": "test_should_run_d1_without_cache",
   "129": "test_should_run_d1_after_close_with_cache",
-  "130": "test_should_run_h1_different_period",
-  "131": "test_save_h4_creates_hour_suffixed_file",
   "132": "test_cache_path_h4_hour_04_is_zero_padded",
   "133": ".invalidate_cache",
-  "134": "test_cache_path_mtf_uses_d1_date",
   "135": ".test_zero_tokens_zero_cost",
   "136": ".test_empty_pricing_table",
-  "137": "create-user.sh"
+  "137": "create-user.sh",
+  "138": ".test_multiple_calls_accumulate",
+  "139": ".test_missing_output_price",
+  "140": ".test_record_call_does_not_raise_when_equal_to_limit",
+  "141": ".test_record_call_does_not_raise_when_below_limit",
+  "142": ".test_zero_limit_disables_enforcement",
+  "143": ".test_negative_limit_disables_enforcement",
+  "144": ".test_no_limit_set_does_not_raise",
+  "145": ".test_set_limit_none_disables_enforcement"
 }

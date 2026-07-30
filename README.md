@@ -553,14 +553,39 @@ use `docker compose exec` to run commands.
 
 #### Running commands
 
+**Development** — run the API server and the Vite dev server in separate shells.
+The Vite dev server (port 5173) proxies `/api` requests to the API (port 3000)
+and provides hot-reload. No UI rebuild is needed during development.
+
+```bash
+# Shell 1 — start the API server (port 3000)
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && python -m src.main"
+
+# Shell 2 — start the Vite dev server (port 5173, proxies /api → :3000)
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/ui && npm run dev"
+```
+
+**Testing the production build locally** — build the UI first, then start the
+server. The FastAPI server serves the built files from `ui/dist/` when they exist.
+
+```bash
+# 1. Build the UI (outputs to ui/dist/)
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/ui && npm run build"
+
+# 2. Start the server — now serves both API and UI on port 3000
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/server && python -m src.main"
+```
+
+**Other commands**
+
 ```bash
 # Run the analyzer
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
   -c "cd /app/analyzer && python main.py XAUUSD"
-
-# Start the API server (port 3000) — use -m flag for correct package resolution
-docker compose -f docker-compose.devel.yml exec trading-agent bash \
-  -c "cd /app/server && python -m src.main"
 
 # Run analyzer tests
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
@@ -569,6 +594,10 @@ docker compose -f docker-compose.devel.yml exec trading-agent bash \
 # Run server tests
 docker compose -f docker-compose.devel.yml exec trading-agent bash \
   -c "cd /app/server && python -m pytest"
+
+# Run UI tests
+docker compose -f docker-compose.devel.yml exec trading-agent bash \
+  -c "cd /app/ui && npm run test"
 
 # Open a shell inside the container
 docker compose -f docker-compose.devel.yml exec trading-agent bash
@@ -653,35 +682,6 @@ The test suite contains **356 tests** covering:
 - **Main**: CLI entry point argument handling
 
 All external dependencies (MT5 terminal, LLM API, ForexFactory) are mocked in tests.
-
-## Code Review Analysis
-
-A comprehensive code review identified **17 issues** across the two-package monorepo —
-`analyzer/` (trading pipeline) and `server/` (FastAPI web API) — plus Dockerfile.prod and
-test files. Issues span security, performance, correctness, and maintainability. No feature
-additions.
-
-### Issues Summary
-
-| # | Severity | Issue |
-|---|---|---|
-| 1 | Critical | **Missing Server Dependencies** — `server/pyproject.toml` lists only fastapi and uvicorn; pydantic imports fail without analyzer's transitive install |
-| 2 | Critical | **No Authentication or Rate Limiting on POST /api/run** — open spending endpoint; each invocation triggers up to 6 LLM calls per symbol |
-| 3 | Critical | **Token Leakage Risk in Telegram URL** — bot token embedded in URL string passed to `requests.post`; could appear in debug logs |
-| 4 | High | **Post-Analysis Race Condition on File Read** — `_read_results` immediately reads result files after subprocess exits; no filesystem flush guarantee |
-| 5 | High | **os.walk Scans Entire Directory on Every Request** — `list_runs()` traverses full data tree and parses every `.json` before applying filters |
-| 6 | High | **Broad Exception Catching Obscures Real Errors** — bare `except Exception` raises generic `RuntimeError` with no diagnostic detail |
-| 7 | Medium | **CORS Configuration Too Permissive** — allows all methods (`["*"]`) and headers (`["*"]`) |
-| 8 | Medium | **Runner Creates Scanner Instance on Every Call** — `_read_results` allocates a new `ResultScanner` each time, triggering a full directory walk |
-| 9 | Medium | **Settings Duplication Between Analyzer and Server** — `analysis_cache_dir` defined in both packages with different path-resolution behavior |
-| 10 | Medium | **_normalize_cors Validator Duplicates _CommaDelimitedEnvSource Logic** — comma-splitting implemented in both places; validator is redundant |
-| 11 | Medium | **Permanent Settings() Singleton in candle_cache** — module-level `_settings` singleton must be manually invalidated in tests; no refresh mechanism |
-| 12 | Medium | **Inconsistent Exception Chaining in POST /api/run** — three overlapping branches all produce `RuntimeError`; needlessly complex |
-| 13 | Low | **Long main() Function** — 165 lines handling argument parsing, initialization, per-symbol orchestration, output writing, Telegram notifications |
-| 14 | Low | **Unused request Parameter in Exception Handler** — `request` parameter unused in `http_exception_handler` |
-| 15 | Low | **Deferred Imports Make Dependency Errors Opaque** — imports inside try block cause `ImportError` to be caught by same handler as runtime failures |
-| 16 | Low | **Type Hint: sample_full_result Fixture Returns dict Without Generic** — should be `dict[str, Any]` |
-| 17 | Low | **Test Naming Inconsistency** — `test_sellsend_message` missing underscore vs `test_sends_buy_message` |
 
 ### Project Facts and Conventions
 

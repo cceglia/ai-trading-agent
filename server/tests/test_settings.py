@@ -51,11 +51,13 @@ class TestCorsOrigins:
 
 
 class TestResolvedCacheDir:
-    """``resolved_cache_dir`` must behave consistently with the analyzer.
+    """``resolved_cache_dir`` must resolve relative paths from the project root.
 
-    The analyzer resolves ``analysis_cache_dir`` relative to its working
-    directory (``analyzer/``).  The server uses the same convention so both
-    packages write to the same directory tree.
+    Both the analyzer and server write/read from the same directory tree.
+    Relative paths are resolved against the **project root** (the parent
+    directory of both ``analyzer/`` and ``server/``) so that the default
+    ``"data"`` produces ``<project_root>/data`` regardless of which package
+    is the working directory.
     """
 
     @staticmethod
@@ -69,9 +71,9 @@ class TestResolvedCacheDir:
 
     def test_resolved_cache_dir_relative(self):
         """Given ``analysis_cache_dir="data"``, the resolved path must be
-        ``<project_root>/analyzer/data``."""
+        ``<project_root>/data``."""
         settings = WebSettings(analysis_cache_dir="data")
-        expected = self._project_root() / "analyzer" / "data"
+        expected = self._project_root() / "data"
         assert settings.resolved_cache_dir == expected
 
     def test_resolved_cache_dir_absolute(self):
@@ -82,17 +84,17 @@ class TestResolvedCacheDir:
 
     def test_resolved_cache_dir_default(self):
         """The default ``analysis_cache_dir`` is ``"data"``, which must
-        resolve to ``<project_root>/analyzer/data``."""
+        resolve to ``<project_root>/data``."""
         settings = WebSettings()
-        expected = self._project_root() / "analyzer" / "data"
+        expected = self._project_root() / "data"
         assert settings.resolved_cache_dir == expected
 
     def test_resolved_cache_dir_relative_from_env(self, monkeypatch):
         """Setting ``TRADING_ANALYSIS_CACHE_DIR`` to a relative value must
-        resolve to ``<project_root>/analyzer/<value>``."""
+        resolve to ``<project_root>/<value>``."""
         monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "custom/cache")
         settings = WebSettings()
-        expected = self._project_root() / "analyzer" / "custom" / "cache"
+        expected = self._project_root() / "custom" / "cache"
         assert settings.resolved_cache_dir == expected
 
     def test_resolved_cache_dir_absolute_from_env(self, monkeypatch):
@@ -101,3 +103,25 @@ class TestResolvedCacheDir:
         monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", "/var/trade/cache")
         settings = WebSettings()
         assert settings.resolved_cache_dir == Path("/var/trade/cache")
+
+    def test_resolved_cache_dir_matches_analyzer(self):
+        """Analyzer and server must resolve the same default to the same path."""
+        import sys
+
+        server_path = str(self.resolved_cache_dir_default())
+
+        analyzer_dir = str(self._project_root() / "analyzer")
+        if analyzer_dir not in sys.path:
+            sys.path.insert(0, analyzer_dir)
+        try:
+            from config.settings import Settings
+
+            analyzer_path = Settings().resolved_analysis_cache_dir
+            assert server_path == analyzer_path
+        finally:
+            if analyzer_dir in sys.path:
+                sys.path.remove(analyzer_dir)
+
+    def resolved_cache_dir_default(self) -> Path:
+        """Helper: return the default resolved cache dir."""
+        return WebSettings().resolved_cache_dir

@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useRuns } from "../composables/useRuns";
 import { startRun } from "../lib/api";
+import { formatApiError } from "../lib/errors";
+import {
+  yearFrom, monthFrom, dayFrom,
+  padMonth, padDay,
+  uniqueYears, uniqueMonths, uniqueDays,
+  preferredOrFirst,
+} from "../lib/dates";
 import RunCard from "../components/RunCard.vue";
 import SymbolSidebar from "../components/SymbolSidebar.vue";
 import TimelineBar from "../components/TimelineBar.vue";
@@ -21,23 +28,35 @@ const symbols = computed(() => {
   return Array.from(symSet).sort();
 });
 
-// Derive unique dates from runs
-const dates = computed(() => {
-  const dateSet = new Set(runs.value.map((r) => r.date));
-  return Array.from(dateSet).sort().reverse();
-});
+// ── Default today ──────────────────────────────────────────────
+const today = new Date();
+const todayYear = String(today.getFullYear());
+const todayMonth = padMonth(today.getMonth() + 1);
+const todayDay = padDay(today.getDate());
 
-const selectedDate = ref<string | null>(null);
+const selectedYear = ref<string | null>(todayYear);
+const selectedMonth = ref<string | null>(todayMonth);
+const selectedDay = ref<string | null>(todayDay);
 
-// Filter runs by selected symbol and date
+// ── Symbol-aware date option lists ─────────────────────────────
+const dateSourceRuns = computed(() =>
+  selectedSymbol.value
+    ? runs.value.filter((r) => r.symbol === selectedSymbol.value)
+    : runs.value,
+);
+const allDates = computed(() => dateSourceRuns.value.map((r) => r.date));
+
+const years = computed(() => uniqueYears(allDates.value));
+const months = computed(() => uniqueMonths(allDates.value, selectedYear.value));
+const days = computed(() => uniqueDays(allDates.value, selectedYear.value, selectedMonth.value));
+
+// ── Filter runs by selected symbol, year, month, day ──────────
 const filteredRuns = computed(() => {
   let result = runs.value;
-  if (selectedSymbol.value) {
-    result = result.filter((r) => r.symbol === selectedSymbol.value);
-  }
-  if (selectedDate.value) {
-    result = result.filter((r) => r.date === selectedDate.value);
-  }
+  if (selectedSymbol.value) result = result.filter((r) => r.symbol === selectedSymbol.value);
+  if (selectedYear.value)   result = result.filter((r) => yearFrom(r.date) === selectedYear.value);
+  if (selectedMonth.value)  result = result.filter((r) => monthFrom(r.date) === selectedMonth.value);
+  if (selectedDay.value)    result = result.filter((r) => dayFrom(r.date) === selectedDay.value);
   return result;
 });
 
@@ -48,8 +67,8 @@ async function handleRunNow() {
     const symbolsToRun = selectedSymbol.value ? [selectedSymbol.value] : ["XAUUSD"];
     await startRun({ symbols: symbolsToRun });
     await reload();
-  } catch (e: any) {
-    runNowError.value = e?.message || "Run failed";
+  } catch (e: unknown) {
+    runNowError.value = formatApiError(e, "Run failed");
   } finally {
     runNowLoading.value = false;
   }
@@ -64,9 +83,61 @@ function selectSymbol(symbol: string | null) {
   selectedSymbol.value = symbol;
 }
 
-function selectDate(date: string | null) {
-  selectedDate.value = date;
+function selectYear(y: string | null) { selectedYear.value = y; }
+function selectMonth(m: string | null) { selectedMonth.value = m; }
+function selectDay(d: string | null) { selectedDay.value = d; }
+
+// ── Centralised cascade: clamp the full selection chain ───────
+function clampDateSelection(): void {
+  if (selectedYear.value === null) {
+    selectedMonth.value = null;
+    selectedDay.value = null;
+    return;
+  }
+
+  selectedYear.value = preferredOrFirst(years.value, selectedYear.value);
+
+  if (selectedYear.value === null) {
+    selectedMonth.value = null;
+    selectedDay.value = null;
+    return;
+  }
+
+  selectedMonth.value = preferredOrFirst(months.value, selectedMonth.value ?? todayMonth);
+
+  if (selectedMonth.value === null) {
+    selectedDay.value = null;
+    return;
+  }
+
+  selectedDay.value = preferredOrFirst(days.value, selectedDay.value ?? todayDay);
 }
+
+// ── Watchers ───────────────────────────────────────────────────
+
+// Symbol change clamps the entire chain (guarded against mid-load).
+watch(selectedSymbol, () => {
+  if (runsLoading.value) return;
+  clampDateSelection();
+});
+
+// Year change clamps month; day then cascades via [year,month] watcher.
+watch(selectedYear, (year) => {
+  if (year === null) {
+    selectedMonth.value = null;
+    return;
+  }
+  selectedMonth.value = preferredOrFirst(months.value, selectedMonth.value ?? todayMonth);
+});
+
+// Day reacts to BOTH year and month — catches "Jul 30 in 2025 not in 2026".
+watch([selectedYear, selectedMonth], ([year, month]) => {
+  if (year === null || month === null) {
+    selectedDay.value = null;
+    return;
+  }
+  selectedDay.value = preferredOrFirst(days.value, selectedDay.value ?? todayDay);
+});
 
 const runCountBySymbol = computed(() => {
   const counts: Record<string, number> = {};
@@ -117,9 +188,15 @@ const runCountBySymbol = computed(() => {
       <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Timeline bar -->
         <TimelineBar
-          :dates="dates"
-          :selected="selectedDate"
-          @select="selectDate"
+          :years="years"
+          :months="months"
+          :days="days"
+          :selected-year="selectedYear"
+          :selected-month="selectedMonth"
+          :selected-day="selectedDay"
+          @select-year="selectYear"
+          @select-month="selectMonth"
+          @select-day="selectDay"
         />
 
         <!-- Run cards grid -->

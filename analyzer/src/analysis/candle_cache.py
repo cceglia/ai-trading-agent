@@ -51,7 +51,8 @@ def _cache_path(timeframe: str, symbol: str, cache_date: datetime) -> str:
     else:
         raise ValueError(f"Unsupported timeframe: {timeframe}")
 
-    return f"{settings.analysis_cache_dir}/{cache_date.strftime('%Y/%m/%d')}/{symbol}/{filename}"
+    date_path = cache_date.strftime("%Y/%m/%d")
+    return f"{settings.resolved_analysis_cache_dir}/{date_path}/{symbol}/{filename}"
 
 
 def _candle_period(timeframe: str, broker_now: datetime) -> tuple[datetime, datetime]:

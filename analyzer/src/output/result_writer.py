@@ -18,7 +18,7 @@ class ResultWriter:
         if base_dir is None:
             from config.settings import Settings
 
-            base_dir = Settings().analysis_cache_dir
+            base_dir = Settings().resolved_analysis_cache_dir
         self.base_dir = Path(base_dir)
 
     def write(
