@@ -31,8 +31,14 @@ class ResultWriter:
         result: dict[str, Any],
         ohlc: dict[str, list[OHLCBar]],
         broker_now: datetime,
-    ) -> Path:
-        """Write result JSON to disk. Returns the file path written.
+    ) -> Path | None:
+        """Write a successful or partial result JSON to disk.
+
+        Fatal pipeline failures are deliberately not persisted: they do not
+        contain a usable analysis result and would otherwise pollute the run
+        history with records that cannot be rendered by the dashboard.
+
+        Returns the written file path, or ``None`` for a fatal result.
 
         Args:
             symbol: Trading symbol (e.g., "XAUUSD")
@@ -41,17 +47,23 @@ class ResultWriter:
             broker_now: Broker local time (used for path construction)
 
         Returns:
-            Path to the written file
+            Path to the written file, or ``None`` when a fatal result is skipped.
         """
+        fatal_error = result.get("fatal_error")
+        if fatal_error is not None:
+            logger.warning(
+                "Skipping persistence of failed analysis for %s: %s",
+                symbol,
+                fatal_error,
+            )
+            return None
+
         path = self._build_path(symbol, broker_now)
         path.parent.mkdir(parents=True, exist_ok=True)
 
         # Determine status
-        fatal_error = result.get("fatal_error")
         errors = result.get("errors", [])
-        if fatal_error is not None:
-            status = "error"
-        elif errors:
+        if errors:
             status = "partial"
         else:
             status = "success"
@@ -75,9 +87,10 @@ class ResultWriter:
             else:
                 sl_tp_overlay = SLTPOverlay()
         else:
-            # No analysis_result available (e.g. fatal error before output assembly).
-            # Use empty overlay — trade levels are not meaningful in error results.
-            if fatal_error is None and not errors:
+            # No analysis_result available. Use an empty overlay only for
+            # partial results; successful results must contain deterministic
+            # trade levels.
+            if not errors:
                 raise ResultWriterContractError(
                     "AnalysisResult is required to write deterministic trade levels"
                 )

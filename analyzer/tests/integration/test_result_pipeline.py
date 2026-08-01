@@ -126,8 +126,8 @@ def test_result_pipeline_writes_json(tmp_path: Path):
     assert parsed.review.approved is True
 
 
-def test_result_with_fatal_error(tmp_path: Path):
-    """Pipeline with fatal error produces valid error result."""
+def test_result_with_fatal_error_is_not_persisted(tmp_path: Path):
+    """Fatal pipeline failures are not persisted as unusable run results."""
     writer = ResultWriter(tmp_path)
     symbol = "XAUUSD"
     broker_now = datetime(2026, 7, 26, 8, 30)
@@ -139,20 +139,9 @@ def test_result_with_fatal_error(tmp_path: Path):
     ohlc = {}
 
     written = writer.write(symbol, result, ohlc, broker_now)
-    with open(written) as f:
-        data = json.load(f)
 
-    assert data["symbol"] == "XAUUSD"
-    assert data["status"] == "error"
-    assert data["fatal_error"] == "Cannot get broker time"
-    assert len(data["errors"]) == 2
-    assert data["decision"] is None
-    assert data["market_context"] is None
-    assert data["review"] is None
-    # Error results use empty overlay (no analysis_result available)
-    assert data["sl_tp_overlay"]["entry_price"] is None
-    assert data["sl_tp_overlay"]["stop_loss"] is None
-    assert data["sl_tp_overlay"]["take_profit"] is None
+    assert written is None
+    assert not (tmp_path / "2026" / "07" / "26" / "XAUUSD").exists()
 
 
 def test_empty_ohlc_defaults(tmp_path: Path):

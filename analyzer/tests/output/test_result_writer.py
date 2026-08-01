@@ -106,7 +106,7 @@ class TestResultWriter:
         assert data["version"] == "1.0"
         assert data["status"] == "success"
 
-    def test_with_fatal_error(self, tmp_path: Path):
+    def test_with_fatal_error_is_not_persisted(self, tmp_path: Path):
         writer = ResultWriter(tmp_path)
         symbol = "XAUUSD"
         broker_now = datetime(2026, 7, 26, 8, 30)
@@ -117,11 +117,9 @@ class TestResultWriter:
         }
         ohlc: dict = {}
         written = writer.write(symbol, result, ohlc, broker_now)
-        with open(written) as f:
-            data = json.load(f)
-        assert data["fatal_error"] == "Critical failure"
-        assert data["status"] == "error"
-        assert len(data["errors"]) == 1
+
+        assert written is None
+        assert not (tmp_path / "2026" / "07" / "26" / "XAUUSD").exists()
 
     def test_status_partial_with_errors(self, tmp_path: Path):
         """When there are errors but no fatal_error, status should be 'partial'."""

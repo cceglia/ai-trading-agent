@@ -319,10 +319,17 @@ class ResultScanner:
             if not isinstance(data, dict):
                 return None
 
+            # Fatal pipeline failures are not displayable run summaries. This
+            # also protects the dashboard from legacy error files written by
+            # older analyzer versions.
+            if data.get("status") == "error":
+                logger.info("Skipping failed result file: %s", fpath)
+                return None
+
             symbol = data.get("symbol", _symbol_from_path)
-            market_ctx = data.get("market_context", {})
-            decision = data.get("decision", {})
-            review = data.get("review", {})
+            market_ctx = data.get("market_context") or {}
+            decision = data.get("decision") or {}
+            review = data.get("review") or {}
 
             return RunSummary(
                 symbol=symbol,

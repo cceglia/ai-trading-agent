@@ -124,6 +124,25 @@ class TestListRuns:
 
         assert len(runs) == 0
 
+    def test_skips_error_results_without_analysis_context(self, tmp_path: Path):
+        """Legacy fatal results must not make the run list endpoint fail."""
+        fpath = tmp_path / "2026" / "07" / "31" / "EURUSD" / "result-07.json"
+        _write_result(
+            fpath,
+            data={
+                "symbol": "EURUSD",
+                "status": "error",
+                "fatal_error": "Data fetch failed",
+                "market_context": None,
+                "decision": None,
+                "review": None,
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+
+        assert s.list_runs() == []
+
     def test_skips_malformed_json_in_list(self, tmp_path: Path):
         # Good file
         good = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
