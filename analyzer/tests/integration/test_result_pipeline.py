@@ -8,13 +8,14 @@ import pytest
 
 from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
+    AdvisoryLevels,
     BiasLevel,
     DecisionAction,
     DecisionOutput,
     MarketContextSummary,
     ReviewVerdict,
 )
-from src.output.result_models import AnalysisResult, OHLCBar
+from src.output.result_models import AnalysisResult, OHLCBar, SLTPOverlay
 from src.output.result_writer import ResultWriter, ResultWriterContractError
 
 
@@ -30,6 +31,18 @@ def test_result_pipeline_writes_json(tmp_path: Path):
         started_at=broker_now,
         completed_at=broker_now,
         status="success",
+        sl_tp_overlay=SLTPOverlay(entry_price=1.1010, stop_loss=1.0980, take_profit=1.1100),
+        advisory_levels=AdvisoryLevels(entry_price=1.1020, stop_loss=1.0970, take_profit=1.1150),
+        review_advisory_levels=AdvisoryLevels(
+            entry_price=1.1020, stop_loss=1.0970, take_profit=1.1150
+        ),
+        setup_grade="AAA",
+        setup_classification_status="CLASSIFIED",
+        setup_lifecycle_status="READY",
+        trade_direction="BULLISH",
+        estimated_reward_risk=3.0,
+        order_type="STOP",
+        deterministic_setup_complete=True,
     )
     result = {
         "market_context": MarketContextSummary(
@@ -115,15 +128,59 @@ def test_result_pipeline_writes_json(tmp_path: Path):
     assert data["ohlc"]["D1"][0]["open"] == 2350.0
     assert data["ohlc"]["D1"][0]["close"] == 2365.5
 
-    # Check SL/TP overlay — always None since DecisionOutput has no price fields
-    assert data["sl_tp_overlay"]["entry_price"] is None
-    assert data["sl_tp_overlay"]["stop_loss"] is None
-    assert data["sl_tp_overlay"]["take_profit"] is None
+    # Deterministic levels and order context survive persistence unchanged.
+    assert data["sl_tp_overlay"] == {
+        "entry_price": 1.1010,
+        "stop_loss": 1.0980,
+        "take_profit": 1.1100,
+    }
+    assert data["advisory_levels"] == {
+        "entry_price": 1.1020,
+        "stop_loss": 1.0970,
+        "take_profit": 1.1150,
+    }
+    assert data["review_advisory_levels"] == data["advisory_levels"]
+    assert data["order_type"] == "STOP"
+    assert data["deterministic_setup_complete"] is True
+    assert data["estimated_reward_risk"] == 3.0
 
     # Check review verdict via AnalysisResult model
     parsed = AnalysisResult.model_validate(data)
     assert parsed.review is not None
     assert parsed.review.approved is True
+
+
+def test_incomplete_setup_persists_unavailable_deterministic_values(tmp_path: Path):
+    """Missing deterministic inputs remain explicitly non-actionable."""
+    broker_now = datetime(2026, 7, 26, 10, 0)
+    analysis_result = AnalysisResult(
+        symbol="EURUSD",
+        run_id="EURUSD-20260726100000",
+        started_at=broker_now,
+        completed_at=broker_now,
+        status="success",
+        sl_tp_overlay=SLTPOverlay(),
+        deterministic_setup_complete=False,
+    )
+    writer = ResultWriter(tmp_path)
+
+    written = writer.write(
+        "EURUSD",
+        {"analysis_result": analysis_result, "errors": [], "fatal_error": None},
+        {"D1": [], "H4": [], "H1": []},
+        broker_now,
+    )
+
+    assert written is not None
+    data = json.loads(written.read_text())
+    assert data["sl_tp_overlay"] == {
+        "entry_price": None,
+        "stop_loss": None,
+        "take_profit": None,
+    }
+    assert data["order_type"] is None
+    assert data["deterministic_setup_complete"] is False
+    assert data["estimated_reward_risk"] is None
 
 
 def test_result_with_fatal_error_is_not_persisted(tmp_path: Path):

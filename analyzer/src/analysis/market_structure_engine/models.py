@@ -114,6 +114,7 @@ class ExecutionBlockerCode(StrEnum):
     DATA_QUALITY_MISSING_D1_DATA = "DATA_QUALITY_MISSING_D1_DATA"
     DATA_QUALITY_MISSING_H4_DATA = "DATA_QUALITY_MISSING_H4_DATA"
     DATA_QUALITY_MISSING_H1_DATA = "DATA_QUALITY_MISSING_H1_DATA"
+    DATA_QUALITY_INCOMPLETE_SETUP = "DATA_QUALITY_INCOMPLETE_SETUP"
 
     # Review blockers
     REVIEW_PENDING = "REVIEW_PENDING"
@@ -593,8 +594,8 @@ class DeterministicSetupState(BaseModel, frozen=True):
         default=None,
         description="Current market price",
     )
-    entry_type: EntryType = Field(
-        default=EntryType.MARKET,
+    entry_type: EntryType | None = Field(
+        default=None,
         description="Type of entry order",
     )
     entry_price: float | None = Field(
@@ -632,11 +633,26 @@ class DeterministicSetupState(BaseModel, frozen=True):
         """Whether this setup qualifies as a candidate for decision.
 
         A setup is a candidate when classification is CLASSIFIED and
-        a grade has been assigned.
+        a grade has been assigned. Price completeness is checked separately
+        by ``deterministic_plan_complete``.
         """
         return (
             self.setup_classification_status == SetupClassificationStatus.CLASSIFIED
             and self.setup_grade is not None
+        )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def deterministic_plan_complete(self) -> bool:
+        """Whether all canonical deterministic setup prices are available."""
+        return all(
+            price is not None
+            for price in (
+                self.current_price,
+                self.entry_price,
+                self.invalidation_price,
+                self.target_price,
+            )
         )
 
 

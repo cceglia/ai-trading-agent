@@ -315,6 +315,12 @@ def _has_high_impact_calendar_event(calendar_events: list[dict[str, Any]] | None
     return False
 
 
+def _deterministic_order_type(state: AgentState) -> str | None:
+    """Return the canonical order type for LLM context, never an LLM value."""
+    setup = state.get("deterministic_setup")
+    return setup.entry_type.value if setup is not None and setup.entry_type is not None else None
+
+
 class TradingGraph:
     """LangGraph orchestrator for trading analysis with multi-timeframe pipeline.
 
@@ -752,6 +758,7 @@ class TradingGraph:
                 pending_orders=state.get("current_pending_orders", []),
                 feedback=feedback if attempts > 0 else None,
                 current_price=context.current_price,
+                order_type=_deterministic_order_type(state),
             )
             return {"decision": decision, "review_attempts": attempts}
         except CostLimitExceeded:
@@ -791,6 +798,7 @@ class TradingGraph:
                 decision=decision,
                 context=context,
                 calendar_events=calendar_events,
+                order_type=_deterministic_order_type(state),
             )
 
             feedback = None
@@ -850,6 +858,32 @@ class TradingGraph:
             d1_context = d1_engine.get("analysis_context", d1_engine)
             h4_context = h4_engine.get("analysis_context", h4_engine)
             h1_context = h1_engine.get("analysis_context", h1_engine)
+
+            # Entry planning needs the same canonical price exposed to the
+            # decision layer. Keep it outside the LLM output and inject it
+            # into the deterministic H1 setup context only.
+            canonical_price = None
+            market_context = state.get("market_context")
+            if market_context is not None and isinstance(market_context.current_price, int | float):
+                canonical_price = market_context.current_price
+            if canonical_price is None:
+                price = state.get("symbol_price") or {}
+                bid = price.get("bid")
+                ask = price.get("ask")
+                if isinstance(bid, int | float) and isinstance(ask, int | float):
+                    canonical_price = (bid + ask) / 2
+                elif isinstance(bid, int | float):
+                    canonical_price = bid
+                elif isinstance(ask, int | float):
+                    canonical_price = ask
+            if canonical_price is not None:
+                h1_context = dict(h1_context)
+                h1_setup = dict(h1_context.get("setup_context") or h1_context)
+                h1_setup["current_price"] = canonical_price
+                if "setup_context" in h1_context:
+                    h1_context["setup_context"] = h1_setup
+                else:
+                    h1_context = h1_setup
 
             setup = grade_setup(
                 h1_context=h1_context,

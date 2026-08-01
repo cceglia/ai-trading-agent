@@ -183,6 +183,20 @@ def _build_blockers(
             )
         )
 
+    # ── Deterministic plan: incomplete ─────────────────────────────────
+    if not setup.deterministic_plan_complete:
+        blockers.append(
+            ExecutionBlocker(
+                blocker_type=ExecutionBlockerType.DATA_QUALITY,
+                code=ExecutionBlockerCode.DATA_QUALITY_INCOMPLETE_SETUP,
+                reason=(
+                    "Deterministic setup is incomplete: canonical current price, "
+                    "entry, stop loss, and take profit are all required"
+                ),
+                severity=BlockerSeverity.INVALIDATES_GRADE,
+            )
+        )
+
     return blockers
 
 

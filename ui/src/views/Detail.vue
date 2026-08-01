@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useRun } from "../composables/useRun";
 import OhlcChart from "../components/OhlcChart.vue";
+import { hasCompleteDeterministicSetup } from "../deterministicSetup";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,6 +15,7 @@ const day = () => (route.params.day as string) || "";
 const file = () => (route.params.file as string) || "";
 
 const { result, loading, error } = useRun(symbol, year, month, day, file);
+const deterministicPlanComplete = computed(() => hasCompleteDeterministicSetup(result.value));
 
 function goBack() {
   router.push("/");
@@ -59,7 +62,7 @@ function goBack() {
       <section class="border border-terminal-border bg-terminal-surface p-3">
         <h2 class="text-xs font-sans font-medium text-terminal-text-secondary uppercase tracking-wider mb-2">Market Context</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div>
+        <div>
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Bias</span>
             <span class="text-sm font-mono" :class="result.market_context?.bias?.includes('bullish') ? 'text-terminal-gain' : result.market_context?.bias?.includes('bearish') ? 'text-terminal-loss' : 'text-terminal-text'">
               {{ result.market_context?.bias || "N/A" }}
@@ -100,26 +103,62 @@ function goBack() {
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Action</span>
             <span class="text-sm font-mono text-terminal-text">{{ result.decision.action.replace("_", " ") }}</span>
           </div>
-          <div v-if="result.sl_tp_overlay?.entry_price != null">
+          <div>
+            <span class="text-2xs font-sans text-terminal-text-tertiary block">Order Type</span>
+            <span class="text-sm font-mono text-terminal-text">{{ result.order_type ?? "UNAVAILABLE" }}</span>
+          </div>
+          <div>
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Entry</span>
-            <span class="text-sm font-mono text-terminal-text">{{ result.sl_tp_overlay.entry_price }}</span>
+            <span class="text-sm font-mono text-terminal-text">{{ result.sl_tp_overlay?.entry_price ?? "UNAVAILABLE" }}</span>
           </div>
-          <div v-if="result.sl_tp_overlay?.stop_loss != null">
+          <div>
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Stop Loss</span>
-            <span class="text-sm font-mono text-terminal-loss">{{ result.sl_tp_overlay.stop_loss }}</span>
+            <span class="text-sm font-mono text-terminal-loss">{{ result.sl_tp_overlay?.stop_loss ?? "UNAVAILABLE" }}</span>
           </div>
-          <div v-if="result.sl_tp_overlay?.take_profit != null">
+          <div>
             <span class="text-2xs font-sans text-terminal-text-tertiary block">Take Profit</span>
-            <span class="text-sm font-mono text-terminal-gain">{{ result.sl_tp_overlay.take_profit }}</span>
+            <span class="text-sm font-mono text-terminal-gain">{{ result.sl_tp_overlay?.take_profit ?? "UNAVAILABLE" }}</span>
           </div>
-          <div v-if="result.estimated_reward_risk != null">
+          <div>
             <span class="text-2xs font-sans text-terminal-text-tertiary block">R/R Ratio</span>
-            <span class="text-sm font-mono text-terminal-text">{{ result.estimated_reward_risk }}</span>
+            <span class="text-sm font-mono text-terminal-text">{{ result.estimated_reward_risk ?? "UNAVAILABLE" }}</span>
           </div>
         </div>
         <div class="mt-2">
+          <span class="text-2xs font-sans text-terminal-text-tertiary block">Deterministic Setup</span>
+          <span
+            class="text-xs font-mono"
+            :class="deterministicPlanComplete ? 'text-terminal-gain' : 'text-terminal-warning'"
+          >
+            {{ deterministicPlanComplete ? "COMPLETE" : "INCOMPLETE / NON-ACTIONABLE" }}
+          </span>
+        </div>
+        <p
+          v-if="!deterministicPlanComplete"
+          class="mt-2 text-xs font-mono text-terminal-warning"
+        >
+          Deterministic plan incomplete / non-actionable
+        </p>
+        <div class="mt-2">
           <span class="text-2xs font-sans text-terminal-text-tertiary block">Reasoning</span>
           <p class="text-xs font-sans text-terminal-text-secondary mt-0.5">{{ result.decision.reasoning }}</p>
+        </div>
+        <div v-if="result.advisory_levels" class="mt-3 border-t border-terminal-border pt-2">
+          <span class="text-2xs font-sans text-terminal-text-tertiary block">Advisory Levels (informational)</span>
+          <div class="grid grid-cols-3 gap-3 mt-1">
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Entry</span>
+              <span class="text-sm font-mono text-terminal-text">{{ result.advisory_levels.entry_price ?? "N/A" }}</span>
+            </div>
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Stop Loss</span>
+              <span class="text-sm font-mono text-terminal-loss">{{ result.advisory_levels.stop_loss ?? "N/A" }}</span>
+            </div>
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Take Profit</span>
+              <span class="text-sm font-mono text-terminal-gain">{{ result.advisory_levels.take_profit ?? "N/A" }}</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -140,6 +179,23 @@ function goBack() {
             <li v-for="(c, i) in result.review.concerns" :key="i" class="text-xs font-mono text-terminal-warning">&bull; {{ c }}</li>
           </ul>
         </div>
+        <div v-if="result.review_advisory_levels" class="mt-3 border-t border-terminal-border pt-2">
+          <span class="text-2xs font-sans text-terminal-text-tertiary block">Review Advisory Levels (informational)</span>
+          <div class="grid grid-cols-3 gap-3 mt-1">
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Entry</span>
+              <span class="text-sm font-mono text-terminal-text">{{ result.review_advisory_levels.entry_price ?? "N/A" }}</span>
+            </div>
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Stop Loss</span>
+              <span class="text-sm font-mono text-terminal-loss">{{ result.review_advisory_levels.stop_loss ?? "N/A" }}</span>
+            </div>
+            <div>
+              <span class="text-2xs font-sans text-terminal-text-tertiary block">Take Profit</span>
+              <span class="text-sm font-mono text-terminal-gain">{{ result.review_advisory_levels.take_profit ?? "N/A" }}</span>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- OHLC Charts -->
@@ -148,8 +204,8 @@ function goBack() {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
           <div v-for="tf in (['D1', 'H4', 'H1'] as const)" :key="tf">
             <OhlcChart
-              :data="result.ohlc[tf] || []"
-              :overlay="result.sl_tp_overlay"
+              :data="result.ohlc?.[tf] || []"
+              :overlay="result.sl_tp_overlay ?? undefined"
               :timeframe="tf"
             />
           </div>

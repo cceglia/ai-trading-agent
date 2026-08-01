@@ -2,6 +2,7 @@ import pytest
 
 from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
+    AdvisoryLevels,
     BiasLevel,
     DecisionAction,
     DecisionOutput,
@@ -94,15 +95,27 @@ class TestDecisionOutput:
             )
             assert decision.action == action.value
 
-    def test_only_symbol_action_reasoning(self):
-        """DecisionOutput should only have symbol, action, and reasoning fields."""
+    def test_advisory_levels_are_optional_and_structured(self):
+        """Advisory prices are explicit fields and are absent by default."""
+        decision = DecisionOutput(
+            symbol="EURUSD",
+            action=DecisionAction.NO_TRADE,
+            reasoning="No setup available",
+            advisory_levels=AdvisoryLevels(entry_price=1.08, stop_loss=1.07),
+        )
+        assert decision.advisory_levels is not None
+        assert decision.advisory_levels.entry_price == 1.08
+        assert decision.advisory_levels.take_profit is None
+
+    def test_only_decision_fields_are_structured(self):
+        """DecisionOutput has no free-form price fields."""
         DecisionOutput(
             symbol="EURUSD",
             action=DecisionAction.NO_TRADE,
             reasoning="No setup available",
         )
         fields = set(DecisionOutput.model_fields.keys())
-        assert fields == {"symbol", "action", "reasoning"}
+        assert fields == {"symbol", "action", "reasoning", "advisory_levels"}
 
 
 class TestReviewVerdict:

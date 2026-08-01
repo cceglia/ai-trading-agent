@@ -71,6 +71,11 @@ def _directional_structure_analysis() -> dict:
                     "setup_context": {
                         "setup_status": "VALID_SETUP",
                         "preferred_direction": "BULLISH",
+                        "current_price": 1.12,
+                        "entry_price": 1.121,
+                        "stop_price": 1.118,
+                        "invalidation_price": 1.118,
+                        "target_price": 1.13,
                         "room_to_target_passed": True,
                         "reward_risk_filter_passed": True,
                         "latest_trigger_event": {"event_type": "BULLISH_BOS"},
@@ -1722,14 +1727,7 @@ class TestCostTrackerWiring:
             "time,open,high,low,close\n2024-01-01T00:00:00,1.0850,1.0900,1.0800,1.0875\n"
         )
 
-        mock_structure_analyzer.analyze.return_value = {
-            "timeframes": {
-                "D1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "D1"},
-                "H4": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H4"},
-                "H1": {"market_structure": {"primary_structure": "BULLISH"}, "timeframe": "H1"},
-            },
-            "confluence": {"status": "NO_VALID_CANDIDATE"},
-        }
+        mock_structure_analyzer.analyze.return_value = _directional_structure_analysis()
 
         # Build agents that share a single CostTracker
         ct = CostTracker()

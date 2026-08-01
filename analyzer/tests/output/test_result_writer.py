@@ -3,6 +3,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -210,6 +211,76 @@ class TestResultWriter:
         assert data["sl_tp_overlay"]["entry_price"] == 1.1050
         assert data["sl_tp_overlay"]["stop_loss"] == 1.0950
         assert data["sl_tp_overlay"]["take_profit"] == 1.1200
+
+    def test_preserves_complete_deterministic_contract(self, tmp_path: Path):
+        analysis_result = AnalysisResult(
+            symbol="XAUUSD",
+            run_id="run",
+            started_at=datetime(2026, 7, 26, 8, 30),
+            completed_at=datetime(2026, 7, 26, 8, 31),
+            status="success",
+            sl_tp_overlay=SLTPOverlay(entry_price=2400.0, stop_loss=2380.0, take_profit=2440.0),
+            setup_grade="AAA",
+            setup_classification_status="CLASSIFIED",
+            setup_lifecycle_status="TRIGGERED",
+            trade_direction="BULLISH",
+            estimated_reward_risk=2.0,
+            order_type="STOP",
+            risk_multiplier=1.0,
+            final_risk_percentage=1.0,
+            execution_status="ACTIONABLE",
+            final_action="buy_setup",
+        )
+        written = ResultWriter(tmp_path).write(
+            "XAUUSD",
+            {"analysis_result": analysis_result, "errors": [], "fatal_error": None},
+            {},
+            datetime(2026, 7, 26, 8, 30),
+        )
+        data = json.loads(written.read_text())
+        assert data["order_type"] == "STOP"
+        assert data["estimated_reward_risk"] == 2.0
+        assert data["execution_status"] == "ACTIONABLE"
+        assert data["final_action"] == "buy_setup"
+
+    @pytest.mark.parametrize("as_object", [False, True])
+    def test_preserves_dict_and_object_analysis_results(
+        self, tmp_path: Path, as_object: bool
+    ) -> None:
+        source = _make_analysis_result().model_copy(
+            update={
+                "setup_grade": "AAA",
+                "order_type": "STOP",
+                "execution_status": "BLOCKED_BY_DATA_QUALITY",
+                "final_action": "no_trade",
+                "deterministic_setup_complete": False,
+            }
+        )
+        raw = source.model_dump(mode="json")
+        analysis_result: object = SimpleNamespace(**raw) if as_object else raw
+
+        written = ResultWriter(tmp_path).write(
+            "XAUUSD",
+            {"analysis_result": analysis_result, "errors": [], "fatal_error": None},
+            {},
+            datetime(2026, 7, 26, 8, 30),
+        )
+        data = json.loads(written.read_text())
+        assert data["setup_grade"] == "AAA"
+        assert data["order_type"] == "STOP"
+        assert data["execution_status"] == "BLOCKED_BY_DATA_QUALITY"
+        assert data["final_action"] == "no_trade"
+        assert data["deterministic_setup_complete"] is False
+
+    def test_invalid_analysis_result_fails_without_creating_output(self, tmp_path: Path) -> None:
+        with pytest.raises(ResultWriterContractError, match="does not satisfy"):
+            ResultWriter(tmp_path).write(
+                "XAUUSD",
+                {"analysis_result": {"setup_grade": "AAA"}, "errors": [], "fatal_error": None},
+                {},
+                datetime(2026, 7, 26, 8, 30),
+            )
+        assert not list(tmp_path.iterdir())
 
     def test_run_id_format(self, tmp_path: Path):
         """run_id should be formatted as YYYY-MM-DDTHH:MM:SS."""

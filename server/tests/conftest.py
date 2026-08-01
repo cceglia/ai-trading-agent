@@ -93,6 +93,20 @@ def sample_full_result() -> dict[str, Any]:
             "stop_loss": 2380.0,
             "take_profit": 2440.0,
         },
+        "advisory_levels": {
+            "entry_price": 2401.0,
+            "stop_loss": 2379.0,
+            "take_profit": 2441.0,
+        },
+        "review_advisory_levels": {
+            "entry_price": 2402.0,
+            "stop_loss": 2378.0,
+            "take_profit": 2442.0,
+        },
+        "estimated_reward_risk": 2.0,
+        "order_type": "STOP",
+        "deterministic_setup_complete": True,
+        "trade_direction": "BULLISH",
     }
 
 

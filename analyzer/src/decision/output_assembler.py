@@ -129,6 +129,7 @@ class FinalOutputAssembler:
             symbol=symbol,
             action=enforcement.final_action,
             reasoning=decision.reasoning,
+            advisory_levels=decision.advisory_levels,
         )
 
         # ── Status inference ──────────────────────────────────────────
@@ -156,6 +157,8 @@ class FinalOutputAssembler:
             decision=final_decision,
             review=review,
             sl_tp_overlay=sl_tp_overlay,
+            advisory_levels=decision.advisory_levels,
+            review_advisory_levels=review.advisory_levels,
             # Deterministic setup (authoritative)
             setup_grade=setup.setup_grade.value if setup.setup_grade is not None else None,
             setup_classification_status=setup.setup_classification_status.value,
@@ -163,6 +166,8 @@ class FinalOutputAssembler:
             trade_direction=setup.trade_direction.value,
             rejection_codes=[rc.value for rc in setup.rejection_codes],
             estimated_reward_risk=setup.estimated_reward_risk,
+            order_type=setup.entry_type.value if setup.entry_type is not None else None,
+            deterministic_setup_complete=setup.deterministic_plan_complete,
             # Risk policy
             risk_multiplier=risk.grade_risk_multiplier,
             final_risk_percentage=risk.final_risk_percentage,

@@ -74,6 +74,14 @@ class TestDeriveExecutionStatus:
         )
         assert derive_execution_status(blockers) == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
 
+    def test_incomplete_setup_is_data_quality_blocker(self) -> None:
+        blocker = _blocker(
+            ExecutionBlockerType.DATA_QUALITY,
+            ExecutionBlockerCode.DATA_QUALITY_INCOMPLETE_SETUP,
+            BlockerSeverity.INVALIDATES_GRADE,
+        )
+        assert derive_execution_status((blocker,)) == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
+
     def test_policy_over_enforcement(self) -> None:
         blockers = (
             _blocker(

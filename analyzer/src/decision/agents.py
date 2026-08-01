@@ -125,11 +125,14 @@ class DeciderAgent:
         feedback: str | None = None,
         *,
         current_price: float | None = None,
+        order_type: str | None = None,
     ) -> DecisionOutput:
         logger.info("Making decision for %s", context.symbol)
 
         prompt = (
             f"Use current_price={current_price} as the price anchor. "
+            f"The deterministic order_type is {order_type}; it is immutable canonical context "
+            "and may be explained or flagged but never overridden. "
             f"Context: {context.model_dump_json()}\n"
             f"Positions: {positions}\n"
             f"Orders: {pending_orders}"
@@ -176,6 +179,8 @@ class ReviewerAgent:
         decision: DecisionOutput,
         context: MarketContextSummary,
         calendar_events: list[dict[str, Any]],
+        *,
+        order_type: str | None = None,
     ) -> ReviewVerdict:
         logger.info("Reviewing decision for %s", decision.symbol)
 
@@ -184,6 +189,7 @@ class ReviewerAgent:
             {
                 "role": "user",
                 "content": (
+                    f"Deterministic order_type (immutable canonical context): {order_type}\n"
                     f"Decision: {decision.model_dump_json()}\n"
                     f"Context: {context.model_dump_json()}\n"
                     f"Calendar: {calendar_events}"

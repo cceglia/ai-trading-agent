@@ -88,6 +88,11 @@ def _directional_structure_analysis() -> dict:
                     "setup_context": {
                         "setup_status": "VALID_SETUP",
                         "preferred_direction": "BULLISH",
+                        "current_price": 1.12,
+                        "entry_price": 1.121,
+                        "stop_price": 1.118,
+                        "invalidation_price": 1.118,
+                        "target_price": 1.13,
                         "room_to_target_passed": True,
                         "reward_risk_filter_passed": True,
                         "latest_trigger_event": {"event_type": "BULLISH_BOS"},

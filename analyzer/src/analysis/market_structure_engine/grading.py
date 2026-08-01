@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .entry_calculator import calculate_entry_plan
 from .models import (
     BiasLevel,
     DeterministicSetupState,
@@ -311,45 +312,47 @@ def grade_setup(
     }
     h1_trigger_status_enum = trigger_status_map.get(h1_trigger_status_str, TriggerStatus.NO_TRIGGER)
 
-    # Build the DeterministicSetupState
-    return DeterministicSetupState(
-        # Classification
-        setup_classification_status=setup_classification,
-        setup_grade=setup_grade,
-        trade_direction=trade_direction,
-        # Lifecycle
-        setup_lifecycle_status=lifecycle_status,
-        geometry_status=geometry_status,
-        confirmed_at=None,
-        confirmed_bar_index=None,
-        expires_after_h1_bars=None,
-        invalidation_reason=None,
-        # D1 timeframe data
-        d1_bias=d1_bias_enum,
-        d1_direction=d1_trade_direction,
-        d1_is_directional=d1_direction,
-        d1_structure_status=strategic_bias.get("primary_structure", "UNKNOWN"),
-        d1_regime=strategic_bias.get("structure_context", "UNKNOWN") or "UNKNOWN",
-        d1_invalidation_status=None,
-        # H4 timeframe data
-        h4_bias=h4_bias_enum,
-        h4_direction=h4_trade_direction,
-        h4_alignment_status=h4_alignment,
-        h4_structure_status=operational.get("h4_structure", "UNKNOWN"),
-        h4_pullback_status=operational.get("h4_internal_structure", {}).get("phase", "UNKNOWN"),
-        # H1 timeframe data
-        h1_bias=h1_bias_enum,
-        h1_direction=trade_direction,
-        h1_trigger_type=h1_trigger_type_enum,
-        h1_trigger_status=h1_trigger_status_enum,
-        h1_setup_status=h1_setup_status,
-        # Entry plan
-        current_price=None,
-        entry_price=None,
-        entry_zone_low=None,
-        entry_zone_high=None,
-        trigger_level=None,
-        invalidation_price=None,
-        target_price=None,
-        estimated_reward_risk=None,
+    # Run the entry calculator after grading so the same deterministic setup
+    # owns classification, geometry, levels, R/R, and order type.
+    latest_close = setup.get("current_price")
+    if latest_close is None:
+        latest_close = setup.get("market", {}).get("current_price")
+    entry_price = setup.get("entry_price")
+    invalidation_price = setup.get("invalidation_price", setup.get("technical_invalidation"))
+    target_price = setup.get("target_price", setup.get("first_objective"))
+    stop_price = setup.get("stop_price", invalidation_price)
+    planned_setup = calculate_entry_plan(
+        {
+            **setup,
+            "trade_direction": trade_direction,
+            "current_price": latest_close,
+            "entry_price": entry_price,
+            "stop_price": stop_price,
+            "invalidation_price": invalidation_price,
+            "target_price": target_price,
+            "setup_classification_status": setup_classification,
+            "setup_grade": setup_grade,
+            "setup_lifecycle_status": lifecycle_status,
+            "d1_bias": d1_bias_enum,
+            "d1_direction": d1_trade_direction,
+            "d1_is_directional": d1_direction,
+            "d1_structure_status": strategic_bias.get("primary_structure", "UNKNOWN"),
+            "d1_regime": strategic_bias.get("structure_context", "UNKNOWN") or "UNKNOWN",
+            "h4_bias": h4_bias_enum,
+            "h4_direction": h4_trade_direction,
+            "h4_alignment_status": h4_alignment,
+            "h4_structure_status": operational.get("h4_structure", "UNKNOWN"),
+            "h4_pullback_status": operational.get("h4_internal_structure", {}).get(
+                "phase", "UNKNOWN"
+            ),
+            "h1_bias": h1_bias_enum,
+            "h1_direction": trade_direction,
+            "h1_trigger_type": h1_trigger_type_enum,
+            "h1_trigger_status": h1_trigger_status_enum,
+            "h1_setup_status": h1_setup_status,
+        }
     )
+
+    # Preserve the classification metadata produced above while taking all
+    # entry-plan values from the calculator's authoritative result.
+    return planned_setup.model_copy(update={"geometry_status": geometry_status})

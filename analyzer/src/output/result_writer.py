@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Mapping
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from src.output.result_models import AnalysisResult, OHLCBar, OHLCData, SLTPOverlay
+from pydantic import ValidationError
+
+from src.output.result_models import AnalysisResult, OHLCBar, OHLCData
 
 logger = logging.getLogger(__name__)
 
@@ -58,9 +61,6 @@ class ResultWriter:
             )
             return None
 
-        path = self._build_path(symbol, broker_now)
-        path.parent.mkdir(parents=True, exist_ok=True)
-
         # Determine status
         errors = result.get("errors", [])
         if errors:
@@ -80,13 +80,23 @@ class ResultWriter:
 
         # Build SL/TP overlay from analysis_result (deterministic engine)
         analysis_result_obj = result.get("analysis_result")
+        assembled_result: AnalysisResult | None
         if analysis_result_obj is not None:
-            overlay = getattr(analysis_result_obj, "sl_tp_overlay", None)
-            if overlay is not None:
-                sl_tp_overlay = overlay
-            else:
-                sl_tp_overlay = SLTPOverlay()
+            try:
+                if isinstance(analysis_result_obj, AnalysisResult):
+                    assembled_result = analysis_result_obj
+                elif isinstance(analysis_result_obj, Mapping):
+                    assembled_result = AnalysisResult.model_validate(analysis_result_obj)
+                else:
+                    assembled_result = AnalysisResult.model_validate(
+                        analysis_result_obj, from_attributes=True
+                    )
+            except (ValidationError, TypeError, ValueError) as exc:
+                raise ResultWriterContractError(
+                    "analysis_result does not satisfy the AnalysisResult contract"
+                ) from exc
         else:
+            assembled_result = None
             # No analysis_result available. Use an empty overlay only for
             # partial results; successful results must contain deterministic
             # trade levels.
@@ -94,23 +104,49 @@ class ResultWriter:
                 raise ResultWriterContractError(
                     "AnalysisResult is required to write deterministic trade levels"
                 )
-            sl_tp_overlay = SLTPOverlay()
 
-        decision = result.get("decision")
-        analysis_result = AnalysisResult(
-            symbol=symbol,
-            run_id=run_id,
-            started_at=broker_now,
-            completed_at=broker_now,
-            status=status,
-            errors=errors,
-            fatal_error=fatal_error,
-            market_context=result.get("market_context"),
-            decision=decision,
-            review=result.get("review"),
-            ohlc=ohlc_data,
-            sl_tp_overlay=sl_tp_overlay,
-        )
+        if assembled_result is None:
+            analysis_result = AnalysisResult(
+                symbol=symbol,
+                run_id=run_id,
+                started_at=broker_now,
+                completed_at=broker_now,
+                status=status,
+                errors=errors,
+                fatal_error=fatal_error,
+                market_context=result.get("market_context"),
+                decision=result.get("decision"),
+                review=result.get("review"),
+                ohlc=ohlc_data,
+            )
+        else:
+            # Start from the validated model so every deterministic field is
+            # retained regardless of whether the caller used a dict/object.
+            payload = assembled_result.model_dump(mode="python")
+            payload.update(
+                {
+                    "symbol": symbol,
+                    "run_id": run_id,
+                    "started_at": broker_now,
+                    "completed_at": broker_now,
+                    "status": status,
+                    "errors": errors,
+                    "fatal_error": fatal_error,
+                    "market_context": result.get("market_context", assembled_result.market_context),
+                    "decision": result.get("decision", assembled_result.decision),
+                    "review": result.get("review", assembled_result.review),
+                    "ohlc": ohlc_data,
+                }
+            )
+            try:
+                analysis_result = AnalysisResult.model_validate(payload)
+            except (ValidationError, TypeError, ValueError) as exc:
+                raise ResultWriterContractError(
+                    "result overrides do not satisfy the AnalysisResult contract"
+                ) from exc
+
+        path = self._build_path(symbol, broker_now)
+        path.parent.mkdir(parents=True, exist_ok=True)
 
         # Serialize to JSON — use model_dump(mode="json") for Pydantic v2
         raw = analysis_result.model_dump(mode="json", by_alias=False)

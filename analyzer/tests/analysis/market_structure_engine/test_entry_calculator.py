@@ -139,22 +139,58 @@ class TestDetermineEntryType:
     """_determine_entry_type classifies entry based on price relationship."""
 
     def test_entry_above_current_is_stop(self) -> None:
-        assert _determine_entry_type(entry_price=1.1010, current_price=1.1000) == EntryType.STOP
+        assert (
+            _determine_entry_type(
+                entry_price=1.1010,
+                current_price=1.1000,
+                trade_direction=TradeDirection.BULLISH,
+            )
+            == EntryType.STOP
+        )
 
     def test_entry_below_current_is_limit(self) -> None:
-        assert _determine_entry_type(entry_price=1.0990, current_price=1.1000) == EntryType.LIMIT
+        assert (
+            _determine_entry_type(
+                entry_price=1.0990,
+                current_price=1.1000,
+                trade_direction=TradeDirection.BULLISH,
+            )
+            == EntryType.LIMIT
+        )
 
     def test_entry_equals_current_is_market(self) -> None:
-        assert _determine_entry_type(entry_price=1.1000, current_price=1.1000) == EntryType.MARKET
+        assert (
+            _determine_entry_type(
+                entry_price=1.1000,
+                current_price=1.1000,
+                trade_direction=TradeDirection.BULLISH,
+            )
+            == EntryType.MARKET
+        )
 
-    def test_entry_none_is_market(self) -> None:
-        assert _determine_entry_type(entry_price=None, current_price=1.1000) == EntryType.MARKET
+    def test_missing_direction_is_unavailable(self) -> None:
+        assert _determine_entry_type(entry_price=1.1010, current_price=1.1000) is None
 
-    def test_current_none_is_market(self) -> None:
-        assert _determine_entry_type(entry_price=1.1010, current_price=None) == EntryType.MARKET
+    def test_invalid_direction_is_unavailable(self) -> None:
+        assert _determine_entry_type(1.1010, 1.1000, "SIDEWAYS") is None
 
-    def test_both_none_is_market(self) -> None:
-        assert _determine_entry_type(entry_price=None, current_price=None) == EntryType.MARKET
+    def test_entry_none_is_unavailable(self) -> None:
+        assert _determine_entry_type(entry_price=None, current_price=1.1000) is None
+
+    def test_current_none_is_unavailable(self) -> None:
+        assert _determine_entry_type(entry_price=1.1010, current_price=None) is None
+
+    def test_both_none_is_unavailable(self) -> None:
+        assert _determine_entry_type(entry_price=None, current_price=None) is None
+
+    def test_bearish_entry_below_current_is_stop(self) -> None:
+        assert _determine_entry_type(1.0990, 1.1000, TradeDirection.BEARISH) == EntryType.STOP
+
+    def test_bearish_entry_above_current_is_limit(self) -> None:
+        assert _determine_entry_type(1.1010, 1.1000, TradeDirection.BEARISH) == EntryType.LIMIT
+
+    def test_neutral_direction_is_unavailable(self) -> None:
+        assert _determine_entry_type(1.1010, 1.1000, TradeDirection.NEUTRAL) is None
 
 
 # ============================================================================
@@ -267,6 +303,9 @@ class TestCalculateEntryPlan:
         assert result.geometry_status == GeometryStatus.TEMPORARILY_UNAVAILABLE
         assert result.estimated_reward_risk is None
         assert result.entry_price is None
+        assert result.entry_type is None
+        assert SetupRejectionCode.INSUFFICIENT_DATA in result.rejection_codes
+        assert result.deterministic_plan_complete is False
 
     def test_trade_direction_from_string(self) -> None:
         """Entry calculator accepts TradeDirection as string."""

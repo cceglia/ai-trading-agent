@@ -62,7 +62,7 @@ class TestAgentPrompts:
         context = MarketContextSummary(
             symbol="EURUSD", bias=BiasLevel.BULLISH, confidence=75.0, reasoning="test"
         )
-        agent.decide(context, [], [])
+        agent.decide(context, [], [], order_type="STOP")
 
         call_kwargs = mock_client.generate_structured_sync.call_args
         messages = call_kwargs[1]["messages"]
@@ -70,6 +70,9 @@ class TestAgentPrompts:
 
         assert "advisory only" in system_msg.lower()
         assert "2:1" in system_msg
+        user_msg = messages[1]["content"]
+        assert "order_type is STOP" in user_msg
+        assert "immutable" in user_msg
 
     def test_reviewer_uses_detailed_prompt(self):
         """ReviewerAgent must use REVIEWER_SYSTEM_PROMPT from prompts.py."""

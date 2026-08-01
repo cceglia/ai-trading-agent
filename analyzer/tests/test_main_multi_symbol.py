@@ -2,20 +2,26 @@
 
 import logging
 import sys
+from datetime import datetime
 from typing import Any
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 from src.decision.cost_tracker import CostLimitExceeded
-from src.output.result_models import SLTPOverlay
+from src.output.result_models import AnalysisResult, SLTPOverlay
 
 
-def _mock_analysis_result(sl_tp_overlay: SLTPOverlay | None = None) -> MagicMock:
+def _mock_analysis_result(sl_tp_overlay: SLTPOverlay | None = None) -> AnalysisResult:
     """Create a mock AnalysisResult for test result dicts."""
-    mock = MagicMock()
-    mock.sl_tp_overlay = sl_tp_overlay or SLTPOverlay()
-    return mock
+    return AnalysisResult(
+        symbol="XAUUSD",
+        run_id="test-run",
+        started_at=datetime(2026, 7, 26, 8, 30),
+        completed_at=datetime(2026, 7, 26, 8, 31),
+        status="success",
+        sl_tp_overlay=sl_tp_overlay or SLTPOverlay(),
+    )
 
 
 class TestArgparseMultiSymbol:

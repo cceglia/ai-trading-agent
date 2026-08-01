@@ -18,6 +18,7 @@ __all__ = [
     "BiasLevel",
     "DecisionAction",
     "MarketContextSummary",
+    "AdvisoryLevels",
     "DecisionOutput",
     "ReviewVerdict",
     "ReviewStatus",
@@ -46,6 +47,14 @@ class MarketContextSummary(BaseModel):
     model_config = {"use_enum_values": True}
 
 
+class AdvisoryLevels(BaseModel):
+    """Optional LLM-proposed levels, never used for execution or chart overlays."""
+
+    entry_price: float | None = Field(default=None, description="Advisory entry price")
+    stop_loss: float | None = Field(default=None, description="Advisory stop-loss price")
+    take_profit: float | None = Field(default=None, description="Advisory take-profit price")
+
+
 class DecisionOutput(BaseModel):
     """Decision output from decider agent.
 
@@ -57,6 +66,10 @@ class DecisionOutput(BaseModel):
     symbol: str = Field(description="Trading symbol")
     action: DecisionAction = Field(description="Decision action")
     reasoning: str = Field(description="Reasoning for the decision")
+    advisory_levels: AdvisoryLevels | None = Field(
+        default=None,
+        description="Optional advisory levels; deterministic levels remain authoritative",
+    )
 
     model_config = {"use_enum_values": True}
 
@@ -96,6 +109,10 @@ class ReviewVerdict(BaseModel):
     geometry_violation_detected: bool = Field(
         default=False,
         description="Geometry violation detected during review",
+    )
+    advisory_levels: AdvisoryLevels | None = Field(
+        default=None,
+        description="Optional advisory levels; deterministic levels remain authoritative",
     )
 
     @computed_field  # type: ignore[prop-decorator]

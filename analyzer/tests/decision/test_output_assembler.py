@@ -18,6 +18,7 @@ from src.analysis.market_structure_engine.models import (
     DeterministicSetupState,
     EnforcementViolation,
     EnforcementViolationCode,
+    EntryType,
     ExecutionBlocker,
     ExecutionBlockerCode,
     ExecutionBlockerType,
@@ -34,7 +35,7 @@ from src.analysis.market_structure_engine.models import (
     TradeDirection,
     TriggerStatus,
 )
-from src.decision.models import DecisionOutput, ReviewVerdict
+from src.decision.models import AdvisoryLevels, DecisionOutput, ReviewVerdict
 from src.decision.output_assembler import FinalOutputAssembler
 
 # ---------------------------------------------------------------------------
@@ -53,6 +54,7 @@ def _make_setup(
     target_price: float | None = 1.1100,
     invalidation_price: float | None = 1.0980,
     estimated_rr: float | None = 3.0,
+    entry_type: EntryType | None = EntryType.STOP,
     **kwargs,
 ) -> DeterministicSetupState:
     params = dict(
@@ -64,6 +66,7 @@ def _make_setup(
         h1_trigger_status=TriggerStatus.CONFIRMED_TRIGGER,
         h1_setup_status="VALID_SETUP",
         current_price=1.1000,
+        entry_type=entry_type,
         entry_price=entry_price,
         entry_zone_low=1.1005,
         entry_zone_high=1.1015,
@@ -112,8 +115,14 @@ def _make_decision(
     action: DecisionAction = DecisionAction.BUY_SETUP,
     symbol: str = "EURUSD",
     reasoning: str = "Bullish structure with confirmed BOS on H1",
+    advisory_levels: AdvisoryLevels | None = None,
 ) -> DecisionOutput:
-    return DecisionOutput(symbol=symbol, action=action, reasoning=reasoning)
+    return DecisionOutput(
+        symbol=symbol,
+        action=action,
+        reasoning=reasoning,
+        advisory_levels=advisory_levels,
+    )
 
 
 def _make_review(
@@ -121,8 +130,9 @@ def _make_review(
     status: ReviewStatus = ReviewStatus.APPROVED,
     reasoning: str = "All criteria met",
     approved: bool = True,
+    advisory_levels: AdvisoryLevels | None = None,
 ) -> ReviewVerdict:
-    return ReviewVerdict(status=status, reasoning=reasoning)
+    return ReviewVerdict(status=status, reasoning=reasoning, advisory_levels=advisory_levels)
 
 
 def _make_enforcement(
@@ -214,6 +224,23 @@ class TestDeterministicPricesInOutput:
         )
         assert result.sl_tp_overlay.take_profit == 1.1200
 
+    def test_advisory_levels_are_separate_from_deterministic_levels(self) -> None:
+        advisory = AdvisoryLevels(entry_price=1.1020, stop_loss=1.0970, take_profit=1.1150)
+        result = FinalOutputAssembler().assemble(
+            setup=_make_setup(entry_price=1.1010, invalidation_price=1.0980, target_price=1.1100),
+            policy=_make_policy(),
+            risk=_make_risk(),
+            decision=_make_decision(advisory_levels=advisory),
+            review=_make_review(advisory_levels=advisory),
+            enforcement=_make_enforcement(),
+        )
+
+        assert result.advisory_levels == advisory
+        assert result.review_advisory_levels == advisory
+        assert result.sl_tp_overlay.entry_price == 1.1010
+        assert result.sl_tp_overlay.stop_loss == 1.0980
+        assert result.sl_tp_overlay.take_profit == 1.1100
+
     def test_sl_tp_overlay_none_when_missing(self) -> None:
         setup = _make_setup(entry_price=None, target_price=None, invalidation_price=None)
         policy = _make_policy()
@@ -234,6 +261,34 @@ class TestDeterministicPricesInOutput:
         assert result.sl_tp_overlay.entry_price is None
         assert result.sl_tp_overlay.stop_loss is None
         assert result.sl_tp_overlay.take_profit is None
+
+    def test_order_type_is_deterministic(self) -> None:
+        result = FinalOutputAssembler().assemble(
+            setup=_make_setup(entry_price=1.1010),
+            policy=_make_policy(),
+            risk=_make_risk(),
+            decision=_make_decision(),
+            review=_make_review(),
+            enforcement=_make_enforcement(),
+        )
+        assert result.order_type == "STOP"
+
+    def test_missing_prices_have_unavailable_order_type(self) -> None:
+        result = FinalOutputAssembler().assemble(
+            setup=_make_setup(
+                entry_price=None,
+                target_price=None,
+                invalidation_price=None,
+                entry_type=None,
+            ),
+            policy=_make_policy(),
+            risk=_make_risk(),
+            decision=_make_decision(),
+            review=_make_review(),
+            enforcement=_make_enforcement(),
+        )
+        assert result.order_type is None
+        assert result.deterministic_setup_complete is False
 
 
 # ============================================================================

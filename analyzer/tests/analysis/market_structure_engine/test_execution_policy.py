@@ -328,6 +328,21 @@ class TestStatusDerivation:
         state = evaluate_execution_policy(setup=setup, risk_policy=policy)
         assert state.pre_review_execution_status == ExecutionStatus.ACTIONABLE
 
+    def test_incomplete_deterministic_plan_is_blocked(self) -> None:
+        setup = _make_setup().model_copy(update={"entry_price": None})
+        policy = evaluate_execution_policy(
+            setup=setup,
+            risk_policy=RiskPolicyState(estimated_reward_risk=2.0),
+            settings=PolicySettings(require_confirmed_trigger=False),
+        )
+
+        assert policy.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
+        assert policy.allowed_actions == (DecisionAction.NO_TRADE,)
+        assert any(
+            blocker.code == ExecutionBlockerCode.DATA_QUALITY_INCOMPLETE_SETUP
+            for blocker in policy.execution_blockers
+        )
+
     def test_multiple_blockers_use_highest_priority(self) -> None:
         """When multiple blocker types present, status uses the highest priority."""
         setup = _make_setup(

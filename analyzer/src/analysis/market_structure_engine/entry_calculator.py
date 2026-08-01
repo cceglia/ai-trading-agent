@@ -135,7 +135,8 @@ def _extract_entry_prices(setup_data: dict[str, Any]) -> dict[str, Any]:
 def _determine_entry_type(
     entry_price: float | None,
     current_price: float | None,
-) -> EntryType:
+    trade_direction: TradeDirection | str | None = None,
+) -> EntryType | None:
     """Determine the entry type based on price relationship.
 
     Args:
@@ -143,15 +144,18 @@ def _determine_entry_type(
         current_price: Current market price.
 
     Returns:
-        EntryType enum value.
+        EntryType enum value, or ``None`` when the price relationship is
+        unavailable.
     """
-    if entry_price is None or current_price is None:
+    if entry_price is None or current_price is None or trade_direction == TradeDirection.NEUTRAL:
+        return None
+    if trade_direction not in (TradeDirection.BULLISH, TradeDirection.BEARISH):
+        return None
+    if entry_price == current_price:
         return EntryType.MARKET
-    if entry_price > current_price:
-        return EntryType.STOP
-    if entry_price < current_price:
-        return EntryType.LIMIT
-    return EntryType.MARKET
+    if trade_direction == TradeDirection.BULLISH:
+        return EntryType.STOP if entry_price > current_price else EntryType.LIMIT
+    return EntryType.STOP if entry_price < current_price else EntryType.LIMIT
 
 
 def calculate_entry_plan(setup_data: dict[str, Any]) -> DeterministicSetupState:
@@ -248,12 +252,17 @@ def _calculate_entry_plan_inner(setup_data: dict[str, Any]) -> DeterministicSetu
         geometry_status = GeometryStatus.TEMPORARILY_UNAVAILABLE
 
     # Determine entry type
-    entry_type = _determine_entry_type(entry_price, current_price)
+    entry_type = _determine_entry_type(entry_price, current_price, trade_direction)
 
     # Extract classification fields with defaults
     setup_classification_status = setup_data.get("setup_classification_status", "NO_SETUP")
     setup_grade = setup_data.get("setup_grade")
     lifecycle_status = setup_data.get("setup_lifecycle_status", "PENDING")
+
+    missing_required_prices = any(
+        price is None for price in (current_price, entry_price, stop_price, target_price)
+    )
+    rejection_codes = (SetupRejectionCode.INSUFFICIENT_DATA,) if missing_required_prices else ()
 
     # Build and return the DeterministicSetupState
     return DeterministicSetupState(
@@ -263,6 +272,7 @@ def _calculate_entry_plan_inner(setup_data: dict[str, Any]) -> DeterministicSetu
         trade_direction=trade_direction,
         # Lifecycle
         setup_lifecycle_status=lifecycle_status,
+        rejection_codes=rejection_codes,
         geometry_status=geometry_status,
         confirmed_at=setup_data.get("confirmed_at"),
         confirmed_bar_index=setup_data.get("confirmed_bar_index"),

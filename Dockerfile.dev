@@ -27,7 +27,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 COPY server/pyproject.toml /app/server/pyproject.toml
 COPY analyzer/pyproject.toml /app/analyzer/pyproject.toml
-RUN pip install -e /app/server -e /app/analyzer
+RUN pip install -e '/app/server[dev]' -e '/app/analyzer[dev]'
 
 # Install UI frontend dependencies (as root)
 COPY ui/package.json ui/package-lock.json* /app/ui/

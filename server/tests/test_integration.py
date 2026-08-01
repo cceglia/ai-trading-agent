@@ -69,6 +69,45 @@ class TestGetRunIntegration:
         assert data["symbol"] == "XAUUSD"
         assert data["market_context"]["bias"] == "bullish"
         assert data["decision"]["action"] == "buy_setup"
+        assert data["sl_tp_overlay"] == {
+            "entry_price": 2400.0,
+            "stop_loss": 2380.0,
+            "take_profit": 2440.0,
+        }
+        assert data["order_type"] == "STOP"
+        assert data["deterministic_setup_complete"] is True
+        assert data["estimated_reward_risk"] == 2.0
+        assert data["advisory_levels"]["entry_price"] == 2401.0
+
+    def test_legacy_result_without_trade_plan_fields_is_usable(
+        self, integration_client, integration_data
+    ):
+        """Legacy files remain readable without inventing a MARKET order."""
+        legacy_path = (
+            integration_data / "2026" / "07" / "26" / "EURUSD" / "result-09.json"
+        )
+        legacy_path.parent.mkdir(parents=True)
+        legacy_path.write_text(
+            json.dumps(
+                {
+                    "symbol": "EURUSD",
+                    "version": "1.0",
+                    "run_id": "legacy-eurusd",
+                    "status": "success",
+                    "market_context": {"bias": "bearish", "confidence": 0.4},
+                    "decision": {"action": "no_trade", "reasoning": "legacy"},
+                    "review": {"approved": False, "reasoning": "legacy"},
+                }
+            )
+        )
+
+        response = integration_client.get("/api/runs/EURUSD/2026/07/26/result-09")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["review"]["status"] == "REJECTED"
+        assert "order_type" not in data or data["order_type"] is None
+        assert "advisory_levels" not in data or data["advisory_levels"] is None
 
     def test_returns_404_for_missing(self, integration_client):
         resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-99-99")

@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
+from src.decision.models import AdvisoryLevels, DecisionOutput, MarketContextSummary, ReviewVerdict
 
 
 class OHLCBar(BaseModel):
@@ -60,6 +60,14 @@ class AnalysisResult(BaseModel):
     review: ReviewVerdict | None = None
     ohlc: OHLCData = Field(default_factory=OHLCData)
     sl_tp_overlay: SLTPOverlay = Field(default_factory=SLTPOverlay)
+    advisory_levels: AdvisoryLevels | None = Field(
+        default=None,
+        description="Optional advisory levels from the decision; never authoritative",
+    )
+    review_advisory_levels: AdvisoryLevels | None = Field(
+        default=None,
+        description="Optional advisory levels from the review; never authoritative",
+    )
 
     # ── Deterministic pipeline (authoritative) ─────────────────────────
     setup_grade: str | None = Field(
@@ -85,6 +93,14 @@ class AnalysisResult(BaseModel):
     estimated_reward_risk: float | None = Field(
         default=None,
         description="Reward-to-risk ratio from deterministic calculation",
+    )
+    order_type: str | None = Field(
+        default=None,
+        description="Direction-aware deterministic order type: MARKET, LIMIT, or STOP",
+    )
+    deterministic_setup_complete: bool = Field(
+        default=False,
+        description="Whether all canonical deterministic setup prices are available",
     )
 
     # ── Risk policy ────────────────────────────────────────────────────
