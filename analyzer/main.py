@@ -244,22 +244,22 @@ def _create_agents(
     # other value causes UnsupportedLLMProviderError at construction time.
     reviewer_provider = ProviderKind(settings.reviewer_llm_provider)
     reviewer_kwargs: dict[str, Any] = dict(client_kwargs)
-    if settings.reviewer_llm_model:
-        reviewer_kwargs["model"] = settings.reviewer_llm_model
-    if settings.reviewer_llm_api_key:
-        reviewer_kwargs["api_key"] = settings.reviewer_llm_api_key
-    if settings.reviewer_llm_base_url:
-        reviewer_kwargs["base_url"] = settings.reviewer_llm_base_url
-    if settings.reviewer_llm_reasoning_effort:
-        reviewer_kwargs["reasoning_effort"] = settings.reviewer_llm_reasoning_effort
-    if settings.reviewer_llm_model_family_override:
-        reviewer_kwargs["family_override"] = settings.reviewer_llm_model_family_override
-    if settings.reviewer_llm_model_version_override:
-        reviewer_kwargs["version_override"] = settings.reviewer_llm_model_version_override
+    if settings.reviewer_model:
+        reviewer_kwargs["model"] = settings.reviewer_model
+    if settings.reviewer_api_key:
+        reviewer_kwargs["api_key"] = settings.reviewer_api_key
+    if settings.reviewer_base_url:
+        reviewer_kwargs["base_url"] = settings.reviewer_base_url
+    if settings.reviewer_reasoning_effort:
+        reviewer_kwargs["reasoning_effort"] = settings.reviewer_reasoning_effort
+    if settings.reviewer_model_family_override:
+        reviewer_kwargs["family_override"] = settings.reviewer_model_family_override
+    if settings.reviewer_model_version_override:
+        reviewer_kwargs["version_override"] = settings.reviewer_model_version_override
     # Reviewer temperature is always set explicitly as an independent setting.
     # Unlike string-based overrides (which use "" to mean "inherit from primary"),
     # temperature is always a meaningful float — defaulting to 0.0 for both.
-    reviewer_kwargs["default_temperature"] = settings.reviewer_llm_temperature
+    reviewer_kwargs["default_temperature"] = settings.reviewer_temperature
 
     reviewer_client = create_llm_client(provider=reviewer_provider, **reviewer_kwargs)
 

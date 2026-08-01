@@ -289,15 +289,13 @@ the environment.
 | `TRADING_OPENAI_MODEL_VERSION_OVERRIDE` | — | Override detected model version for the primary LLM |
 | **LLM — Reviewer (independent)** | | |
 | `TRADING_REVIEWER_LLM_PROVIDER` | `openai` | Provider for the reviewer LLM |
-| `TRADING_REVIEWER_LLM_MODEL` | `""` | Model identifier (empty = use primary model) |
-| `TRADING_REVIEWER_LLM_API_KEY` | `""` | API key (empty = use primary API key) |
-| `TRADING_REVIEWER_LLM_BASE_URL` | `""` | Base URL (empty = default for provider) |
-| `TRADING_REVIEWER_LLM_REASONING_EFFORT` | `""` | Reasoning effort for reviewer |
-| `TRADING_REVIEWER_LLM_TIMEOUT_SECONDS` | `120.0` | Timeout for reviewer LLM calls |
-| `TRADING_REVIEWER_LLM_MAX_RETRIES` | `3` | Maximum provider retries for reviewer |
-| `TRADING_REVIEWER_LLM_TEMPERATURE` | `0.0` | Temperature for the reviewer LLM |
-| `TRADING_REVIEWER_LLM_MODEL_FAMILY_OVERRIDE` | — | Override detected model family for reviewer |
-| `TRADING_REVIEWER_LLM_MODEL_VERSION_OVERRIDE` | — | Override detected model version for reviewer |
+| `TRADING_REVIEWER_MODEL` | `""` | Model identifier (empty = use primary model) |
+| `TRADING_REVIEWER_API_KEY` | `""` | API key (empty = use primary API key) |
+| `TRADING_REVIEWER_BASE_URL` | `""` | Base URL (empty = default for provider) |
+| `TRADING_REVIEWER_REASONING_EFFORT` | `""` | Reasoning effort for reviewer |
+| `TRADING_REVIEWER_TEMPERATURE` | `0.0` | Temperature for the reviewer LLM |
+| `TRADING_REVIEWER_MODEL_FAMILY_OVERRIDE` | — | Override detected model family for reviewer |
+| `TRADING_REVIEWER_MODEL_VERSION_OVERRIDE` | — | Override detected model version for reviewer |
 | **Review Policy** | | |
 | `TRADING_REQUIRE_REVIEWER` | `True` | Require independent reviewer for executable decisions |
 | `TRADING_ALLOW_UNREVIEWED_DECISIONS` | `False` | Allow decisions without review (forbidden in paper/live) |
@@ -496,10 +494,10 @@ primary_client = create_llm_client(
 # Reviewer can use a different model
 reviewer_client = create_llm_client(
     provider=ProviderKind(settings.reviewer_llm_provider),
-    api_key=settings.reviewer_llm_api_key or api_key,
-    base_url=settings.reviewer_llm_base_url or base_url,
-    model=settings.reviewer_llm_model or model,
-    reasoning_effort=settings.reviewer_llm_reasoning_effort or reasoning_effort,
+    api_key=settings.reviewer_api_key or api_key,
+    base_url=settings.reviewer_base_url or base_url,
+    model=settings.reviewer_model or model,
+    reasoning_effort=settings.reviewer_reasoning_effort or reasoning_effort,
 )
 
 # Wire up LLM agents with their respective clients
@@ -687,8 +685,8 @@ result = graph.run("EURUSD")
 - **Two-LLM-Instance Architecture** (`main.py:_create_agents`): The synthesizer and decider
   share a **primary** LLM client. The reviewer receives its own **reviewer** client, which
   can use a different model, API key, base URL, reasoning effort, and model family/version
-  overrides — all configured via environment variables (`TRADING_REVIEWER_LLM_MODEL`,
-  `TRADING_REVIEWER_LLM_API_KEY`, etc.).
+  overrides — all configured via environment variables (`TRADING_REVIEWER_MODEL`,
+  `TRADING_REVIEWER_API_KEY`, etc.).
 - **CostTracker** (`cost_tracker.py`): Tracks cumulative token usage and USD cost per symbol
   using per-model pricing tables (`input_per_million`, `cached_input_per_million`,
   `output_per_million`). Raises `CostLimitExceeded` when `cost_per_symbol_limit` is exceeded

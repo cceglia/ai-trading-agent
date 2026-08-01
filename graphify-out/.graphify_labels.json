@@ -175,9 +175,18 @@
   "173": "._synthesize_context",
   "174": "test_scanner.py",
   "175": "TestCORS",
+  "176": "test_h1_candle_period",
+  "177": "test_h1_candle_period_midnight",
   "178": "TestCostTrackerWiring",
+  "179": "testget_cache_date_d1_before_close",
+  "180": "testget_cache_date_h4_returns_closing_hour",
   "181": "TestGenericAliasModelIdentityResolver",
   "182": ".test_cost_limit_exceeded_message_in_stderr",
   "183": "Domain Glossary",
-  "184": "Architecture"
+  "184": "Architecture",
+  "185": "test_should_run_h1_without_cache",
+  "186": "test_load_returns_none_when_missing",
+  "187": "test_save_h4_creates_hour_suffixed_file",
+  "188": "test_load_handles_corrupt_json",
+  "189": "0001-reviewer-configuration-names.md"
 }

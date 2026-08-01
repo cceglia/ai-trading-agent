@@ -104,7 +104,7 @@ class TestCreateAgentsTemperatureWiring:
 
     The primary client should receive settings.openai_temperature as
     default_temperature. The reviewer client should always receive
-    settings.reviewer_llm_temperature as its own independent default_temperature
+    settings.reviewer_temperature as its own independent default_temperature
     (even when it matches the primary — unlike string overrides that use ""
     to mean "inherit from primary").
     """
@@ -123,13 +123,13 @@ class TestCreateAgentsTemperatureWiring:
         settings.primary_llm_provider = "openai"
 
         settings.reviewer_llm_provider = "openai"
-        settings.reviewer_llm_model = ""
-        settings.reviewer_llm_api_key = ""
-        settings.reviewer_llm_base_url = ""
-        settings.reviewer_llm_reasoning_effort = ""
-        settings.reviewer_llm_model_family_override = ""
-        settings.reviewer_llm_model_version_override = ""
-        settings.reviewer_llm_temperature = 0.0
+        settings.reviewer_model = ""
+        settings.reviewer_api_key = ""
+        settings.reviewer_base_url = ""
+        settings.reviewer_reasoning_effort = ""
+        settings.reviewer_model_family_override = ""
+        settings.reviewer_model_version_override = ""
+        settings.reviewer_temperature = 0.0
 
         cost_tracker = MagicMock(spec=CostTracker)
 
@@ -144,7 +144,7 @@ class TestCreateAgentsTemperatureWiring:
         )
 
     def test_reviewer_client_receives_reviewer_temperature(self) -> None:
-        """Reviewer client gets reviewer_llm_temperature, independent of primary."""
+        """Reviewer client gets reviewer_temperature, independent of primary."""
         import main
         from src.decision.cost_tracker import CostTracker
 
@@ -157,13 +157,13 @@ class TestCreateAgentsTemperatureWiring:
         settings.primary_llm_provider = "openai"
 
         settings.reviewer_llm_provider = "openai"
-        settings.reviewer_llm_model = ""
-        settings.reviewer_llm_api_key = ""
-        settings.reviewer_llm_base_url = ""
-        settings.reviewer_llm_reasoning_effort = ""
-        settings.reviewer_llm_model_family_override = ""
-        settings.reviewer_llm_model_version_override = ""
-        settings.reviewer_llm_temperature = 0.3  # different from primary
+        settings.reviewer_model = ""
+        settings.reviewer_api_key = ""
+        settings.reviewer_base_url = ""
+        settings.reviewer_reasoning_effort = ""
+        settings.reviewer_model_family_override = ""
+        settings.reviewer_model_version_override = ""
+        settings.reviewer_temperature = 0.3  # different from primary
 
         cost_tracker = MagicMock(spec=CostTracker)
 
@@ -191,13 +191,13 @@ class TestCreateAgentsTemperatureWiring:
         settings.primary_llm_provider = "openai"
 
         settings.reviewer_llm_provider = "openai"
-        settings.reviewer_llm_model = ""
-        settings.reviewer_llm_api_key = ""
-        settings.reviewer_llm_base_url = ""
-        settings.reviewer_llm_reasoning_effort = ""
-        settings.reviewer_llm_model_family_override = ""
-        settings.reviewer_llm_model_version_override = ""
-        settings.reviewer_llm_temperature = 0.9  # differs from primary
+        settings.reviewer_model = ""
+        settings.reviewer_api_key = ""
+        settings.reviewer_base_url = ""
+        settings.reviewer_reasoning_effort = ""
+        settings.reviewer_model_family_override = ""
+        settings.reviewer_model_version_override = ""
+        settings.reviewer_temperature = 0.9  # differs from primary
 
         cost_tracker = MagicMock(spec=CostTracker)
 

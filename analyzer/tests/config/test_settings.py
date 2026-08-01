@@ -92,6 +92,41 @@ class TestReasoningEffortSettings:
         assert Settings().openai_reasoning_effort == "high"
 
 
+class TestReviewerSettings:
+    """Tests for reviewer-specific environment variable names."""
+
+    def test_reviewer_env_names_drop_llm_except_provider(self, monkeypatch: pytest.MonkeyPatch):
+        """Reviewer settings use the concise names while provider stays compatible."""
+        monkeypatch.setenv("TRADING_REVIEWER_LLM_PROVIDER", "openai")
+        monkeypatch.setenv("TRADING_REVIEWER_MODEL", "reviewer-model")
+        monkeypatch.setenv("TRADING_REVIEWER_API_KEY", "reviewer-key")
+        monkeypatch.setenv("TRADING_REVIEWER_BASE_URL", "https://reviewer.example/v1")
+        monkeypatch.setenv("TRADING_REVIEWER_TEMPERATURE", "0.3")
+        monkeypatch.setenv("TRADING_REVIEWER_REASONING_EFFORT", "high")
+        monkeypatch.setenv("TRADING_REVIEWER_MODEL_FAMILY_OVERRIDE", "family")
+        monkeypatch.setenv("TRADING_REVIEWER_MODEL_VERSION_OVERRIDE", "version")
+
+        settings = Settings()
+
+        assert settings.reviewer_llm_provider == "openai"
+        assert settings.reviewer_model == "reviewer-model"
+        assert settings.reviewer_api_key == "reviewer-key"
+        assert settings.reviewer_base_url == "https://reviewer.example/v1"
+        assert settings.reviewer_temperature == 0.3
+        assert settings.reviewer_reasoning_effort == "high"
+        assert settings.reviewer_model_family_override == "family"
+        assert settings.reviewer_model_version_override == "version"
+        assert not hasattr(settings, "reviewer_llm_timeout_seconds")
+        assert not hasattr(settings, "reviewer_llm_max_retries")
+
+    def test_old_reviewer_model_name_is_not_loaded(self, monkeypatch: pytest.MonkeyPatch):
+        """The removed reviewer prefix is not accepted as a compatibility alias."""
+        monkeypatch.setenv("TRADING_REVIEWER_LLM_MODEL", "old-model")
+        monkeypatch.delenv("TRADING_REVIEWER_MODEL", raising=False)
+
+        assert Settings().reviewer_model == ""
+
+
 class TestOpenAITemperatureSettings:
     """Tests for the openai_temperature Settings field.
 

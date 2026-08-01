@@ -65,39 +65,31 @@ class Settings(BaseSettings):
         default="openai",
         description="Provider for the reviewer LLM (e.g. openai, anthropic)",
     )
-    reviewer_llm_model: str = Field(
+    reviewer_model: str = Field(
         default="",
         description="Model identifier for the reviewer LLM (empty = use primary model)",
     )
-    reviewer_llm_model_family_override: str | None = Field(
+    reviewer_model_family_override: str | None = Field(
         default=None,
         description="Override the detected model family for the reviewer",
     )
-    reviewer_llm_model_version_override: str | None = Field(
+    reviewer_model_version_override: str | None = Field(
         default=None,
         description="Override the detected model version for the reviewer",
     )
-    reviewer_llm_api_key: str = Field(
+    reviewer_api_key: str = Field(
         default="",
         description="API key for the reviewer LLM (empty = use primary API key)",
     )
-    reviewer_llm_base_url: str = Field(
+    reviewer_base_url: str = Field(
         default="",
         description="Base URL for the reviewer LLM (empty = use default for provider)",
     )
-    reviewer_llm_timeout_seconds: float = Field(
-        default=120.0,
-        description="Timeout in seconds for reviewer LLM calls",
-    )
-    reviewer_llm_max_retries: int = Field(
-        default=3,
-        description="Maximum number of provider retries for reviewer LLM calls",
-    )
-    reviewer_llm_temperature: float = Field(
+    reviewer_temperature: float = Field(
         default=0.0,
         description="Temperature setting for the reviewer LLM",
     )
-    reviewer_llm_reasoning_effort: str = Field(
+    reviewer_reasoning_effort: str = Field(
         default="",
         description="Reasoning effort for reviewer (low/medium/high), empty = not set",
     )
