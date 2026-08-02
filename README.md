@@ -321,8 +321,7 @@ the environment.
 | `TRADING_ANALYSIS_CACHE_DIR` | `data` | Base directory for analysis disk cache and run results |
 | **Candle Close Times** | | |
 | `TRADING_D1_CLOSE_TIME` | `17:00` | D1 candle close time (`HH:MM` in broker time) |
-| `TRADING_H4_CLOSE_TIME` | `00:00` | H4 anchor time (`HH:MM` in broker time) |
-| `TRADING_H4_CLOSE_INTERVAL_HOURS` | `4` | H4 interval in hours |
+| `TRADING_H4_CLOSE_TIME` | `00:00` | H4 anchor time (`HH:MM` in broker time); H4 length is fixed at 4 hours |
 | **Telegram Notifications** | | |
 | `TRADING_TELEGRAM_BOT_TOKEN` | `""` | Telegram bot token for trade notifications |
 | `TRADING_TELEGRAM_CHAT_ID` | `""` | Telegram chat ID for notifications |

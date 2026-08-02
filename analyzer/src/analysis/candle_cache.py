@@ -13,6 +13,11 @@ _settings: Settings | None = None
 
 logger = logging.getLogger(__name__)
 
+# H4 is by definition a 4-hour timeframe: the period length is fixed and
+# must not be configurable.  Only the anchor time (h4_close_time) is
+# configurable, which offsets the 4-hour grid (e.g. 05:00 → 05-09, 09-13…).
+H4_INTERVAL_HOURS = 4
+
 
 def _get_settings() -> Settings:
     global _settings
@@ -81,7 +86,7 @@ def _candle_period(timeframe: str, broker_now: datetime) -> tuple[datetime, date
             return today_close, today_close + timedelta(days=1)
     elif timeframe == "H4":
         anchor_h, anchor_m = map(int, settings.h4_close_time.split(":"))
-        interval = timedelta(hours=settings.h4_close_interval_hours)
+        interval = timedelta(hours=H4_INTERVAL_HOURS)
         anchor = broker_now.replace(hour=anchor_h, minute=anchor_m, second=0, microsecond=0)
         periods_from_anchor = int((broker_now - anchor) / interval)
         period_start = anchor + interval * periods_from_anchor

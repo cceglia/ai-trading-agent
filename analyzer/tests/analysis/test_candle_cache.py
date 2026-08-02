@@ -514,14 +514,6 @@ def test_settings_has_h4_close_time():
     assert s.h4_close_time == "00:00"
 
 
-def test_settings_has_h4_close_interval_hours():
-    from config.settings import Settings
-
-    s = Settings()
-    assert hasattr(s, "h4_close_interval_hours")
-    assert s.h4_close_interval_hours == 4
-
-
 def test_settings_has_analysis_cache_dir(monkeypatch):
     from config.settings import Settings
 

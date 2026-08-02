@@ -279,7 +279,6 @@ class Settings(BaseSettings):
         default="17:00", description="D1 candle close time (HH:MM broker time)"
     )
     h4_close_time: str = Field(default="00:00", description="H4 anchor time (HH:MM broker time)")
-    h4_close_interval_hours: int = Field(default=4, description="H4 interval in hours")
     analysis_cache_dir: str = Field(
         default="data", description="Base directory for analysis cache and run results"
     )
