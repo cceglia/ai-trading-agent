@@ -8,6 +8,8 @@ import sys
 from datetime import datetime
 from typing import Any
 
+from pydantic import BaseModel
+
 from config.settings import Settings
 from src.analysis.structure_analyzer import MarketStructureEngine
 from src.calendar.forexfactory import ForexFactoryCalendar
@@ -353,6 +355,20 @@ def _write_result(
     writer.write(symbol, result, ohlc, broker_now)
 
 
+def _model_or_dict(value: Any) -> dict[str, Any]:
+    """Normalize a pydantic model, plain dict, or ``None`` into a dict.
+
+    Analysis result steps can carry either a pydantic model (e.g. a decision
+    or review) or an already-serialized dict.  This helper makes both forms
+    usable by the notification layer, which expects plain dictionaries.
+    """
+    if isinstance(value, BaseModel):
+        return value.model_dump()
+    if isinstance(value, dict):
+        return value
+    return {}
+
+
 def _send_telegram_notification(
     symbol: str,
     result: dict[str, Any],
@@ -368,17 +384,9 @@ def _send_telegram_notification(
         result: Analysis result dict.
         settings: Application settings (for Telegram credentials).
     """
-    decision_raw = result.get("decision")
-    context_raw = result.get("market_context", result.get("context"))
-    review_raw = result.get("review")
-
-    decision = (
-        decision_raw.model_dump() if hasattr(decision_raw, "model_dump") else (decision_raw or {})
-    )
-    context = (
-        context_raw.model_dump() if hasattr(context_raw, "model_dump") else (context_raw or {})
-    )
-    review = review_raw.model_dump() if hasattr(review_raw, "model_dump") else (review_raw or {})
+    decision = _model_or_dict(result.get("decision"))
+    context = _model_or_dict(result.get("market_context", result.get("context")))
+    review = _model_or_dict(result.get("review"))
 
     if review.get("status") == "APPROVED" and decision.get("action") in (
         "buy_setup",

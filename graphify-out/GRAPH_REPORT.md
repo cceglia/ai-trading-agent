@@ -1,16 +1,16 @@
 # Graph Report - Agent  (2026-08-03)
 
 ## Corpus Check
-- 166 files · ~107,252 words
+- 166 files · ~107,326 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 3320 nodes · 7601 edges · 189 communities (155 shown, 34 thin omitted)
+- 3322 nodes · 7605 edges · 186 communities (156 shown, 30 thin omitted)
 - Extraction: 65% EXTRACTED · 35% INFERRED · 0% AMBIGUOUS · INFERRED: 2686 edges (avg confidence: 0.64)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3430292b`
+- Built from commit: `8ff5ab35`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -162,14 +162,11 @@
 - test_h1_candle_period_at_boundary
 - test_h1_candle_period_midnight
 - test_cache_path_d1_uses_folder_date_not_broker_now
-- testget_cache_date_d1_after_close
-- test_should_run_d1_without_cache
 - test_cache_path_h1_includes_closing_hour
 - triage-labels.md
 - test_should_run_h4_with_cache
 - TestDecisionOutput
 - test_should_run_d1_before_close
-- TestGradeSetupSchemaValidation
 - _mock_analysis_result
 - test_should_run_h1_with_cache
 - test_should_run_h1_different_period
@@ -211,7 +208,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (189 total, 34 thin omitted)
+## Communities (186 total, 30 thin omitted)
 
 ### Community 0 - "TestFatalError"
 Cohesion: 0.27
@@ -222,12 +219,12 @@ Cohesion: 0.07
 Nodes (52): _cache_path(), _get_cache_date(), _get_settings(), load_cached_synthesis(), Any, datetime, Path, File-based cache for SynthesizerAgent output, keyed by (symbol, day, H1-closing- (+44 more)
 
 ### Community 2 - "DataSource"
-Cohesion: 0.09
-Nodes (12): Tests for the new model_pricing Settings field.      These tests will fail RED (, model_pricing defaults to a non-empty dict., Default model_pricing contains 'gpt-4o' with new format keys., Invalid JSON raises a validation error., All price values in model_pricing are >= 0., Price of exactly 0.0 is accepted silently (valid configuration)., Boolean as a price value is rejected., Negative price is rejected. (+4 more)
+Cohesion: 0.06
+Nodes (24): BaseSettings, Self, Parse JSON string env var and validate prices.          Accepts only the new for, Trading agent configuration., Reject unsupported instructor_mode values at Settings-parse time.          An in, Map an empty-string env var to ``None`` (inherit the primary timeout)., Resolve ``analysis_cache_dir`` to an absolute path.          Both the analyzer a, Validate execution policy settings based on execution mode.          Paper and L (+16 more)
 
 ### Community 3 - "AgentState"
 Cohesion: 0.04
-Nodes (70): Force a fresh Settings() on the next _get_settings() call., reload_settings(), InvalidTradeDirectionError, Structure analysis missing required 'timeframes' schema., Trade direction string does not map to a valid TradeDirection., StructureSchemaError, AgentState, Route after early execution routing.          Returns:             - ``"determin (+62 more)
+Nodes (59): LangGraph orchestrator for trading analysis with multi-timeframe pipeline., TradingGraph, _directional_structure_analysis(), _make_tracking_side_effect(), mock_reviewer(), If get_broker_time() fails, _analyze_structure should set fatal_error., get_candles must be called with broker_time param., snapshot_builder.build must be called with broker_time. (+51 more)
 
 ### Community 4 - "SnapshotBuilder"
 Cohesion: 0.07
@@ -246,28 +243,28 @@ Cohesion: 0.08
 Nodes (19): CalendarProvider, DataSource, Any, datetime, Protocol, Analyze market structure from snapshots.          Args:             snapshots: D, Fetch OHLC candles as CSV string.          Args:             symbol: Trading sym, Get latest price info for a symbol.          Args:             symbol: Trading s (+11 more)
 
 ### Community 8 - "TestCostTracking"
-Cohesion: 0.05
-Nodes (51): BiasLevel, Structural bias levels., _canonical_structure_analysis(), _directional_structure_analysis(), _make_cached_summary(), mock_decider(), datetime, Path (+43 more)
+Cohesion: 0.06
+Nodes (42): _canonical_structure_analysis(), _directional_structure_analysis(), _make_cached_summary(), mock_reviewer(), datetime, Path, RED-first tests for orchestrator-level synthesizer cache integration.  Tests ver, Different H1 hour on same day → cache miss (different closing hours).          C (+34 more)
 
 ### Community 9 - "ForexFactoryCalendar"
 Cohesion: 0.04
-Nodes (43): CostTracker, Accumulated cost across all recorded calls., Number of calls recorded., Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Set a per-symbol cost limit.          When *limit* is ``<= 0`` or ``None`` the l, Set the current symbol for error context.          The symbol is used by :meth:`, Tests for CostTracker — tracks LLM API call costs.  CostTracker lives in ``src/d (+35 more)
+Nodes (46): CostTracker, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Accumulated cost across all recorded calls., Number of calls recorded., Reset accumulated cost and call count to zero., Tracks LLM API call costs using per-model token pricing.      Each instance is i, Set a per-symbol cost limit.          When *limit* is ``<= 0`` or ``None`` the l, Set the current symbol for error context.          The symbol is used by :meth:` (+38 more)
 
 ### Community 10 - "orchestrator/test_synthesizer_cache.py"
 Cohesion: 0.25
 Nodes (14): EngineError, ExternalDerivedValuesError, InsufficientDataError, ParentContextError, Any, Exception, Base class for deterministic engine errors., TimeframeMismatchError (+6 more)
 
 ### Community 11 - "Agent Instructions"
-Cohesion: 0.10
-Nodes (15): _build_parser(), main(), _parse_and_configure_settings(), Build the CLI argument parser.      Returns:         Configured ArgumentParser i, Parse CLI args into a configured Settings instance.      Applies CLI overrides (, Main entry point.      Parses CLI arguments, initialises the analysis pipeline,, CaptureFixture, With --telegram, notification is NOT sent when action is no_trade. (+7 more)
+Cohesion: 0.08
+Nodes (15): main(), Main entry point.      Parses CLI arguments, initialises the analysis pipeline,, CaptureFixture, LogCaptureFixture, With --telegram, notification is NOT sent when action is no_trade., With --telegram, notification is NOT sent when review is not approved., Verify main() calls graph.run() for each symbol., Warning is logged when --telegram is set but token/chat_id are empty. (+7 more)
 
 ### Community 12 - "config/__init__.py"
 Cohesion: 0.05
 Nodes (40): autoprefixer, axios, echarts, postcss, tailwindcss, typescript, dependencies, axios (+32 more)
 
 ### Community 13 - "trading-ai-agent"
-Cohesion: 0.05
-Nodes (32): EnforcementViolation, FinalDecisionState, BaseModel, An enforcement violation detected during setup validation.      Attributes:, Immutable state representing the final decision outcome.      Attributes:, Enforcement violations are structured and carry code + reason., When setup is NON_EXECUTABLE, review is NOT_REQUIRED., When there's no setup, review is NOT_REQUIRED. (+24 more)
+Cohesion: 0.04
+Nodes (45): EnforcementViolation, FinalDecisionState, BaseModel, An enforcement violation detected during setup validation.      Attributes:, Immutable state representing the final decision outcome.      Attributes:, Evaluate all enforcement checks and produce a final decision state.          Arg, CANDIDATE_NOT_GENERATED: executable action without classified candidate., EXECUTION_NOT_ACTIONABLE: executable action while not ACTIONABLE. (+37 more)
 
 ### Community 14 - "src/calendar/__init__.py"
 Cohesion: 0.31
@@ -290,24 +287,24 @@ Cohesion: 0.28
 Nodes (14): analyze_candles(), _classify_engulfing(), Any, adx(), calculate_indicators(), ema(), macd(), Any (+6 more)
 
 ### Community 19 - "tests/calendar/__init__.py"
-Cohesion: 0.12
-Nodes (24): grade_setup(), Any, Grade a trading setup based on multi-timeframe structural analysis.      This fu, _d1_context(), _h1_context(), _h4_context(), Any, AAA grade when all three timeframes aligned: D1 directional,     H4 aligned cont (+16 more)
+Cohesion: 0.17
+Nodes (14): grade_setup(), Any, Grade a trading setup based on multi-timeframe structural analysis.      This fu, _d1_context(), _h1_context(), _h4_context(), Any, AAA can be achieved with ALIGNED_PULLBACK as well. (+6 more)
 
 ### Community 20 - "tests/data/__init__.py"
 Cohesion: 0.33
 Nodes (3): Configure structured logging for the trading agent., setup_logging(), TestSetupLogging
 
 ### Community 21 - "tests/decision/__init__.py"
-Cohesion: 0.12
-Nodes (25): _create_agents(), _format_field(), _format_field_int(), _get_decision_field(), _initialize_pipeline(), _print_summary(), _print_symbol_summary(), Any (+17 more)
+Cohesion: 0.14
+Nodes (18): _create_agents(), _initialize_pipeline(), _model_or_dict(), _print_summary(), Any, Create the three LLM agents used in the pipeline.      Each agent receives its o, Create the full analysis pipeline (data providers, agents, graph).      Args:, Write analysis result to disk via the ResultWriter.      Falls back to ``datetim (+10 more)
 
 ### Community 22 - "tests/__init__.py"
 Cohesion: 0.18
 Nodes (9): calculate_entry_plan(), Calculate entry plan from raw setup data.      Accepts the raw entry data from t, calculate_entry_plan integration test., When geometry is invalid, status is TEMPORARILY_UNAVAILABLE., Entry calculator accepts TradeDirection as string., Entry calculator accepts TradeDirection as enum., Invalid trade direction returns rejected state, not NEUTRAL fallback., Non-string/enum trade direction returns rejected state. (+1 more)
 
 ### Community 23 - "tests/orchestrator/__init__.py"
-Cohesion: 0.07
-Nodes (47): BaseSettings, Parse JSON string env var and validate prices.          Accepts only the new for, Trading agent configuration., Map an empty-string env var to ``None`` (inherit the primary timeout)., Resolve ``analysis_cache_dir`` to an absolute path.          Both the analyzer a, Settings, DeterministicEnforcementGate, Evaluate all enforcement checks and produce a final decision state.          Arg (+39 more)
+Cohesion: 0.14
+Nodes (26): DeterministicEnforcementGate, Enforces deterministic invariants before a decision is finalised.      The gate, _calendar_blocker(), _make_decision(), _make_policy(), _make_review(), _make_risk_policy(), _make_setup() (+18 more)
 
 ### Community 24 - "_make_mcp_tool_result"
 Cohesion: 0.09
@@ -318,16 +315,16 @@ Cohesion: 0.07
 Nodes (33): Walk the data directory tree, read/parse JSON result files,     filter/sort into, ResultScanner, Path, Unit tests for ResultScanner., Legacy fatal results must not make the run list endpoint fail., Helper to write a result JSON file., Files not in YYYY/MM/DD/SYMBOL/ pattern are skipped., When JSON has a 'symbol' field, it overrides the path-derived symbol. (+25 more)
 
 ### Community 26 - "test_terminal_data_provider.py"
-Cohesion: 0.09
-Nodes (14): Immutable state for risk management policy evaluation.      Attributes:, Final risk percentage after grade multiplier is applied., Whether the estimated reward-to-risk meets the minimum threshold., RiskPolicyState, Deterministic risk policy creation for the multi-timeframe pipeline.  This modul, Map all pipeline states into a unified :class:`AnalysisResult`.          Paramet, Assemble the final AnalysisResult from all pipeline states., Risk information is output from RiskPolicyState. (+6 more)
+Cohesion: 0.10
+Nodes (12): Immutable state for risk management policy evaluation.      Attributes:, Final risk percentage after grade multiplier is applied., Whether the estimated reward-to-risk meets the minimum threshold., RiskPolicyState, Map all pipeline states into a unified :class:`AnalysisResult`.          Paramet, Risk information is output from RiskPolicyState., TestRiskOutput, RiskPolicyState.risk_reward_ok computation. (+4 more)
 
 ### Community 27 - "TestGetCandlesBrokerNow"
-Cohesion: 0.15
-Nodes (15): Writes analysis results to JSON files in the data/ directory tree., ResultWriter, _make_analysis_result(), Path, SLTPOverlay, Tests for ResultWriter., When there are errors but no fatal_error, status should be 'partial'., OHLC bars appear in the output JSON under 'ohlc'. (+7 more)
+Cohesion: 0.12
+Nodes (13): CostLimitExceeded, Exception, Raised when per-symbol LLM cost exceeds the configured limit., Tests for ``except CostLimitExceeded: raise`` in every graph node.      Without, When ``SynthesizerAgent.synthesize`` raises ``CostLimitExceeded``,         it mu, When ``DeciderAgent.decide`` raises ``CostLimitExceeded``,         it must propa, When ``ReviewerAgent.review`` raises ``CostLimitExceeded``,         it must prop, When ``DataSource.get_positions`` raises ``CostLimitExceeded``,         it must (+5 more)
 
 ### Community 28 - "TestGetPositions"
-Cohesion: 0.26
-Nodes (13): _make_decision(), _make_policy(), _make_review(), _make_risk_policy(), _make_setup(), ReviewStatus, Create a RiskPolicyState with sensible defaults., Create DecisionOutput with enum action preserved.      Uses model_construct to b (+5 more)
+Cohesion: 0.18
+Nodes (16): _make_decision(), _make_policy(), _make_review(), _make_risk_policy(), _make_setup(), ReviewStatus, Integration tests for the full pipeline: enforcement gate + output assembler.  T, Create a RiskPolicyState with sensible defaults. (+8 more)
 
 ### Community 29 - "._run_async"
 Cohesion: 0.06
@@ -347,7 +344,7 @@ Nodes (15): build_risk_policy(), Create a :class:`RiskPolicyState` from a setup 
 
 ### Community 33 - "MarketContextSummary"
 Cohesion: 0.16
-Nodes (10): ForexFactoryCalendar, Any, Convert raw time text to ISO timestamp (best-effort)., Map raw impact text to standard impact level., Economic calendar provider via ForexFactory scraping., Initialize calendar provider.          Args:             cache_hours: Hours to c, Fetch upcoming economic calendar events.          Returns:             List of e, Check if cache is still valid. (+2 more)
+Nodes (10): ForexFactoryCalendar, Any, Convert raw time text to ISO timestamp (best-effort).          ForexFactory time, Map raw impact text to standard impact level., Economic calendar provider via ForexFactory scraping., Initialize calendar provider.          Args:             cache_hours: Hours to c, Fetch upcoming economic calendar events.          Returns:             List of e, Check if cache is still valid. (+2 more)
 
 ### Community 34 - "setup_logging"
 Cohesion: 0.23
@@ -370,8 +367,8 @@ Cohesion: 0.11
 Nodes (11): classify_trigger(), Classify a price-action trigger event and determine its confirmation status., CHoCH classification with all confirmation paths., CHoCH without any confirmation path → PENDING_CONFIRMATION., CHoCH + retest (Path A) → CONFIRMED., CHoCH + continuation BOS (Path B) → CONFIRMED., CHoCH + sweep-and-reclaim (Path C) → CONFIRMED., RECLAIM and RETEST trigger types. (+3 more)
 
 ### Community 39 - "test_should_run_h1_different_period"
-Cohesion: 0.08
-Nodes (17): ModelIdentityResolutionStatus, Independence level of the reviewer., Status of model identity resolution., ReviewerIndependenceLevel, Safe resolution: provide a function to resolve execution mode., Consistency checks between decision and engine models., DecisionAction should be importable from both engine models and decision models., BiasLevel should be importable from both engine models and decision models. (+9 more)
+Cohesion: 0.05
+Nodes (24): ModelIdentityResolutionStatus, Independence level of the reviewer., Status of model identity resolution., ReviewerIndependenceLevel, Tests for model identity resolution and execution mode validation (Section 16.7), Safe resolution: provide a function to resolve execution mode., Consistency checks between decision and engine models., DecisionAction should be importable from both engine models and decision models. (+16 more)
 
 ### Community 40 - "graph.py"
 Cohesion: 0.17
@@ -394,8 +391,8 @@ Cohesion: 0.12
 Nodes (15): chartOption, props, biasArrow, biasColor, emit, props, AdvisoryLevels, Decision (+7 more)
 
 ### Community 46 - "BiasLevel"
-Cohesion: 0.27
-Nodes (6): Type of price action trigger for a setup., TriggerType, _is_bos(), CHoCH/BOS trigger classification for the H1 timeframe.  This module implements `, Return ``True`` when the trigger is a Break-of-Structure event., TestIsBos
+Cohesion: 0.43
+Nodes (3): _is_bos(), Return ``True`` when the trigger is a Break-of-Structure event., TestIsBos
 
 ### Community 47 - "test_analyze_structure_passes_broker_time_to_snapshot_builder"
 Cohesion: 0.20
@@ -410,28 +407,28 @@ Cohesion: 0.30
 Nodes (8): useRuns(), buildRequestURL(), capString(), extractErrorDetail(), formatApiError(), looksLikeHTML(), MinimalRequestConfig, safeStringify()
 
 ### Community 50 - "main.py"
-Cohesion: 0.06
-Nodes (15): Route-level tests with mocked scanner/runner., Tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}., Tests for POST /api/run., Symbols must be 1-20 alphanumeric characters., CORS header verification tests., Issue an OPTIONS preflight request with standard CORS headers., OPTIONS preflight must return restricted allow-methods., OPTIONS preflight must return restricted allow-headers.          The middleware (+7 more)
+Cohesion: 0.05
+Nodes (17): client(), Route-level tests with mocked scanner/runner., Tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}., Tests for POST /api/run., Symbols must be 1-20 alphanumeric characters., CORS header verification tests., Issue an OPTIONS preflight request with standard CORS headers., OPTIONS preflight must return restricted allow-methods. (+9 more)
 
 ### Community 54 - "main.py"
 Cohesion: 0.05
 Nodes (33): Retry reading result files with backoff.          After a subprocess completes t, Return the subset of *symbols* that have no run in the scanner., Walk the data directory via ResultScanner and return the         most recent res, Spawn Python subprocess to run analysis, enforce timeout,     capture stderr, an, Run analysis for the given symbols.          Spawns: python main.py [--model <m>, Spawn the Python process and wait for completion.          On timeout the proces, RunService, _make_run_summary() (+25 more)
 
 ### Community 55 - "test_result_pipeline_writes_json"
-Cohesion: 0.06
-Nodes (27): _deterministic_order_type(), _has_high_impact_calendar_event(), Any, Deterministic early execution routing.          When the execution policy status, Validate the decision before it reaches the reviewer.          Ensures the decis, Run the deterministic enforcement gate.          The gate verifies that every ex, Run the trading graph for a symbol.          Args:             symbol: Trading s, Select the canonical current price across timeframes.      The canonical current (+19 more)
+Cohesion: 0.05
+Nodes (36): Structure analysis missing required 'timeframes' schema., StructureSchemaError, AgentState, _deterministic_order_type(), _has_high_impact_calendar_event(), Any, Deterministic early execution routing.          When the execution policy status, Route after early execution routing.          Returns:             - ``"determin (+28 more)
 
 ### Community 56 - "TestSynthesizeContextCanonicalPrice"
-Cohesion: 0.11
-Nodes (11): evaluate_execution_policy(), Evaluate execution policy and return an :class:`ExecutionPolicyState`.      Cons, Self, Create an ExecutionPolicyState from a setup and blockers.          Extracts the, _make_risk_policy(), _make_setup(), Calendar has highest priority among non-execution blockers., When multiple blocker types present, status uses the highest priority. (+3 more)
+Cohesion: 0.10
+Nodes (18): _build_blockers(), evaluate_execution_policy(), PolicySettings, Evaluate execution policy and return an :class:`ExecutionPolicyState`.      Cons, Configuration for execution policy evaluation.      Attributes:         countert, Evaluate all blocker conditions and return the active blockers.      This is an, Self, Create an ExecutionPolicyState from a setup and blockers.          Extracts the (+10 more)
 
 ### Community 57 - "TestOhlcCachePath"
-Cohesion: 0.11
-Nodes (16): AnalysisResult, OHLCData, BaseModel, OHLC data keyed by timeframe., Entry, stop-loss and take-profit overlay for charts., Top-level pipeline output serialized to JSON for the web viewer.      Fields are, SLTPOverlay, Tests for output result models. (+8 more)
+Cohesion: 0.05
+Nodes (42): AnalysisResult, OHLCData, BaseModel, OHLC data keyed by timeframe., Entry, stop-loss and take-profit overlay for charts., Top-level pipeline output serialized to JSON for the web viewer.      Fields are, SLTPOverlay, Any (+34 more)
 
 ### Community 58 - "test_h4_candle_period_at_boundary"
-Cohesion: 0.08
-Nodes (28): LLMUsage, parse_usage(), Extract an ``LLMUsage`` from a provider response.      Handles:     * ``None`` r, Immutable record of token usage for a single LLM API call.      Token fields are, _dict_to_sns(), make_raw_response(), Build a mock provider response with controlled usage fields.      The returned o, Recursively convert a dict to a SimpleNamespace. (+20 more)
+Cohesion: 0.15
+Nodes (11): _dict_to_sns(), make_raw_response(), Build a mock provider response with controlled usage fields.      The returned o, Recursively convert a dict to a SimpleNamespace., Primary field names: input_tokens / output_tokens., input_tokens_details = None must not crash., output_tokens_details = None must not crash., cached_input_tokens > input_tokens → clamped to input, uncached = 0. (+3 more)
 
 ### Community 59 - "AgentState"
 Cohesion: 0.23
@@ -446,8 +443,8 @@ Cohesion: 0.57
 Nodes (6): _canonicalize(), _event_type(), Any, _quality(), scan_events(), _scope()
 
 ### Community 80 - "test_cache_path_d1_uses_folder_date_not_broker_now"
-Cohesion: 0.08
-Nodes (22): _log_llm_call(), Any, Record an LLM call and log its cost. Returns enriched usage with costs., MarketContextSummary, Summary of market context from synthesizer agent., _make_mock_client(), Tests for prompt usage in agents., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs. (+14 more)
+Cohesion: 0.11
+Nodes (18): Record an LLM API call and return its usage with cost filled in.          Parame, LLMUsage, Immutable record of token usage for a single LLM API call.      Token fields are, _make_mock_client(), Tests for prompt usage in agents., SynthesizerAgent.synthesize must accept current_price/current_price_time kwargs., User prompt must render current_price and current_price_time values., When no price is supplied, the current-price line must state None. (+10 more)
 
 ### Community 81 - ".write"
 Cohesion: 0.17
@@ -458,8 +455,8 @@ Cohesion: 0.33
 Nodes (6): Development environment (Docker), Quick commands (run inside container), Running from Docker (host → container), Setup, Starting the container, Stopping
 
 ### Community 84 - "setup_logging"
-Cohesion: 0.13
-Nodes (12): MonkeyPatch, TRADING_MODEL_PRICING JSON env var overrides the default (new format)., Tests for the primary LLM instructor_mode and timeout Settings fields.      Thes, openai_instructor_mode defaults to 'json_mode'., json_mode' is a valid value., tool_call' is a valid value., An unsupported instructor_mode value is rejected at parse time., An empty primary instructor_mode is a misconfiguration and is rejected. (+4 more)
+Cohesion: 0.08
+Nodes (19): MonkeyPatch, Tests for the primary LLM instructor_mode and timeout Settings fields.      Thes, openai_instructor_mode defaults to 'json_mode'., json_mode' is a valid value., tool_call' is a valid value., An unsupported instructor_mode value is rejected at parse time., An empty primary instructor_mode is a misconfiguration and is rejected., openai_timeout defaults to 120.0 seconds. (+11 more)
 
 ### Community 85 - "test_should_run_h1_different_period"
 Cohesion: 0.11
@@ -470,8 +467,8 @@ Cohesion: 0.17
 Nodes (23): AdvisoryLevels, FinalOutputAssembler, Final decision output assembler.  This module implements :class:`FinalOutputAsse, Assembles a single :class:`AnalysisResult` from all pipeline states.      The as, _calendar_blocker(), _make_decision(), _make_enforcement(), _make_policy() (+15 more)
 
 ### Community 87 - "test_result_pipeline_writes_json"
-Cohesion: 0.15
-Nodes (9): AnthropicModelIdentityResolver, OpenAIModelIdentityResolver, Resolver for OpenAI model identifiers.      Recognises patterns like ``gpt-4o-20, Resolver for Anthropic model identifiers.      Recognises patterns like ``claude, Provider-aware supports() checks., Consistency checks across model identity classes., All resolvers implement supports() and resolve() with correct signatures., TestModelIdentityConsistency (+1 more)
+Cohesion: 0.08
+Nodes (20): AnthropicModelIdentityResolver, ModelIdentityResolver, OpenAIModelIdentityResolver, Protocol, StrEnum, LLM model configuration and provider-aware identity resolution.  This module def, Protocol for provider-specific model identity resolvers.      Implementations mu, Resolver for OpenAI model identifiers.      Recognises patterns like ``gpt-4o-20 (+12 more)
 
 ### Community 88 - "send_trade_notification"
 Cohesion: 0.07
@@ -486,8 +483,8 @@ Cohesion: 0.14
 Nodes (12): BaseHTTPMiddleware, FastAPI, Request, RequestResponseEndpoint, Response, create_app(), Create and configure the FastAPI application., AuthMiddleware (+4 more)
 
 ### Community 93 - "test_should_run_h1_different_period"
-Cohesion: 0.08
-Nodes (11): ModelIdentityResolver, Protocol, Protocol for provider-specific model identity resolvers.      Implementations mu, Return ``True`` if this resolver can handle *model*., Resolve *model* into an :class:`LLMModelIdentity`., Tests for LLM model configuration and identity resolution (Section 16.7).  Tests, GenericAliasModelIdentityResolver — always supports, resolves as fallback., ResolutionStatus values. (+3 more)
+Cohesion: 0.12
+Nodes (16): _build_parser(), _format_field(), _format_field_int(), _get_decision_field(), _parse_and_configure_settings(), _print_symbol_summary(), Trading AI Agent - CLI Entry Point., Build the CLI argument parser.      Returns:         Configured ArgumentParser i (+8 more)
 
 ### Community 94 - "test_load_returns_none_when_missing"
 Cohesion: 0.29
@@ -506,12 +503,12 @@ Cohesion: 0.29
 Nodes (7): Configuration, Cost Analysis, Cost Estimate (GPT-4o), Default Model Pricing, Environment Variables — Analyzer, Environment Variables — Server, Token Estimates (GPT-4o)
 
 ### Community 98 - "server/tests/conftest.py"
-Cohesion: 0.10
-Nodes (18): client(), client_with_auth(), mock_data_dir(), Any, Path, RunSummary, Shared fixtures for server tests., Create a temporary data directory with fixture JSON files. (+10 more)
+Cohesion: 0.11
+Nodes (16): client_with_auth(), mock_data_dir(), Any, Path, RunSummary, Shared fixtures for server tests., Create a temporary data directory with fixture JSON files., Create a ResultScanner pointing at the mock data directory. (+8 more)
 
 ### Community 99 - "test_cache_path_d1_no_hour_suffix"
-Cohesion: 0.14
-Nodes (14): _extract_int(), _extract_total_tokens(), _field_exists(), _get_field(), Any, LLM usage tracking — parse provider responses and extract token counts.  This mo, Return ``True`` if the nested attribute/dict path exists.      Works with object, Return the value at a nested attribute/dict path, or ``None``. (+6 more)
+Cohesion: 0.24
+Nodes (4): Return a non-negative ``int`` or ``0`` for invalid/missing values.      Handles, safe_non_negative_int(), LogCaptureFixture, TestSafeNonNegativeInt
 
 ### Community 100 - "context.py"
 Cohesion: 0.22
@@ -530,8 +527,8 @@ Cohesion: 0.31
 Nodes (3): Map a raw event-type string to the corresponding TriggerType enum.      Returns, _resolve_trigger_type(), TestResolveTriggerType
 
 ### Community 105 - "create_app"
-Cohesion: 0.07
-Nodes (24): create_llm_client(), LLMCommunicationClient, OpenAIProviderAdapter, Exception, LLM client protocol, provider adapters, and factory for structured LLM calls.  T, Raised when an unsupported LLM provider is requested., OpenAI provider adapter implementing ``LLMClientProtocol``.      Wraps an ``inst, The model identifier. (+16 more)
+Cohesion: 0.08
+Nodes (19): create_llm_client(), LLMCommunicationClient, OpenAIProviderAdapter, LLM client protocol, provider adapters, and factory for structured LLM calls.  T, Raised when an unsupported LLM provider is requested., OpenAI provider adapter implementing ``LLMClientProtocol``.      Wraps an ``inst, The model identifier., Factory: create the right provider adapter for the given *provider*.      Args: (+11 more)
 
 ### Community 106 - "TestListRunsPruning"
 Cohesion: 0.33
@@ -558,8 +555,8 @@ Cohesion: 0.40
 Nodes (5): Architecture Diagram, External Dependencies and I/O Boundaries, Project Facts and Conventions, Test Coverage — Analyzer, Testing
 
 ### Community 114 - "TestFatalError"
-Cohesion: 0.13
-Nodes (7): Review verdict from reviewer agent.      The ``approved`` property derives from, ReviewVerdict, approved must appear in model_dump() via @computed_field., TestReviewVerdict, mock_reviewer(), TestReviewRouting, mock_reviewer()
+Cohesion: 0.14
+Nodes (7): BiasLevel, Structural bias levels., Review verdict from reviewer agent.      The ``approved`` property derives from, ReviewVerdict, approved must appear in model_dump() via @computed_field., TestReviewVerdict, TestReviewRouting
 
 ### Community 115 - "Docker"
 Cohesion: 0.25
@@ -570,60 +567,60 @@ Cohesion: 0.33
 Nodes (5): emit, localDay, localMonth, localYear, props
 
 ### Community 117 - "Architecture"
-Cohesion: 0.21
-Nodes (12): Path, End-to-end integration test for the result JSON pipeline., Missing deterministic inputs remain explicitly non-actionable., Fatal pipeline failures are not persisted as unusable run results., Result with no OHLC data produces empty arrays., Full pipeline simulation writes valid JSON result., Success result without analysis_result raises contract error., test_empty_ohlc_defaults() (+4 more)
+Cohesion: 0.17
+Nodes (7): parse_usage(), Extract an ``LLMUsage`` from a provider response.      Handles:     * ``None`` r, Tests for usage.py — LLMUsage, safe_non_negative_int, and parse_usage.  No exter, Fallback field names: prompt_tokens / completion_tokens., TestParseUsageChatCompletions, TestParseUsageDict, TestParseUsageNoneOrMissing
 
 ### Community 118 - "test_cache_path_mtf_uses_d1_date"
 Cohesion: 0.08
-Nodes (126): Entry plan calculation for the multi-timeframe pipeline.  This module implements, _build_blockers(), PolicySettings, Deterministic execution policy evaluation for the multi-timeframe pipeline.  Thi, Configuration for execution policy evaluation.      Attributes:         countert, Evaluate all blocker conditions and return the active blockers.      This is an, Deterministic setup grading for the multi-timeframe pipeline.  This module imple, BlockerSeverity (+118 more)
+Nodes (115): Entry plan calculation for the multi-timeframe pipeline.  This module implements, Deterministic execution policy evaluation for the multi-timeframe pipeline.  Thi, Deterministic setup grading for the multi-timeframe pipeline.  This module imple, BlockerSeverity, DecisionAction, DeterministicSetupState, EnforcementViolationCode, EntryType (+107 more)
 
 ### Community 119 - "TestParseUsageChatCompletions"
-Cohesion: 0.15
-Nodes (7): OpenAIProviderAdapter, OpenAI provider adapter — instructor-based structured output.  Wraps the ``instr, The provider this adapter handles., Resolved identity for the configured model., The raw model identifier., Optional reasoning effort level., OpenAI provider adapter using ``instructor`` for structured output.      Conform
+Cohesion: 0.31
+Nodes (10): _extract_int(), _extract_total_tokens(), _field_exists(), _get_field(), Any, LLM usage tracking — parse provider responses and extract token counts.  This mo, Return ``True`` if the nested attribute/dict path exists.      Works with object, Return the value at a nested attribute/dict path, or ``None``. (+2 more)
 
 ### Community 120 - ".get_run"
-Cohesion: 0.14
-Nodes (8): Tests for the reviewer instructor_mode and timeout Settings fields.      Empty s, reviewer_instructor_mode defaults to '' (inherit primary)., tool_call' is a valid reviewer override., An unsupported reviewer instructor_mode value is rejected., reviewer_timeout defaults to None (inherit primary)., An explicitly-empty TRADING_REVIEWER_TIMEOUT means inherit primary., TRADING_REVIEWER_TIMEOUT env var overrides the default., TestReviewerInstructorModeAndTimeout
+Cohesion: 0.25
+Nodes (7): _canonical_structure_analysis(), Build a structure_analysis fixture whose H1 timeframe has the     most-recent cl, _synthesize_context must compute the canonical current price from         the pe, Even when the LLM-returned summary has current_price=None, the         orchestra, get_broker_time() should be called once in _analyze_structure and     reused in, test_get_broker_time_called_once_per_run(), TestSynthesizeContextCanonicalPrice
 
 ### Community 122 - "test_d1_candle_period_after_close"
 Cohesion: 0.20
 Nodes (5): Tests for CHoCH/BOS trigger classification (Section 16.5).  Tests the triggers.p, None trigger event handling., When multiple confirmation events are provided, any one path suffices., TestClassifyTriggerMultiplePaths, TestClassifyTriggerNull
 
 ### Community 124 - "test_h4_candle_period_at_boundary"
-Cohesion: 0.15
-Nodes (10): GenericAliasModelIdentityResolver, LLM model configuration and provider-aware identity resolution.  This module def, Fallback resolver that treats the entire model string as the family.      Used w, Resolve a model string to its provider-aware identity.      Iterates through reg, resolve_model_identity(), resolve_model_identity() orchestrates resolution through registered resolvers., Provider hint directs to the correct resolver., GENERIC provider hint bypasses provider-specific resolvers. (+2 more)
+Cohesion: 0.12
+Nodes (11): GenericAliasModelIdentityResolver, Fallback resolver that treats the entire model string as the family.      Used w, Resolve a model string to its provider-aware identity.      Iterates through reg, resolve_model_identity(), GenericAliasModelIdentityResolver — always supports, resolves as fallback., resolve_model_identity() orchestrates resolution through registered resolvers., Provider hint directs to the correct resolver., GENERIC provider hint bypasses provider-specific resolvers. (+3 more)
 
 ### Community 125 - "testget_cache_date_d1_before_close"
 Cohesion: 0.25
 Nodes (7): Reset the _settings sentinel in candle_cache before each test.      Tests use mo, Reset the _settings sentinel in synthesizer_cache before each test.      Mirrors, reset_candle_cache_settings(), reset_synthesizer_cache_settings(), sample_decision(), sample_market_context(), sample_review()
 
 ### Community 126 - "test_h1_candle_period_at_boundary"
-Cohesion: 0.08
-Nodes (18): ProviderKind, Supported LLM provider identifiers., LLMProviderAdapter, LLMProviderAdapterFactory, Any, Protocol, LLM provider adapter — base interface and factory.  Defines the abstract adapter, Register an adapter class for a provider.          Args:             provider: P (+10 more)
+Cohesion: 0.07
+Nodes (21): The provider this adapter handles., ProviderKind, Return ``True`` if this resolver can handle *model*., Resolve *model* into an :class:`LLMModelIdentity`., Supported LLM provider identifiers., LLMProviderAdapter, LLMProviderAdapterFactory, Any (+13 more)
 
 ### Community 127 - "test_should_run_d1_after_close_without_cache"
 Cohesion: 0.33
 Nodes (4): _check_path_c_sweep_and_reclaim(), Path C: CHoCH is confirmed by a sweep-and-reclaim pattern.      A sweep-and-recl, Path C: CHoCH confirmed by a sweep-and-reclaim pattern., TestCheckPathCSweepAndReclaim
 
 ### Community 128 - "usage.py"
-Cohesion: 0.22
-Nodes (8): _calculate_entry_plan_inner(), _extract_entry_prices(), Any, Extract and normalize entry price data from setup context.      Args:         se, Inner implementation that may raise InvalidTradeDirectionError., Tests for entry plan calculation and geometry validation (Section 16.4).  Tests, _extract_entry_prices normalizes entry price data., TestExtractEntryPrices
+Cohesion: 0.18
+Nodes (10): _calculate_entry_plan_inner(), _extract_entry_prices(), Any, Extract and normalize entry price data from setup context.      Args:         se, Inner implementation that may raise InvalidTradeDirectionError., InvalidTradeDirectionError, Trade direction string does not map to a valid TradeDirection., Tests for entry plan calculation and geometry validation (Section 16.4).  Tests (+2 more)
 
 ### Community 129 - "test_should_run_d1_after_close_with_cache"
-Cohesion: 0.09
-Nodes (11): derive_allowed_actions(), Derive the allowed actions based on trade direction and execution status.      R, Derive allowed actions from direction and execution status., Tests for enforcement logic and models (Section 16.6).  Tests the enforcement-re, Allowed actions based on status and direction., Key blocker codes are creatable and have expected properties., Non-executable actions (NO_TRADE, WAIT_FOR_SETUP) pass without         needing a, TestDeriveAllowedActions (+3 more)
+Cohesion: 0.29
+Nodes (5): Any, T, The underlying sync instructor-patched OpenAI client., Send messages to the LLM and return a structured Pydantic model.          Runs t, Synchronous variant of :meth:`generate_structured`.          Returns ``(response
 
 ### Community 130 - "_is_choch"
-Cohesion: 0.43
-Nodes (3): _is_choch(), Return ``True`` when the trigger is a Change-of-Character event., TestIsChoch
+Cohesion: 0.27
+Nodes (6): Type of price action trigger for a setup., TriggerType, _is_choch(), CHoCH/BOS trigger classification for the H1 timeframe.  This module implements `, Return ``True`` when the trigger is a Change-of-Character event., TestIsChoch
 
 ### Community 131 - "TestReviewerIndependenceLevel"
-Cohesion: 0.16
-Nodes (8): LLMModelConfig, Immutable configuration for an LLM endpoint.      Attributes:         model: Mod, Edge cases for LLM configuration., When provider is None, automatic detection kicks in., Model string with whitespace is treated literally (no stripping)., LLMModelConfig dataclass construction., TestLLMConfigEdgeCases, TestLLMModelConfig
+Cohesion: 0.10
+Nodes (13): OpenAIProviderAdapter, OpenAI provider adapter — instructor-based structured output.  Wraps the ``instr, The raw model identifier., Optional reasoning effort level., OpenAI provider adapter using ``instructor`` for structured output.      Conform, LLMModelConfig, Immutable configuration for an LLM endpoint.      Attributes:         model: Mod, Edge cases for LLM configuration. (+5 more)
 
 ### Community 132 - "TestCostTrackerWiring"
-Cohesion: 0.22
-Nodes (6): Return the resolved identity information about the configured LLM., LLMModelIdentity, Human-readable model identity string for logging., Immutable, provider-aware identity for a resolved LLM model.      This is the ca, LLMModelIdentity dataclass and display_name., TestLLMModelIdentity
+Cohesion: 0.15
+Nodes (8): Resolved identity for the configured model., Return the resolved identity information about the configured LLM., Return identity information about the configured LLM., LLMModelIdentity, Human-readable model identity string for logging., Immutable, provider-aware identity for a resolved LLM model.      This is the ca, LLMModelIdentity dataclass and display_name., TestLLMModelIdentity
 
 ### Community 133 - ".invalidate_cache"
 Cohesion: 0.17
@@ -638,20 +635,20 @@ Cohesion: 0.18
 Nodes (8): Compute the project root from the test file location.          Mirror the same t, Default ``analysis_cache_dir="data"`` resolves to ``<project_root>/data``., A relative path resolves against the project root, not CWD., An absolute path is returned as-is., Setting ``TRADING_ANALYSIS_CACHE_DIR`` to an absolute value must         be retu, Analyzer and server must resolve the same default to the same path., Tests for the ``resolved_analysis_cache_dir`` property.      Both the analyzer a, TestResolvedAnalysisCacheDir
 
 ### Community 138 - ".test_cache_disabled_by_env"
-Cohesion: 0.19
-Nodes (9): Any, datetime, Exception, OHLCBar, Path, Compute data/YYYY/MM/DD/SYMBOL/result-HH.json path., Raised when ResultWriter receives an invalid or incomplete result., Write a successful or partial result JSON to disk.          Fatal pipeline failu (+1 more)
+Cohesion: 0.29
+Nodes (4): Provider returned total_tokens=0 → keep 0, do not derive., No total_tokens field → derive as input + output., total_tokens = None → derive as input + output., TestParseUsageTotalTokens
 
 ### Community 139 - "TestArgparseMultiSymbol"
 Cohesion: 0.17
 Nodes (7): Tests for the new synthesizer_cache_enabled Settings field.      RED phase: thes, synthesizer_cache_enabled defaults to True when no env var is set., TRADING_SYNTHESIZER_CACHE_ENABLED=true yields True., TRADING_SYNTHESIZER_CACHE_ENABLED=false yields False., TRADING_SYNTHESIZER_CACHE_ENABLED=0 yields False (bool coercion)., Invalid TRADING_SYNTHESIZER_CACHE_ENABLED value either raises or falls back to d, TestSynthesizerCacheEnabled
 
 ### Community 140 - "ResultWriterContractError"
-Cohesion: 0.12
-Nodes (7): Tests for model identity resolution and execution mode validation (Section 16.7), ModelIdentityResolutionStatus has three states with expected semantics., Semantic: RESOLVED means a clear model was identified., ReviewerIndependenceLevel has three levels of independence., STRONG, WEAK, NONE each have different string values., TestModelIdentityResolutionStatus, TestReviewerIndependenceLevel
+Cohesion: 0.33
+Nodes (6): Force a fresh Settings() on the next _get_settings() call., reload_settings(), Fresh-fetch path must also save the MTF cache file., H1 analysis must now be saved to cache like D1/H4., test_analyze_structure_fresh_saves_mtf_cache(), test_analyze_structure_saves_h1_cache()
 
 ### Community 141 - "test_h1_candle_period"
 Cohesion: 0.06
-Nodes (37): DeciderAgent, LLM agents for the trading pipeline.  Each agent owns a slice of the analysis pi, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., Synthesizes market context from structure analysis and calendar., ReviewerAgent, SynthesizerAgent, LLMClientProtocol (+29 more)
+Nodes (36): DeciderAgent, LLM agents for the trading pipeline.  Each agent owns a slice of the analysis pi, Makes trading decisions based on market context., Reviews trading decisions and provides feedback., Synthesizes market context from structure analysis and calendar., ReviewerAgent, SynthesizerAgent, LLMClientProtocol (+28 more)
 
 ### Community 143 - "TestDetermineD1Directional"
 Cohesion: 0.31
@@ -662,8 +659,8 @@ Cohesion: 0.15
 Nodes (8): The removed reviewer prefix is not accepted as a compatibility alias., Tests for the new openai_reasoning_effort Settings field.      These tests will, openai_reasoning_effort defaults to empty string (not set)., TRADING_OPENAI_REASONING_EFFORT env var overrides the default., Tests for reviewer-specific environment variable names., Reviewer settings use the concise names while provider stays compatible., TestReasoningEffortSettings, TestReviewerSettings
 
 ### Community 146 - "_mock_analysis_result"
-Cohesion: 0.27
-Nodes (6): Any, T, Synchronous variant of :meth:`generate_structured`.          Returns the respons, Send messages to the LLM and return a structured Pydantic model.          This m, Synchronous variant of :meth:`generate_structured`.          Returns ``(response, Send messages to the LLM and return a structured Pydantic model.          Args:
+Cohesion: 0.33
+Nodes (4): When ``state.fatal_error`` is set, ``_synthesize_context`` short-circuits., fatal_error set \u2192 returns {} without checking cache or calling LLM., fatal_error set \u2192 cache is NOT written even if synthesizer runs.          N, TestFatalError
 
 ### Community 147 - "TestDetermineGeometryStatus"
 Cohesion: 0.36
@@ -686,8 +683,8 @@ Cohesion: 0.33
 Nodes (3): _determine_trade_direction(), Determine trade direction from D1 bias and H4 preferred direction.      Args:, TestDetermineTradeDirection
 
 ### Community 152 - "ExecutionStatus"
-Cohesion: 0.17
-Nodes (9): derive_execution_status(), Derive the execution status from a set of blockers.      Priority order (highest, _blocker(), REVIEW lowest priority — enforcement blockers take precedence., Deterministic violations (e.g., RISK_REWARD with INVALIDATES_GRADE)         shou, A review that is not APPROVED but has no deterministic violations         produc, For executable actions (BUY_SETUP/SELL_SETUP), if the status is         ACTIONAB, Status derivation with priority: CALENDAR > DATA_QUALITY > POLICY > ENFORCEMENT (+1 more)
+Cohesion: 0.07
+Nodes (23): derive_allowed_actions(), derive_execution_status(), Derive the execution status from a set of blockers.      Priority order (highest, Derive the allowed actions based on trade direction and execution status.      R, Derive execution status from blockers before review stage., Derive allowed actions from direction and execution status., _blocker(), Tests for enforcement logic and models (Section 16.6).  Tests the enforcement-re (+15 more)
 
 ### Community 153 - "TestSynthesizeContextCanonicalPrice"
 Cohesion: 0.36
@@ -709,25 +706,29 @@ Nodes (4): Agent skills, Domain docs, Issue tracker, Triage labels
 Cohesion: 0.33
 Nodes (6): api, createApiClient(), defaultBaseURL(), fetchRuns(), resolveApiBaseURL(), RunRequest
 
+### Community 158 - "test_should_run_h4_with_cache"
+Cohesion: 0.40
+Nodes (3): All token fields normalise negative values to 0., Booleans in usage fields are normalised to 0., TestParseUsageInvalidValues
+
 ### Community 159 - "test_d1_candle_period_after_close"
-Cohesion: 0.11
-Nodes (17): Any, T, The underlying sync instructor-patched OpenAI client., Send messages to the LLM and return a structured Pydantic model.          Runs t, Synchronous variant of :meth:`generate_structured`.          Returns ``(response, LLMClientError, Raised when an LLM API call fails after all retries., _Echo (+9 more)
+Cohesion: 0.09
+Nodes (20): LLMClientError, Any, Exception, T, Synchronous variant of :meth:`generate_structured`.          Returns the respons, Raised when an LLM API call fails after all retries., Send messages to the LLM and return a structured Pydantic model.          This m, Synchronous variant of :meth:`generate_structured`.          Returns ``(response (+12 more)
 
 ### Community 161 - "test_should_run_h4_without_cache"
-Cohesion: 0.29
-Nodes (6): _make_tracking_side_effect(), Create a side effect that records an LLM call on the shared CostTracker.      Th, Tests for CostTracker wiring in TradingGraph.run().      These tests verify that, Run TradingGraph with mocked agents that have a shared CostTracker,         asse, Verify that a CostTracker instance can be shared across all 3 agents         and, TestCostTrackerWiring
+Cohesion: 0.50
+Nodes (3): Multiple invocations within a day — only the first miss calls the LLM., 5 sequential runs on same symbol/day → exactly 1 LLM call.          First run: c, TestRepeatedRuns
 
 ### Community 164 - "test_h4_candle_period"
 Cohesion: 0.40
 Nodes (4): Consequences, Context, Decision, Default the structured output mode to `json_mode`
 
-### Community 173 - "TestDecisionOutput"
-Cohesion: 0.15
-Nodes (6): AdvisoryLevels, BaseModel, Optional LLM-proposed levels, never used for execution or chart overlays., DecisionOutput has no free-form price fields., Advisory prices are explicit fields and are absent by default., TestDecisionOutput
-
-### Community 175 - "TestGradeSetupSchemaValidation"
+### Community 170 - "test_cache_path_h1_includes_closing_hour"
 Cohesion: 0.14
-Nodes (8): Tests for _grade_setup schema validation (Phase 2.2)., Missing 'timeframes' key in structure analysis → INVALID_STRUCTURE_SCHEMA., Empty 'timeframes' dict → INVALID_STRUCTURE_SCHEMA., None value for 'timeframes' → INVALID_STRUCTURE_SCHEMA., Empty structure_analysis → INVALID_STRUCTURE_SCHEMA., Valid timeframes dict → grading proceeds (no fatal_error)., _grade_setup returns empty dict when fatal_error is already set., TestGradeSetupSchemaValidation
+Nodes (13): Tests for deterministic setup grading (Section 16.1).  Tests the grade_setup() f, AAA grade when all three timeframes aligned: D1 directional,     H4 aligned cont, AA grade when two timeframes aligned but H1 trigger is CHoCH-based., COUNTERTREND grade when H4 not aligned with D1., No setup when D1 is neutral or direction is NEUTRAL., Lifecycle status in grade_setup output., Geometry status in grade_setup output., TestGradeSetupAA (+5 more)
+
+### Community 173 - "TestDecisionOutput"
+Cohesion: 0.08
+Nodes (21): AdvisoryLevels, DecisionOutput, BaseModel, Optional LLM-proposed levels, never used for execution or chart overlays., Decision output from decider agent.      The LLM selects an action and explains, DecisionOutput does NOT contain deterministic fields like         entry_price, s, DecisionOutput has no free-form price fields., Advisory prices are explicit fields and are absent by default. (+13 more)
 
 ### Community 176 - "_mock_analysis_result"
 Cohesion: 0.22
@@ -742,27 +743,27 @@ Cohesion: 0.40
 Nodes (5): Analysis Pipeline (LangGraph State Machine), Architecture, Deployment Architecture, Design Principles, Service Architecture
 
 ### Community 191 - "TestArgparseMultiSymbol"
-Cohesion: 0.03
-Nodes (43): CostLimitExceeded, Exception, CostTracker — tracks LLM API call costs.  Exposes a single :class:`CostTracker`, Raised when per-symbol LLM cost exceeds the configured limit., Record an LLM API call and return its usage with cost filled in.          Parame, CostLimitExceeded is a subclass of Exception., Exception string representation includes limit, total_cost, and symbol., Tests for ``except CostLimitExceeded: raise`` in every graph node.      Without (+35 more)
+Cohesion: 0.08
+Nodes (18): Tests for multi-symbol support in main.py., Test that argparse accepts multiple symbols via _build_parser., Cost limit enforcement in the pipeline (TASK-3).      These tests verify that:, _build_parser accepts multiple symbols as nargs+., _build_parser is backward-compatible with single symbol., --model option is accepted., --base-url option is accepted., End-to-end cost limit abort integration tests (TASK-4).      These tests exercis (+10 more)
 
 ### Community 192 - "TestLogLlmCall"
-Cohesion: 0.20
-Nodes (6): Tests for agent cost-logging helper extraction., _log_llm_call extracts duplicated cost-logging from agents., When usage is provided, logs cost details., When usage is all-zero (no usage data), logs zero cost., Records the call on the cost tracker when usage is provided., TestLogLlmCall
+Cohesion: 0.10
+Nodes (14): _log_llm_call(), Any, Record an LLM call and log its cost. Returns enriched usage with costs., MarketContextSummary, Summary of market context from synthesizer agent., Tests for agent cost-logging helper extraction., _log_llm_call extracts duplicated cost-logging from agents., When usage is provided, logs cost details. (+6 more)
 
 ## Knowledge Gaps
 - **181 isolated node(s):** `trading-ai-agent`, `create-user.sh script`, `start-dev.sh script`, `trading-server`, `*.vue` (+176 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **34 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **30 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Settings` connect `tests/orchestrator/__init__.py` to `Mt5DataProvider`, `DataSource`, `AgentState`, `Evaluator`, `.invalidate_cache`, `reload_settings`, `.test_empty_pricing_table`, `.test_cache_disabled_by_env`, `Agent Instructions`, `TestArgparseMultiSymbol`, `test_grading.py`, `tests/decision/__init__.py`, `TestGetCandlesBrokerNow`, `._run_async`, `testget_cache_date_d1_after_close`, `test_should_run_d1_without_cache`, `test_result_pipeline_writes_json`, `setup_logging`, `test_should_run_h1_different_period`, `test_cache_path_mtf`, `test_cache_path_mtf_uses_d1_date`, `.get_run`?**
-  _High betweenness centrality (0.324) - this node is a cross-community bridge._
-- **Why does `create_app()` connect `test_runner.py` to `server/tests/conftest.py`, `test_analyze_structure_fresh_saves_mtf_cache`, `src/data/__init__.py`, `main.py`, `TerminalApiError`, `test_result_pipeline_writes_json`, `._run_async`?**
-  _High betweenness centrality (0.131) - this node is a cross-community bridge._
+- **Why does `Settings` connect `DataSource` to `Mt5DataProvider`, `AgentState`, `Evaluator`, `.invalidate_cache`, `reload_settings`, `.test_empty_pricing_table`, `TestArgparseMultiSymbol`, `trading-ai-agent`, `test_grading.py`, `tests/decision/__init__.py`, `tests/orchestrator/__init__.py`, `._run_async`, `test_result_pipeline_writes_json`, `TestOhlcCachePath`, `setup_logging`, `test_should_run_h1_different_period`, `test_should_run_h1_different_period`, `test_cache_path_mtf`, `test_cache_path_mtf_uses_d1_date`?**
+  _High betweenness centrality (0.333) - this node is a cross-community bridge._
+- **Why does `create_app()` connect `test_runner.py` to `test_analyze_structure_fresh_saves_mtf_cache`, `src/data/__init__.py`, `main.py`, `main.py`, `TerminalApiError`, `test_result_pipeline_writes_json`, `._run_async`?**
+  _High betweenness centrality (0.139) - this node is a cross-community bridge._
 - **Why does `WebSettings` connect `._run_async` to `test_runner.py`?**
-  _High betweenness centrality (0.129) - this node is a cross-community bridge._
+  _High betweenness centrality (0.137) - this node is a cross-community bridge._
 - **Are the 109 inferred relationships involving `Settings` (e.g. with `ExecutionMode` and `DeterministicEnforcementGate`) actually correct?**
   _`Settings` has 109 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 85 inferred relationships involving `DecisionAction` (e.g. with `DeterministicEnforcementGate` and `AdvisoryLevels`) actually correct?**

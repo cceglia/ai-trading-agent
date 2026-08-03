@@ -106,13 +106,20 @@ class ForexFactoryCalendar:
 
     @staticmethod
     def _parse_time(raw_time: str) -> str:
-        """Convert raw time text to ISO timestamp (best-effort)."""
-        try:
-            from dateutil import parser as dateparser
+        """Convert raw time text to ISO timestamp (best-effort).
 
-            return dateparser.parse(raw_time).isoformat()
-        except Exception:
-            return raw_time
+        ForexFactory time cells use formats like ``7:00am`` / ``12:30pm``.
+        Anything else (``All Day``, ``Day 1``, ``Tentative``, …) is
+        returned unchanged.  Uses the stdlib parser so the analyzer has no
+        undeclared runtime dependency on ``dateutil``.
+        """
+        cleaned = raw_time.strip().replace(" ", "")
+        for fmt in ("%I:%M%p", "%I%p", "%H:%M"):
+            try:
+                return datetime.strptime(cleaned, fmt).isoformat()
+            except ValueError:
+                continue
+        return raw_time
 
     @staticmethod
     def _normalize_impact(raw: str) -> str:
