@@ -1,8 +1,8 @@
 import json
 import logging
-from typing import Self
+from typing import ClassVar, Self
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, ValidationInfo, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 # ExecutionMode is defined in the market_structure_engine models (canonical home).
@@ -42,6 +42,24 @@ class Settings(BaseSettings):
 
     openai_reasoning_effort: str = Field(
         default="", description="OpenAI reasoning_effort (low/medium/high), empty = not set"
+    )
+
+    openai_instructor_mode: str = Field(
+        default="json_mode",
+        description=(
+            "Structured output mode for instructor (json_mode or tool_call); "
+            "json_mode works with OpenAI-compatible providers that reject "
+            "forced tool_choice under thinking mode (see docs/adr/0002)"
+        ),
+    )
+    openai_timeout: float = Field(
+        default=120.0,
+        gt=0,
+        description=(
+            "Per-attempt request timeout in seconds for the primary LLM; "
+            "a hung upstream fails fast with a status=error result instead "
+            "of blocking the pipeline"
+        ),
     )
 
     openai_temperature: float = Field(
@@ -92,6 +110,21 @@ class Settings(BaseSettings):
     reviewer_reasoning_effort: str = Field(
         default="",
         description="Reasoning effort for reviewer (low/medium/high), empty = not set",
+    )
+    reviewer_instructor_mode: str = Field(
+        default="",
+        description=(
+            "Structured output mode for the reviewer "
+            "(json_mode or tool_call); empty = inherit the primary LLM"
+        ),
+    )
+    reviewer_timeout: float | None = Field(
+        default=None,
+        gt=0,
+        description=(
+            "Per-attempt request timeout in seconds for the reviewer; "
+            "None = inherit the primary LLM timeout"
+        ),
     )
 
     # Terminal MCP Configuration
@@ -257,6 +290,49 @@ class Settings(BaseSettings):
                             f"{key!r} price for {model!r} must be non-negative, got {val}"
                         )
                     # price == 0.0 is accepted silently (valid configuration)
+        return v
+
+    # Structured output modes with real support among OpenAI-compatible
+    # providers (ADR 0002). json_mode uses response_format={"type":
+    # "json_object"}; tool_call forces a tool_choice, which some providers
+    # reject under thinking mode.
+    ALLOWED_INSTRUCTOR_MODES: ClassVar[frozenset[str]] = frozenset({"json_mode", "tool_call"})
+
+    @field_validator("openai_instructor_mode", "reviewer_instructor_mode")
+    @classmethod
+    def validate_instructor_mode(cls, v: object, info: ValidationInfo) -> object:
+        """Reject unsupported instructor_mode values at Settings-parse time.
+
+        An invalid mode would otherwise only surface as a deterministic
+        provider error on the first LLM call. The reviewer field additionally
+        accepts ``""`` to mean "inherit the primary" (ADR 0001 convention);
+        the primary field must always name a concrete mode.
+        """
+        if v == "":
+            if info.field_name == "openai_instructor_mode":
+                raise ValueError(
+                    "openai_instructor_mode must be one of: "
+                    f"{', '.join(sorted(cls.ALLOWED_INSTRUCTOR_MODES))}"
+                )
+            return v  # reviewer: empty string = inherit the primary
+        if v not in cls.ALLOWED_INSTRUCTOR_MODES:
+            raise ValueError(
+                f"invalid instructor_mode {v!r}: must be one of: "
+                f"{', '.join(sorted(cls.ALLOWED_INSTRUCTOR_MODES))}"
+            )
+        return v
+
+    @field_validator("reviewer_timeout", mode="before")
+    @classmethod
+    def parse_reviewer_timeout(cls, v: object) -> object:
+        """Map an empty-string env var to ``None`` (inherit the primary timeout).
+
+        ``.env.template`` documents ``TRADING_REVIEWER_TIMEOUT=`` as "inherit
+        the primary LLM's timeout", so an explicitly-empty value must parse to
+        ``None`` rather than failing float parsing.
+        """
+        if v == "":
+            return None
         return v
 
     # Calendar Configuration

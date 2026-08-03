@@ -32,6 +32,7 @@ import logging
 from typing import Any, Protocol, TypeVar, runtime_checkable
 
 import instructor
+from instructor import Mode
 from openai import AsyncOpenAI, OpenAI
 from pydantic import BaseModel
 
@@ -189,6 +190,16 @@ class OpenAIProviderAdapter:
     default_temperature:
         Default temperature when not specified per-call.  When ``None``
         the provider's default is used.
+    instructor_mode:
+        Structured output mode passed to ``instructor.from_openai`` as
+        ``Mode(instructor_mode)``.  Defaults to ``"json_mode"``, which
+        uses ``response_format={"type": "json_object"}`` and works with
+        OpenAI-compatible providers that reject forced ``tool_choice``
+        (see docs/adr/0002).
+    timeout:
+        Per-attempt request timeout in seconds for both the sync and async
+        OpenAI clients.  When ``None`` the OpenAI SDK's own default applies
+        (600s per attempt).
     """
 
     def __init__(
@@ -202,6 +213,8 @@ class OpenAIProviderAdapter:
         reasoning_effort: str | None = None,
         default_max_retries: int = 3,
         default_temperature: float | None = None,
+        instructor_mode: str = "json_mode",
+        timeout: float | None = None,
     ) -> None:
         self._model = model
         self._reasoning_effort = reasoning_effort
@@ -216,15 +229,25 @@ class OpenAIProviderAdapter:
             version_override=version_override,
         )
 
-        # Build OpenAI kwargs and create the synchronous client.
+        # Build OpenAI kwargs and create the synchronous client.  A timeout
+        # is only forwarded when explicitly set so the SDK's own default
+        # (600s per attempt) applies otherwise.
         openai_kwargs: dict[str, Any] = {}
         if api_key:
             openai_kwargs["api_key"] = api_key
         if base_url:
             openai_kwargs["base_url"] = base_url
+        if timeout is not None:
+            openai_kwargs["timeout"] = timeout
 
-        self._sync_client = instructor.from_openai(OpenAI(**openai_kwargs))
-        self._async_client = instructor.from_openai(AsyncOpenAI(**openai_kwargs))
+        self._sync_client = instructor.from_openai(
+            OpenAI(**openai_kwargs),
+            mode=Mode(instructor_mode),
+        )
+        self._async_client = instructor.from_openai(
+            AsyncOpenAI(**openai_kwargs),
+            mode=Mode(instructor_mode),
+        )
 
         logger.info(
             "OpenAIProviderAdapter initialised: model=%s family=%s version=%s reasoning_effort=%s",
@@ -414,6 +437,8 @@ def create_llm_client(
     reasoning_effort: str | None = None,
     default_max_retries: int = 3,
     default_temperature: float | None = None,
+    instructor_mode: str = "json_mode",
+    timeout: float | None = None,
 ) -> OpenAIProviderAdapter:
     """Factory: create the right provider adapter for the given *provider*.
 
@@ -427,6 +452,8 @@ def create_llm_client(
         reasoning_effort: Optional reasoning effort level.
         default_max_retries: Default retries per call.
         default_temperature: Default temperature.
+        instructor_mode: Structured output mode for ``instructor.from_openai``.
+        timeout: Per-attempt request timeout in seconds (None = SDK default).
 
     Returns:
         An adapter satisfying ``LLMClientProtocol``.
@@ -450,6 +477,8 @@ def create_llm_client(
         reasoning_effort=reasoning_effort,
         default_max_retries=default_max_retries,
         default_temperature=default_temperature,
+        instructor_mode=instructor_mode,
+        timeout=timeout,
     )
 
 

@@ -15,11 +15,23 @@
 | **`TRADING_OPENAI_TEMPERATURE`** | Environment variable for the Primary LLM temperature. Default: `0.0`. Maps to `Settings.openai_temperature`. |
 | **`TRADING_REVIEWER_TEMPERATURE`** | Environment variable for the Reviewer LLM temperature. Default: `0.0`. Maps to `Settings.reviewer_temperature`. |
 
+## Structured Output
+
+| Term | Definition |
+|---|---|
+| **Structured output mode** | The mode by which an LLM agent returns schema-validated data, via `response_format` (e.g. `{"type": "json_object"}`) or tool-calls. Default: `json_mode` for both the Primary LLM and the Reviewer LLM. _Avoid_: instructor mode, response mode. |
+| **`TRADING_OPENAI_INSTRUCTOR_MODE`** | Environment variable for the Primary LLM structured output mode. Valid values: `json_mode`, `tool_call`. Default: `json_mode`. Maps to `Settings.openai_instructor_mode`. |
+| **`TRADING_REVIEWER_INSTRUCTOR_MODE`** | Environment variable for the Reviewer LLM structured output mode. Empty = inherit the Primary LLM. Maps to `Settings.reviewer_instructor_mode`. |
+| **`TRADING_OPENAI_TIMEOUT`** | Environment variable for the Primary LLM per-attempt request timeout in seconds. Default: `120`. Maps to `Settings.openai_timeout`. |
+| **`TRADING_REVIEWER_TIMEOUT`** | Environment variable for the Reviewer LLM per-attempt request timeout in seconds. Empty = inherit the Primary LLM. Maps to `Settings.reviewer_timeout`. |
+
 ## Design Decisions
 
 - **Same temperature for Synthesizer and Decider**: Intentional choice. Both share the Primary LLM client and its temperature. No future split is planned.
 - **Reviewer temperature is independent**, not an override of the primary temperature. Both default to `0.0` but are configured via separate env vars.
 - **Temperatures are always explicit floats**, never `None`. When not set, `0.0` is used (not the provider default). This ensures reproducibility across different providers.
+- **`json_mode` is the default structured output mode** because OpenAI-compatible providers reject forced `tool_choice` under thinking mode and reject `response_format: json_schema`; only `json_mode` is accepted. The JSON schema is injected into the prompt instead (see `docs/adr/0002`).
+- **A hung LLM upstream fails fast** via a per-attempt request timeout (`TRADING_OPENAI_TIMEOUT`, default 120s) and surfaces as an explicit `status=error` analysis result, never a silent multi-minute blockage.
 
 ## Analysis Runs
 

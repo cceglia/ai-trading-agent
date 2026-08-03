@@ -15,6 +15,7 @@ import warnings
 from unittest.mock import patch
 
 import pytest
+from instructor import Mode
 
 from src.decision.llm_client import (
     LLMClientProtocol,
@@ -80,6 +81,50 @@ class TestOpenAIProviderAdapter:
         assert isinstance(adapter, LLMClientProtocol)
 
 
+class TestOpenAIProviderAdapterModeAndTimeout:
+    """instructor_mode and timeout are forwarded to the underlying clients."""
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_forwards_json_mode_and_timeout(self, mock_async, mock_sync, mock_instructor):
+        OpenAIProviderAdapter(model="gpt-4o", instructor_mode="json_mode", timeout=120)
+
+        # Both OpenAI clients receive the per-attempt timeout.
+        assert mock_sync.call_args.kwargs["timeout"] == 120
+        assert mock_async.call_args.kwargs["timeout"] == 120
+
+        # instructor.from_openai receives mode=Mode.JSON for both clients.
+        assert mock_instructor.from_openai.call_count == 2
+        for call in mock_instructor.from_openai.call_args_list:
+            assert call.kwargs["mode"] == Mode.JSON
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_forwards_tool_call_mode(self, _mock_async, _mock_sync, mock_instructor):
+        OpenAIProviderAdapter(model="gpt-4o", instructor_mode="tool_call")
+
+        for call in mock_instructor.from_openai.call_args_list:
+            assert call.kwargs["mode"] == Mode.TOOLS
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_defaults_to_json_mode_without_timeout_kwarg(
+        self, mock_async, mock_sync, mock_instructor
+    ):
+        OpenAIProviderAdapter(model="gpt-4o")
+
+        for call in mock_instructor.from_openai.call_args_list:
+            assert call.kwargs["mode"] == Mode.JSON
+
+        # When timeout is None (inherit default), the clients are not given a
+        # timeout kwarg so the SDK's own default applies.
+        assert "timeout" not in mock_sync.call_args.kwargs
+        assert "timeout" not in mock_async.call_args.kwargs
+
+
 # ---------------------------------------------------------------------------
 # create_llm_client factory
 # ---------------------------------------------------------------------------
@@ -115,6 +160,25 @@ class TestCreateLLMClient:
         )
         assert client.model_identity.model_family == "gpt-4o-mini"
         assert client.model_identity.model_version == "2024-12-01"
+
+    @patch("src.decision.llm_client.instructor")
+    @patch("src.decision.llm_client.OpenAI")
+    @patch("src.decision.llm_client.AsyncOpenAI")
+    def test_forwards_instructor_mode_and_timeout(self, mock_async, mock_sync, mock_instructor):
+        create_llm_client(
+            provider=ProviderKind.OPENAI,
+            model="gpt-4o",
+            instructor_mode="tool_call",
+            timeout=42,
+        )
+
+        # The factory forwards the timeout to the OpenAI clients and the
+        # instructor mode to instructor.from_openai.
+        assert mock_sync.call_args.kwargs["timeout"] == 42
+        assert mock_async.call_args.kwargs["timeout"] == 42
+        assert mock_instructor.from_openai.call_count == 2
+        for call in mock_instructor.from_openai.call_args_list:
+            assert call.kwargs["mode"] == Mode.TOOLS
 
 
 # ---------------------------------------------------------------------------

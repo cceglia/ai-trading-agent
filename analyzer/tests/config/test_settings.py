@@ -298,6 +298,95 @@ class TestModelPricingSettings:
         assert '# "DeepSeek' not in source, "Commented-out pricing line should be removed"
 
 
+class TestOpenAIInstructorModeAndTimeout:
+    """Tests for the primary LLM instructor_mode and timeout Settings fields.
+
+    These tests will fail RED (AttributeError / missing validator) until the
+    fields are implemented in config/settings.py.
+    """
+
+    def test_instructor_mode_default_is_json_mode(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_instructor_mode defaults to 'json_mode'."""
+        monkeypatch.delenv("TRADING_OPENAI_INSTRUCTOR_MODE", raising=False)
+        assert Settings().openai_instructor_mode == "json_mode"
+
+    def test_instructor_mode_accepts_json_mode(self, monkeypatch: pytest.MonkeyPatch):
+        """'json_mode' is a valid value."""
+        monkeypatch.setenv("TRADING_OPENAI_INSTRUCTOR_MODE", "json_mode")
+        assert Settings().openai_instructor_mode == "json_mode"
+
+    def test_instructor_mode_accepts_tool_call(self, monkeypatch: pytest.MonkeyPatch):
+        """'tool_call' is a valid value."""
+        monkeypatch.setenv("TRADING_OPENAI_INSTRUCTOR_MODE", "tool_call")
+        assert Settings().openai_instructor_mode == "tool_call"
+
+    def test_instructor_mode_rejects_unknown_value(self, monkeypatch: pytest.MonkeyPatch):
+        """An unsupported instructor_mode value is rejected at parse time."""
+        monkeypatch.setenv("TRADING_OPENAI_INSTRUCTOR_MODE", "json_schema_mode")
+        with pytest.raises(ValueError, match="instructor_mode"):
+            Settings()
+
+    def test_instructor_mode_rejects_empty_string(self, monkeypatch: pytest.MonkeyPatch):
+        """An empty primary instructor_mode is a misconfiguration and is rejected."""
+        monkeypatch.setenv("TRADING_OPENAI_INSTRUCTOR_MODE", "")
+        with pytest.raises(ValueError, match="instructor_mode"):
+            Settings()
+
+    def test_timeout_default_is_120(self, monkeypatch: pytest.MonkeyPatch):
+        """openai_timeout defaults to 120.0 seconds."""
+        monkeypatch.delenv("TRADING_OPENAI_TIMEOUT", raising=False)
+        assert Settings().openai_timeout == 120.0
+
+    def test_timeout_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        """TRADING_OPENAI_TIMEOUT env var overrides the default."""
+        monkeypatch.setenv("TRADING_OPENAI_TIMEOUT", "45")
+        assert Settings().openai_timeout == 45.0
+
+    def test_timeout_rejects_non_positive(self, monkeypatch: pytest.MonkeyPatch):
+        """A timeout <= 0 would fail every request instantly — reject it."""
+        monkeypatch.setenv("TRADING_OPENAI_TIMEOUT", "0")
+        with pytest.raises(ValueError):
+            Settings()
+
+
+class TestReviewerInstructorModeAndTimeout:
+    """Tests for the reviewer instructor_mode and timeout Settings fields.
+
+    Empty string / None mean "inherit the primary" (ADR 0001 convention).
+    """
+
+    def test_reviewer_instructor_mode_default_inherits(self, monkeypatch: pytest.MonkeyPatch):
+        """reviewer_instructor_mode defaults to '' (inherit primary)."""
+        monkeypatch.delenv("TRADING_REVIEWER_INSTRUCTOR_MODE", raising=False)
+        assert Settings().reviewer_instructor_mode == ""
+
+    def test_reviewer_instructor_mode_accepts_tool_call(self, monkeypatch: pytest.MonkeyPatch):
+        """'tool_call' is a valid reviewer override."""
+        monkeypatch.setenv("TRADING_REVIEWER_INSTRUCTOR_MODE", "tool_call")
+        assert Settings().reviewer_instructor_mode == "tool_call"
+
+    def test_reviewer_instructor_mode_rejects_unknown_value(self, monkeypatch: pytest.MonkeyPatch):
+        """An unsupported reviewer instructor_mode value is rejected."""
+        monkeypatch.setenv("TRADING_REVIEWER_INSTRUCTOR_MODE", "bogus")
+        with pytest.raises(ValueError, match="instructor_mode"):
+            Settings()
+
+    def test_reviewer_timeout_default_inherits(self, monkeypatch: pytest.MonkeyPatch):
+        """reviewer_timeout defaults to None (inherit primary)."""
+        monkeypatch.delenv("TRADING_REVIEWER_TIMEOUT", raising=False)
+        assert Settings().reviewer_timeout is None
+
+    def test_reviewer_timeout_empty_env_inherits(self, monkeypatch: pytest.MonkeyPatch):
+        """An explicitly-empty TRADING_REVIEWER_TIMEOUT means inherit primary."""
+        monkeypatch.setenv("TRADING_REVIEWER_TIMEOUT", "")
+        assert Settings().reviewer_timeout is None
+
+    def test_reviewer_timeout_from_env(self, monkeypatch: pytest.MonkeyPatch):
+        """TRADING_REVIEWER_TIMEOUT env var overrides the default."""
+        monkeypatch.setenv("TRADING_REVIEWER_TIMEOUT", "30")
+        assert Settings().reviewer_timeout == 30.0
+
+
 class TestSynthesizerCacheEnabled:
     """Tests for the new synthesizer_cache_enabled Settings field.
 

@@ -222,6 +222,8 @@ def _create_agents(
         "model": model,
         "reasoning_effort": reasoning_effort,
         "default_temperature": settings.openai_temperature,
+        "instructor_mode": settings.openai_instructor_mode,
+        "timeout": settings.openai_timeout,
     }
 
     # Resolve model identity for logging and diagnostics.
@@ -256,6 +258,13 @@ def _create_agents(
         reviewer_kwargs["family_override"] = settings.reviewer_model_family_override
     if settings.reviewer_model_version_override:
         reviewer_kwargs["version_override"] = settings.reviewer_model_version_override
+    # Reviewer instructor mode and timeout inherit the primary unless the
+    # reviewer-specific settings are explicitly set ("" / None = inherit,
+    # same convention as the string-based overrides above, ADR 0001).
+    if settings.reviewer_instructor_mode:
+        reviewer_kwargs["instructor_mode"] = settings.reviewer_instructor_mode
+    if settings.reviewer_timeout is not None:
+        reviewer_kwargs["timeout"] = settings.reviewer_timeout
     # Reviewer temperature is always set explicitly as an independent setting.
     # Unlike string-based overrides (which use "" to mean "inherit from primary"),
     # temperature is always a meaningful float — defaulting to 0.0 for both.

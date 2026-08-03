@@ -211,6 +211,95 @@ class TestCreateAgentsTemperatureWiring:
         assert reviewer_call.kwargs["default_temperature"] == 0.9
 
 
+class TestCreateAgentsInstructorModeAndTimeoutWiring:
+    """_create_agents forwards instructor_mode/timeout to both LLM clients.
+
+    The primary client carries ``Settings.openai_instructor_mode`` /
+    ``Settings.openai_timeout``. The reviewer inherits both when the reviewer
+    overrides are empty/``None`` and overrides them independently when set
+    (same convention as the existing reviewer string settings, ADR 0001).
+    """
+
+    @staticmethod
+    def _settings(**overrides) -> MagicMock:
+        defaults = {
+            "openai_api_key": "test-key",
+            "openai_base_url": "",
+            "openai_model": "gpt-4o",
+            "openai_reasoning_effort": "",
+            "openai_temperature": 0.0,
+            "openai_instructor_mode": "json_mode",
+            "openai_timeout": 120.0,
+            "primary_llm_provider": "openai",
+            "reviewer_llm_provider": "openai",
+            "reviewer_model": "",
+            "reviewer_api_key": "",
+            "reviewer_base_url": "",
+            "reviewer_reasoning_effort": "",
+            "reviewer_model_family_override": "",
+            "reviewer_model_version_override": "",
+            "reviewer_temperature": 0.0,
+            "reviewer_instructor_mode": "",
+            "reviewer_timeout": None,
+        }
+        defaults.update(overrides)
+        return MagicMock(**defaults)
+
+    def test_primary_client_receives_mode_and_timeout(self) -> None:
+        """Primary client kwargs carry the Settings mode and timeout."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = self._settings()
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        primary_call = mock_create.call_args_list[0]
+        assert primary_call.kwargs["instructor_mode"] == "json_mode"
+        assert primary_call.kwargs["timeout"] == 120.0
+
+    def test_reviewer_inherits_mode_and_timeout_when_not_configured(self) -> None:
+        """Reviewer inherits the primary's mode and timeout when unset."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = self._settings()
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        reviewer_call = mock_create.call_args_list[1]
+        assert reviewer_call.kwargs["instructor_mode"] == "json_mode"
+        assert reviewer_call.kwargs["timeout"] == 120.0
+
+    def test_reviewer_overrides_mode_and_timeout(self) -> None:
+        """Reviewer overrides only when its own settings are set."""
+        import main
+        from src.decision.cost_tracker import CostTracker
+
+        settings = self._settings(
+            reviewer_instructor_mode="tool_call",
+            reviewer_timeout=30.0,
+        )
+        cost_tracker = MagicMock(spec=CostTracker)
+
+        with patch("main.create_llm_client") as mock_create:
+            main._create_agents(settings, cost_tracker)
+
+        primary_call = mock_create.call_args_list[0]
+        reviewer_call = mock_create.call_args_list[1]
+
+        # Primary is unaffected by the reviewer overrides.
+        assert primary_call.kwargs["instructor_mode"] == "json_mode"
+        assert primary_call.kwargs["timeout"] == 120.0
+        # Reviewer uses its own values.
+        assert reviewer_call.kwargs["instructor_mode"] == "tool_call"
+        assert reviewer_call.kwargs["timeout"] == 30.0
+
+
 class TestMainCostLogging:
     """main.py must not log 'Total LLM cost' — that's graph.run()'s job."""
 
