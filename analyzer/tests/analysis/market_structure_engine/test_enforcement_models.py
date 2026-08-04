@@ -39,6 +39,20 @@ class TestDeriveExecutionStatus:
     def test_no_blockers_is_actionable(self) -> None:
         assert derive_execution_status(()) == ExecutionStatus.ACTIONABLE
 
+    def test_candidate_blocker_is_non_executable(self) -> None:
+        """A no-candidate blocker derives NON_EXECUTABLE, not a data-quality block.
+
+        Regression test for result-23.json (US100.cash, 2026-08-04): the
+        absence of a valid candidate is a non-executability state, not a
+        data-quality failure.
+        """
+        blocker = _blocker(
+            ExecutionBlockerType.CANDIDATE,
+            ExecutionBlockerCode.NO_VALID_CANDIDATE,
+            BlockerSeverity.EXECUTION_ONLY,
+        )
+        assert derive_execution_status((blocker,)) == ExecutionStatus.NON_EXECUTABLE
+
     def test_calendar_highest_priority(self) -> None:
         blockers = (
             _blocker(

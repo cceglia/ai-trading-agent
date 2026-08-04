@@ -13,6 +13,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from src.analysis.market_structure_engine.execution_policy import (
+    evaluate_execution_policy,
+)
 from src.analysis.market_structure_engine.grading import (
     _determine_d1_directional,
     _determine_geometry_status,
@@ -24,12 +27,17 @@ from src.analysis.market_structure_engine.grading import (
     grade_setup,
 )
 from src.analysis.market_structure_engine.models import (
+    DecisionAction,
+    ExecutionBlockerType,
+    ExecutionStatus,
     GeometryStatus,
     SetupClassificationStatus,
     SetupGrade,
     SetupLifecycleStatus,
+    SetupRejectionCode,
     TradeDirection,
 )
+from src.analysis.market_structure_engine.risk_policy import build_risk_policy
 
 # ============================================================================
 # _determine_trade_direction
@@ -585,3 +593,124 @@ class TestGradeSetupEdgeCases:
                 _d1_context(bias=bias_str),
             )
             assert result.d1_bias.value == bias_str
+
+
+# ============================================================================
+# NO_SETUP rejection codes (regression: result-23.json US100.cash 2026-08-04)
+# ============================================================================
+
+
+class TestGradeSetupRejectionCodes:
+    """NO_SETUP must carry structural rejection codes, never INSUFFICIENT_DATA.
+
+    The artifact scenario: H1 setup status CONFLICT_WITH_HIGHER_TIMEFRAME with
+    a FAILED_BULLISH_BREAKOUT trigger. The classification is NO_SETUP because
+    the trigger is not confirmed; the entry absence is intentional, not a
+    data-quality problem.
+    """
+
+    def test_conflict_with_higher_timeframe_structural_codes(self) -> None:
+        result = grade_setup(
+            _h1_context(
+                setup_status="CONFLICT_WITH_HIGHER_TIMEFRAME",
+                trigger_type="FAILED_BULLISH_BREAKOUT",
+            ),
+            _h4_context(alignment="DAILY_BIAS_AT_RISK", direction="BEARISH", structure="BULLISH"),
+            _d1_context(bias="STRONG_BEARISH", structure="BEARISH"),
+        )
+        assert result.setup_classification_status == SetupClassificationStatus.NO_SETUP
+        assert result.setup_grade is None
+        assert SetupRejectionCode.INSUFFICIENT_DATA not in result.rejection_codes
+        assert SetupRejectionCode.HIGHER_TIMEFRAME_CONFLICT in result.rejection_codes
+        assert SetupRejectionCode.TRIGGER_NOT_CONFIRMED in result.rejection_codes
+
+    def test_no_setup_no_insufficient_data(self) -> None:
+        """A plain NO_SETUP (D1 neutral) carries no INSUFFICIENT_DATA either."""
+        result = grade_setup(
+            _h1_context(setup_status="VALID_SETUP", trigger_type="BULLISH_BOS"),
+            _h4_context(alignment="ALIGNED_CONTINUATION", direction="BULLISH"),
+            _d1_context(bias="NEUTRAL"),
+        )
+        assert result.setup_classification_status == SetupClassificationStatus.NO_SETUP
+        assert SetupRejectionCode.INSUFFICIENT_DATA not in result.rejection_codes
+
+    def test_classified_setup_keeps_empty_rejection_codes(self) -> None:
+        """A healthy CLASSIFIED setup with a complete plan keeps empty codes."""
+        h1 = _h1_context(setup_status="VALID_SETUP", trigger_type="BULLISH_BOS")
+        h1["setup_context"].update(
+            {
+                "current_price": 1.12,
+                "entry_price": 1.121,
+                "stop_price": 1.118,
+                "invalidation_price": 1.118,
+                "target_price": 1.13,
+            }
+        )
+        result = grade_setup(
+            h1,
+            _h4_context(alignment="ALIGNED_CONTINUATION", direction="BULLISH"),
+            _d1_context(bias="BULLISH"),
+        )
+        assert result.setup_classification_status == SetupClassificationStatus.CLASSIFIED
+        assert result.rejection_codes == ()
+
+
+class TestNoCandidatePipeline:
+    """Full deterministic chain for the result-23.json artifact scenario.
+
+    Mirrors graph._grade_setup -> _build_risk_policy -> _evaluate_execution_policy
+    with the exact analysis-context shape from the real MTF file. Guards the
+    end-to-end invariants: NO_SETUP stays NO_SETUP, no fake data-quality error,
+    no fabricated grade, and the execution status is NON_EXECUTABLE.
+    """
+
+    def test_artifact_no_candidate_chain(self) -> None:
+        h1 = _h1_context(
+            setup_status="CONFLICT_WITH_HIGHER_TIMEFRAME",
+            trigger_type="FAILED_BULLISH_BREAKOUT",
+        )
+        h1["setup_context"].update(
+            {
+                "current_price": 29750.23,
+                "technical_invalidation": 29780.18,
+                "first_objective": 28887.83,
+            }
+        )
+        h4 = _h4_context(alignment="DAILY_BIAS_AT_RISK", direction="BEARISH", structure="BULLISH")
+        d1 = _d1_context(bias="STRONG_BEARISH", structure="BEARISH")
+
+        setup = grade_setup(h1_context=h1, h4_context=h4, d1_context=d1)
+        risk = build_risk_policy(
+            setup_grade=setup.setup_grade,
+            base_risk_percentage=1.0,
+            estimated_reward_risk=setup.estimated_reward_risk,
+        )
+        policy = evaluate_execution_policy(setup=setup, risk_policy=risk)
+
+        # Classification stays NO_SETUP with structural codes
+        assert setup.setup_classification_status == SetupClassificationStatus.NO_SETUP
+        assert setup.setup_grade is None
+        assert SetupRejectionCode.INSUFFICIENT_DATA not in setup.rejection_codes
+        assert SetupRejectionCode.HIGHER_TIMEFRAME_CONFLICT in setup.rejection_codes
+        assert SetupRejectionCode.TRIGGER_NOT_CONFIRMED in setup.rejection_codes
+
+        # No candidate → no deterministic plan levels at all
+        assert setup.entry_price is None
+        assert setup.invalidation_price is None
+        assert setup.target_price is None
+        assert setup.estimated_reward_risk is None
+        assert setup.entry_type is None
+
+        # No fabricated grade / risk allocation
+        assert risk.grade_risk_multiplier == 0.0
+        assert risk.final_risk_percentage == 0.0
+
+        # No fake data-quality blockers; status is NON_EXECUTABLE
+        assert not any(
+            b.blocker_type == ExecutionBlockerType.DATA_QUALITY for b in policy.execution_blockers
+        )
+        assert not any(
+            b.blocker_type == ExecutionBlockerType.RISK_REWARD for b in policy.execution_blockers
+        )
+        assert policy.pre_review_execution_status == ExecutionStatus.NON_EXECUTABLE
+        assert policy.allowed_actions == (DecisionAction.NO_TRADE,)

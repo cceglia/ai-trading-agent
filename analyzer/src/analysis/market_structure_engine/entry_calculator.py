@@ -259,10 +259,19 @@ def _calculate_entry_plan_inner(setup_data: dict[str, Any]) -> DeterministicSetu
     setup_grade = setup_data.get("setup_grade")
     lifecycle_status = setup_data.get("setup_lifecycle_status", "PENDING")
 
+    # Only a CLASSIFIED candidate can be rejected for INSUFFICIENT_DATA.
+    # For a NO_SETUP the absence of an entry plan is intentional (no candidate
+    # was generated) — labelling that a data-quality problem turns intentional
+    # nulls into false errors (regression: result-23.json, US100.cash).
     missing_required_prices = any(
         price is None for price in (current_price, entry_price, stop_price, target_price)
     )
-    rejection_codes = (SetupRejectionCode.INSUFFICIENT_DATA,) if missing_required_prices else ()
+    rejection_codes: tuple[SetupRejectionCode, ...] = ()
+    if (
+        missing_required_prices
+        and setup_classification_status == SetupClassificationStatus.CLASSIFIED
+    ):
+        rejection_codes = (SetupRejectionCode.INSUFFICIENT_DATA,)
 
     # Build and return the DeterministicSetupState
     return DeterministicSetupState(

@@ -304,8 +304,36 @@ class TestCalculateEntryPlan:
         assert result.estimated_reward_risk is None
         assert result.entry_price is None
         assert result.entry_type is None
-        assert SetupRejectionCode.INSUFFICIENT_DATA in result.rejection_codes
         assert result.deterministic_plan_complete is False
+
+    def test_no_setup_missing_prices_no_insufficient_data(self) -> None:
+        """NO_SETUP with missing prices must not be labelled INSUFFICIENT_DATA.
+
+        The absence of an entry plan is intentional for a NO_SETUP (no
+        candidate was generated) — it is not a data-quality problem.
+        Regression test for result-23.json (US100.cash, 2026-08-04).
+        """
+        result = calculate_entry_plan(
+            {
+                "trade_direction": "BULLISH",
+                "setup_classification_status": SetupClassificationStatus.NO_SETUP,
+            }
+        )
+        assert result.setup_classification_status == SetupClassificationStatus.NO_SETUP
+        assert SetupRejectionCode.INSUFFICIENT_DATA not in result.rejection_codes
+        assert result.rejection_codes == ()
+
+    def test_classified_missing_prices_insufficient_data(self) -> None:
+        """A CLASSIFIED candidate with missing prices is genuinely INSUFFICIENT_DATA."""
+        result = calculate_entry_plan(
+            {
+                "trade_direction": "BULLISH",
+                "setup_classification_status": SetupClassificationStatus.CLASSIFIED,
+                "setup_grade": "AAA",
+            }
+        )
+        assert result.setup_classification_status == SetupClassificationStatus.CLASSIFIED
+        assert SetupRejectionCode.INSUFFICIENT_DATA in result.rejection_codes
 
     def test_trade_direction_from_string(self) -> None:
         """Entry calculator accepts TradeDirection as string."""

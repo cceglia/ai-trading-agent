@@ -44,7 +44,7 @@ _DEFAULT_RISK_MULTIPLIER: float = 1.0
 
 def build_risk_policy(
     *,
-    setup_grade: SetupGrade,
+    setup_grade: SetupGrade | None,
     base_risk_percentage: float,
     estimated_reward_risk: float | None,
 ) -> RiskPolicyState:
@@ -55,9 +55,14 @@ def build_risk_policy(
     The computed fields ``final_risk_percentage`` and ``risk_reward_ok`` are
     derived automatically by the model.
 
+    When *setup_grade* is ``None`` (a NO_SETUP — no candidate was generated),
+    the multiplier is ``0.0`` so no operational risk is allocated. Fabricating
+    a grade here would produce an apparently-valid risk allocation for a setup
+    that does not exist (regression: result-23.json, US100.cash).
+
     Args:
         setup_grade: Quality grade assigned to the setup (AAA, AA,
-            COUNTERTREND).
+            COUNTERTREND), or ``None`` when no setup was classified.
         base_risk_percentage: Base risk per trade as a percentage of
             account equity (e.g. 1.0 for 1 %).
         estimated_reward_risk: Deterministically calculated reward-to-risk
@@ -72,9 +77,12 @@ def build_risk_policy(
     if base_risk_percentage < 0:
         raise ValueError(f"base_risk_percentage must be non-negative, got {base_risk_percentage}")
 
-    min_rr, multiplier = GRADE_RISK_TABLE.get(
-        setup_grade, (_DEFAULT_MIN_RR, _DEFAULT_RISK_MULTIPLIER)
-    )
+    if setup_grade is None:
+        min_rr, multiplier = _DEFAULT_MIN_RR, 0.0
+    else:
+        min_rr, multiplier = GRADE_RISK_TABLE.get(
+            setup_grade, (_DEFAULT_MIN_RR, _DEFAULT_RISK_MULTIPLIER)
+        )
 
     return RiskPolicyState(
         base_risk_percentage=base_risk_percentage,

@@ -79,8 +79,29 @@ def _build_blockers(
     """Evaluate all blocker conditions and return the active blockers.
 
     This is an internal helper; callers use :func:`evaluate_execution_policy`.
+
+    When no candidate was generated (``candidate_generated`` is False), the
+    missing entry / stop / target / R/R are intentional absences, not data
+    problems. A single ``NO_VALID_CANDIDATE`` blocker is emitted instead of
+    the symptom blockers, which derives to NON_EXECUTABLE rather than
+    BLOCKED_BY_DATA_QUALITY (regression: result-23.json, US100.cash).
     """
     blockers: list[ExecutionBlocker] = []
+
+    # ── No valid candidate: nothing to evaluate ────────────────────────
+    if not setup.candidate_generated:
+        blockers.append(
+            ExecutionBlocker(
+                blocker_type=ExecutionBlockerType.CANDIDATE,
+                code=ExecutionBlockerCode.NO_VALID_CANDIDATE,
+                reason=(
+                    f"Setup classification {setup.setup_classification_status.value} "
+                    "has no valid candidate — nothing to execute"
+                ),
+                severity=BlockerSeverity.EXECUTION_ONLY,
+            )
+        )
+        return blockers
 
     # ── Policy: countertrend disabled ──────────────────────────────────
     if setup.setup_grade == SetupGrade.COUNTERTREND and not settings.countertrend_enabled:

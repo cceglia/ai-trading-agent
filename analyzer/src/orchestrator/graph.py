@@ -26,12 +26,13 @@ from src.analysis.market_structure_engine.grading import grade_setup
 from src.analysis.market_structure_engine.models import (
     DecisionAction,
     DeterministicSetupState,
+    ExecutionBlockerType,
     ExecutionPolicyState,
     ExecutionStatus,
     FinalDecisionState,
+    GeometryStatus,
     ReviewStatus,
     RiskPolicyState,
-    SetupGrade,
 )
 from src.analysis.market_structure_engine.risk_policy import build_risk_policy
 from src.data.snapshot_builder import SnapshotBuilder
@@ -942,7 +943,7 @@ class TradingGraph:
 
         try:
             risk = build_risk_policy(
-                setup_grade=setup.setup_grade or SetupGrade.AA,
+                setup_grade=setup.setup_grade,
                 base_risk_percentage=base_risk_percentage,
                 estimated_reward_risk=setup.estimated_reward_risk,
             )
@@ -1014,6 +1015,11 @@ class TradingGraph:
         DecisionOutput(NO_TRADE) and ReviewVerdict(NOT_REQUIRED)
         so the LLM agents are bypassed entirely.
 
+        The review flags are derived from the deterministic state instead of
+        using the model defaults: a no-candidate / HTF-conflict setup must not
+        report htf_alignment_ok / calendar_clear / risk_management_ok as true
+        (regression: result-23.json, US100.cash).
+
         For all other statuses, return empty (the LLM decide node
         handles the decision).
         """
@@ -1036,11 +1042,41 @@ class TradingGraph:
                 action=DecisionAction.NO_TRADE,
                 reasoning=f"Early-exit: execution status is {status.value}",
             )
+
+            setup = state.get("deterministic_setup")
+            calendar_events = state.get("calendar_events")
+
+            # Derive honest review flags from the deterministic state.
+            # - HTF alignment: only explicit ALIGNED_* statuses count.
+            # - Calendar: unknown (no events fetched) is not clear.
+            # - Risk management: no RISK_REWARD / GEOMETRY blockers remain.
+            htf_alignment_ok = setup is not None and setup.h4_alignment_status in (
+                "ALIGNED_CONTINUATION",
+                "ALIGNED_PULLBACK",
+            )
+            calendar_clear = (
+                calendar_events is not None
+                and bool(calendar_events)
+                and not _has_high_impact_calendar_event(calendar_events)
+            )
+            risk_management_ok = not any(
+                b.blocker_type in (ExecutionBlockerType.RISK_REWARD, ExecutionBlockerType.GEOMETRY)
+                for b in execution_policy.execution_blockers
+            )
+            geometry_violation_detected = (
+                setup is not None and setup.geometry_status != GeometryStatus.VALID
+            )
+
             review = ReviewVerdict(
                 status=ReviewStatus.NOT_REQUIRED,
                 reasoning="Deterministic early exit — review not required",
                 concerns=(),
                 suggested_improvements=None,
+                risk_management_ok=risk_management_ok,
+                htf_alignment_ok=htf_alignment_ok,
+                calendar_clear=calendar_clear,
+                blocker_violation_detected=bool(execution_policy.execution_blockers),
+                geometry_violation_detected=geometry_violation_detected,
             )
             return {
                 "decision": decision,

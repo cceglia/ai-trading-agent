@@ -341,6 +341,118 @@ class TestMaxReviewAttempts:
         assert trading_graph.max_review_attempts == 2
 
 
+class TestEarlyExecutionRoutingReviewFlags:
+    """Deterministic early-exit ReviewVerdict must reflect deterministic state.
+
+    Regression test for result-23.json (US100.cash, 2026-08-04): the early-exit
+    review previously defaulted htf_alignment_ok / risk_management_ok /
+    calendar_clear to True even for a CONFLICT_WITH_HIGHER_TIMEFRAME NO_SETUP.
+    """
+
+    def _state(
+        self,
+        *,
+        h4_alignment: str,
+        calendar_events: list | None,
+        blockers: tuple,
+    ) -> dict:
+        from src.analysis.market_structure_engine.models import (
+            DeterministicSetupState,
+            ExecutionPolicyState,
+            GeometryStatus,
+            SetupClassificationStatus,
+            SetupLifecycleStatus,
+            SetupRejectionCode,
+            TradeDirection,
+        )
+
+        setup = DeterministicSetupState(
+            setup_classification_status=SetupClassificationStatus.NO_SETUP,
+            setup_grade=None,
+            trade_direction=TradeDirection.BEARISH,
+            setup_lifecycle_status=SetupLifecycleStatus.INVALIDATED,
+            geometry_status=GeometryStatus.PERMANENTLY_INVALID,
+            h4_alignment_status=h4_alignment,
+            h1_setup_status="CONFLICT_WITH_HIGHER_TIMEFRAME",
+            rejection_codes=(
+                SetupRejectionCode.HIGHER_TIMEFRAME_CONFLICT,
+                SetupRejectionCode.TRIGGER_NOT_CONFIRMED,
+            ),
+        )
+        policy = ExecutionPolicyState(
+            trade_direction=TradeDirection.BEARISH,
+            execution_blockers=blockers,
+        )
+        return {
+            "symbol": "US100.cash",
+            "execution_policy": policy,
+            "deterministic_setup": setup,
+            "calendar_events": calendar_events,
+            "fatal_error": None,
+        }
+
+    def _candidate_blocker(self):
+        from src.analysis.market_structure_engine.models import (
+            BlockerSeverity,
+            ExecutionBlocker,
+            ExecutionBlockerCode,
+            ExecutionBlockerType,
+        )
+
+        return ExecutionBlocker(
+            blocker_type=ExecutionBlockerType.CANDIDATE,
+            code=ExecutionBlockerCode.NO_VALID_CANDIDATE,
+            reason="No valid candidate generated",
+            severity=BlockerSeverity.EXECUTION_ONLY,
+        )
+
+    def test_htf_conflict_review_flags_are_honest(self, trading_graph):
+        state = self._state(
+            h4_alignment="DAILY_BIAS_AT_RISK",
+            calendar_events=[],
+            blockers=(self._candidate_blocker(),),
+        )
+        result = trading_graph._early_execution_routing(state)
+        review = result["review"]
+        assert review.status == "NOT_REQUIRED"
+        assert review.htf_alignment_ok is False
+        assert review.risk_management_ok is True  # no risk/geometry blockers remain
+        assert review.calendar_clear is False  # calendar unknown → not clear
+        assert review.geometry_violation_detected is True  # PERMANENTLY_INVALID
+
+    def test_aligned_candidate_review_flags_pass(self, trading_graph):
+        state = self._state(
+            h4_alignment="ALIGNED_CONTINUATION",
+            calendar_events=[],
+            blockers=(),
+        )
+        # Override classification to CLASSIFIED with a grade so flags pass
+        from src.analysis.market_structure_engine.models import (
+            DeterministicSetupState,
+            ExecutionPolicyState,
+            SetupClassificationStatus,
+            SetupGrade,
+            SetupLifecycleStatus,
+            TradeDirection,
+        )
+
+        setup = DeterministicSetupState(
+            setup_classification_status=SetupClassificationStatus.CLASSIFIED,
+            setup_grade=SetupGrade.AAA,
+            trade_direction=TradeDirection.BULLISH,
+            setup_lifecycle_status=SetupLifecycleStatus.TRIGGERED,
+            h4_alignment_status="ALIGNED_CONTINUATION",
+            h1_setup_status="VALID_SETUP",
+        )
+        state["deterministic_setup"] = setup
+        state["execution_policy"] = ExecutionPolicyState(
+            trade_direction=TradeDirection.BULLISH,
+            execution_blockers=(),
+        )
+        result = trading_graph._early_execution_routing(state)
+        assert result == {}
+
+
 def test_analyze_structure_fetches_all_timeframes(tmp_path, monkeypatch):
     """_analyze_structure must fetch all three timeframes fresh (no partial cache)."""
     from datetime import datetime

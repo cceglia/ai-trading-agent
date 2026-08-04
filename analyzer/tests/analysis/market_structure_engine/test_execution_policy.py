@@ -358,6 +358,50 @@ class TestStatusDerivation:
         assert state.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
 
 
+class TestNoCandidateExecutionStatus:
+    """No-candidate setups are NON_EXECUTABLE, not data-quality failures.
+
+    Regression test for result-23.json (US100.cash, 2026-08-04): a NO_SETUP
+    with no grade previously produced RISK_REWARD_CALCULATION_FAILED,
+    GEOMETRY_INVALID and DATA_QUALITY_INCOMPLETE_SETUP blockers that turned
+    the intentional absence of a candidate into BLOCKED_BY_DATA_QUALITY.
+    """
+
+    def test_no_candidate_is_non_executable(self) -> None:
+        setup = _make_setup(
+            classification=SetupClassificationStatus.NO_SETUP,
+            grade=None,
+            trade_direction=TradeDirection.NEUTRAL,
+            lifecycle=SetupLifecycleStatus.INVALIDATED,
+            geometry=GeometryStatus.PERMANENTLY_INVALID,
+            trigger_status=TriggerStatus.CONFIRMED_TRIGGER,
+            h1_setup="CONFLICT_WITH_HIGHER_TIMEFRAME",
+        ).model_copy(
+            update={
+                "entry_price": None,
+                "invalidation_price": None,
+                "target_price": None,
+                "estimated_reward_risk": None,
+            }
+        )
+        policy = _make_risk_policy(estimated_rr=None)
+
+        state = evaluate_execution_policy(setup=setup, risk_policy=policy)
+
+        assert state.pre_review_execution_status == ExecutionStatus.NON_EXECUTABLE
+        assert state.allowed_actions == (DecisionAction.NO_TRADE,)
+        # No symptom blockers that mislabel "no candidate" as a data problem
+        assert not any(
+            b.blocker_type == ExecutionBlockerType.DATA_QUALITY for b in state.execution_blockers
+        )
+        assert not any(
+            b.blocker_type == ExecutionBlockerType.RISK_REWARD for b in state.execution_blockers
+        )
+        assert not any(
+            b.blocker_type == ExecutionBlockerType.GEOMETRY for b in state.execution_blockers
+        )
+
+
 # ============================================================================
 # Allowed actions derivation
 # ============================================================================

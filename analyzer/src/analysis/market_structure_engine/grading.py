@@ -23,6 +23,7 @@ from .models import (
     SetupClassificationStatus,
     SetupGrade,
     SetupLifecycleStatus,
+    SetupRejectionCode,
     TradeDirection,
     TriggerStatus,
     TriggerType,
@@ -274,6 +275,20 @@ def grade_setup(
         h1_trigger_confirmed, h1_trigger_status_str, h1_setup_status
     )
 
+    # Build structural rejection codes. A NO_SETUP is a valid classification
+    # outcome — no candidate was generated — so it must never carry
+    # INSUFFICIENT_DATA. The specific structural reasons are recorded here
+    # instead, so the downstream pipeline stops as "no candidate" rather than
+    # inventing a data-quality problem (regression: result-23.json, US100.cash).
+    rejection_codes: tuple[SetupRejectionCode, ...] = ()
+    if setup_classification == SetupClassificationStatus.NO_SETUP:
+        codes: list[SetupRejectionCode] = []
+        if h1_setup_status == "CONFLICT_WITH_HIGHER_TIMEFRAME":
+            codes.append(SetupRejectionCode.HIGHER_TIMEFRAME_CONFLICT)
+        if not h1_trigger_confirmed:
+            codes.append(SetupRejectionCode.TRIGGER_NOT_CONFIRMED)
+        rejection_codes = tuple(codes)
+
     # Map bias strings to BiasLevel enums
     bias_map = {
         "STRONG_BULLISH": BiasLevel.STRONG_BULLISH,
@@ -317,10 +332,21 @@ def grade_setup(
     latest_close = setup.get("current_price")
     if latest_close is None:
         latest_close = setup.get("market", {}).get("current_price")
-    entry_price = setup.get("entry_price")
-    invalidation_price = setup.get("invalidation_price", setup.get("technical_invalidation"))
-    target_price = setup.get("target_price", setup.get("first_objective"))
-    stop_price = setup.get("stop_price", invalidation_price)
+    # A NO_SETUP has no candidate, so no deterministic plan levels exist. The
+    # H1 engine may still expose technical_invalidation / first_objective, but
+    # those describe the (rejected) setup, not an actionable plan — carrying
+    # them as stop/target would surface a half-populated overlay and a fake
+    # RISK_REWARD_CALCULATION_FAILED (regression: result-23.json, US100.cash).
+    if setup_classification == SetupClassificationStatus.NO_SETUP:
+        entry_price = None
+        invalidation_price = None
+        target_price = None
+        stop_price = None
+    else:
+        entry_price = setup.get("entry_price")
+        invalidation_price = setup.get("invalidation_price", setup.get("technical_invalidation"))
+        target_price = setup.get("target_price", setup.get("first_objective"))
+        stop_price = setup.get("stop_price", invalidation_price)
     planned_setup = calculate_entry_plan(
         {
             **setup,
@@ -355,4 +381,10 @@ def grade_setup(
 
     # Preserve the classification metadata produced above while taking all
     # entry-plan values from the calculator's authoritative result.
-    return planned_setup.model_copy(update={"geometry_status": geometry_status})
+    # The structural rejection codes computed for NO_SETUP override whatever
+    # the calculator inferred (which would otherwise be INSUFFICIENT_DATA for
+    # the intentionally-absent entry plan).
+    update: dict[str, Any] = {"geometry_status": geometry_status}
+    if rejection_codes:
+        update["rejection_codes"] = rejection_codes
+    return planned_setup.model_copy(update=update)

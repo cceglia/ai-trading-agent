@@ -88,6 +88,7 @@ class ExecutionBlockerType(StrEnum):
     EXECUTION_MODE = "EXECUTION_MODE"
     RISK_REWARD = "RISK_REWARD"
     GEOMETRY = "GEOMETRY"
+    CANDIDATE = "CANDIDATE"
 
 
 class ExecutionBlockerCode(StrEnum):
@@ -134,6 +135,9 @@ class ExecutionBlockerCode(StrEnum):
     # Geometry blockers
     GEOMETRY_INVALID = "GEOMETRY_INVALID"
     GEOMETRY_TEMPORARILY_UNAVAILABLE = "GEOMETRY_TEMPORARILY_UNAVAILABLE"
+
+    # Candidate blockers
+    NO_VALID_CANDIDATE = "NO_VALID_CANDIDATE"
 
 
 class EnforcementViolationCode(StrEnum):
@@ -349,15 +353,18 @@ def derive_execution_status(blockers: tuple[ExecutionBlocker, ...]) -> Execution
     """Derive the execution status from a set of blockers.
 
     Priority order (highest priority checked across ALL blockers first):
-    1. Any CALENDAR blocker → BLOCKED_BY_CALENDAR
-    2. Any DATA_QUALITY blocker → BLOCKED_BY_DATA_QUALITY
-    3. Any POLICY blocker → BLOCKED_BY_POLICY
-    4. Any RISK_REWARD blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
-    5. Any GEOMETRY blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
-    6. Any REVIEW blocker → BLOCKED_BY_REVIEW
-    7. No blockers → ACTIONABLE
+    1. Any CANDIDATE blocker → NON_EXECUTABLE
+    2. Any CALENDAR blocker → BLOCKED_BY_CALENDAR
+    3. Any DATA_QUALITY blocker → BLOCKED_BY_DATA_QUALITY
+    4. Any POLICY blocker → BLOCKED_BY_POLICY
+    5. Any RISK_REWARD blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
+    6. Any GEOMETRY blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
+    7. Any REVIEW blocker → BLOCKED_BY_REVIEW
+    8. No blockers → ACTIONABLE
     """
     types = {b.blocker_type for b in blockers}
+    if ExecutionBlockerType.CANDIDATE in types:
+        return ExecutionStatus.NON_EXECUTABLE
     if ExecutionBlockerType.CALENDAR in types:
         return ExecutionStatus.BLOCKED_BY_CALENDAR
     if ExecutionBlockerType.DATA_QUALITY in types:
@@ -413,6 +420,8 @@ class SetupRejectionCode(StrEnum):
 
     INVALID_TRADE_DIRECTION = "INVALID_TRADE_DIRECTION"
     INSUFFICIENT_DATA = "INSUFFICIENT_DATA"
+    HIGHER_TIMEFRAME_CONFLICT = "HIGHER_TIMEFRAME_CONFLICT"
+    TRIGGER_NOT_CONFIRMED = "TRIGGER_NOT_CONFIRMED"
 
 
 # ---------------------------------------------------------------------------

@@ -50,6 +50,22 @@ class TestBuildRiskPolicy:
         assert result.grade_risk_multiplier == 0.25
         assert result.minimum_reward_risk == 2.5
 
+    def test_none_grade_zero_multiplier(self) -> None:
+        """A setup without a grade (NO_SETUP) must not fabricate a multiplier.
+
+        Regression test for result-23.json (US100.cash, 2026-08-04): a NO_SETUP
+        previously fell back to the AA table entry via `or SetupGrade.AA` in the
+        graph node, producing an apparently-valid risk allocation of 0.5.
+        """
+        result = build_risk_policy(
+            setup_grade=None,
+            base_risk_percentage=1.0,
+            estimated_reward_risk=None,
+        )
+        assert result.grade_risk_multiplier == 0.0
+        assert result.final_risk_percentage == 0.0
+        assert result.risk_reward_ok is False
+
 
 class TestGRADERiskTable:
     """GRADE_RISK_TABLE must contain expected entries."""
