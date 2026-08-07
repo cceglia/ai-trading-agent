@@ -17,7 +17,7 @@ Blocker conditions evaluated:
     - MISSING_D1_DATA / MISSING_H4_DATA / MISSING_H1_DATA: Timeframe data absent
     - INVALID_ENTRY_GEOMETRY: Entry geometry status is not VALID
 
-The computed fields ``pre_review_execution_status`` and ``allowed_actions`` on
+The computed fields ``execution_status`` and ``allowed_actions`` on
 the returned :class:`ExecutionPolicyState` are derived automatically from the
 blockers via ``derive_execution_status()`` and ``derive_allowed_actions()``.
 """
@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from .config import MIN_RR
 from .models import (
     BlockerSeverity,
     DeterministicSetupState,
@@ -60,7 +61,7 @@ class PolicySettings:
 
     countertrend_enabled: bool = False
     high_impact_calendar_block: bool = True
-    minimum_reward_risk: float = 1.0
+    minimum_reward_risk: float = MIN_RR
     require_confirmed_trigger: bool = True
     require_valid_geometry: bool = True
 
@@ -155,8 +156,8 @@ def _build_blockers(
     ):
         blockers.append(
             ExecutionBlocker(
-                blocker_type=ExecutionBlockerType.REVIEW,
-                code=ExecutionBlockerCode.REVIEW_TRIGGER_NOT_CONFIRMED,
+                blocker_type=ExecutionBlockerType.POLICY,
+                code=ExecutionBlockerCode.POLICY_TRIGGER_NOT_CONFIRMED,
                 reason=(f"Trigger status {setup.h1_trigger_status.value} is not CONFIRMED"),
                 severity=BlockerSeverity.EXECUTION_ONLY,
             )
@@ -240,7 +241,7 @@ def evaluate_execution_policy(
     (policy, calendar, risk/reward, trigger, data quality, geometry), and
     constructs an immutable state with the resulting blockers.
 
-    The computed fields ``pre_review_execution_status`` and ``allowed_actions``
+    The computed fields ``execution_status`` and ``allowed_actions``
     are derived automatically from the blockers via ``derive_execution_status()``
     and ``derive_allowed_actions()``.
 
@@ -265,7 +266,7 @@ def evaluate_execution_policy(
         ...     risk_policy=my_risk_policy,
         ...     has_high_impact_event=True,
         ... )
-        >>> state.pre_review_execution_status
+        >>> state.execution_status
         <ExecutionStatus.BLOCKED_BY_CALENDAR: 'BLOCKED_BY_CALENDAR'>
         >>> state.allowed_actions
         (<DecisionAction.NO_TRADE: 'no_trade'>,)

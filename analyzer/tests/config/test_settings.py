@@ -92,41 +92,6 @@ class TestReasoningEffortSettings:
         assert Settings().openai_reasoning_effort == "high"
 
 
-class TestReviewerSettings:
-    """Tests for reviewer-specific environment variable names."""
-
-    def test_reviewer_env_names_drop_llm_except_provider(self, monkeypatch: pytest.MonkeyPatch):
-        """Reviewer settings use the concise names while provider stays compatible."""
-        monkeypatch.setenv("TRADING_REVIEWER_LLM_PROVIDER", "openai")
-        monkeypatch.setenv("TRADING_REVIEWER_MODEL", "reviewer-model")
-        monkeypatch.setenv("TRADING_REVIEWER_API_KEY", "reviewer-key")
-        monkeypatch.setenv("TRADING_REVIEWER_BASE_URL", "https://reviewer.example/v1")
-        monkeypatch.setenv("TRADING_REVIEWER_TEMPERATURE", "0.3")
-        monkeypatch.setenv("TRADING_REVIEWER_REASONING_EFFORT", "high")
-        monkeypatch.setenv("TRADING_REVIEWER_MODEL_FAMILY_OVERRIDE", "family")
-        monkeypatch.setenv("TRADING_REVIEWER_MODEL_VERSION_OVERRIDE", "version")
-
-        settings = Settings()
-
-        assert settings.reviewer_llm_provider == "openai"
-        assert settings.reviewer_model == "reviewer-model"
-        assert settings.reviewer_api_key == "reviewer-key"
-        assert settings.reviewer_base_url == "https://reviewer.example/v1"
-        assert settings.reviewer_temperature == 0.3
-        assert settings.reviewer_reasoning_effort == "high"
-        assert settings.reviewer_model_family_override == "family"
-        assert settings.reviewer_model_version_override == "version"
-        assert not hasattr(settings, "reviewer_llm_timeout_seconds")
-        assert not hasattr(settings, "reviewer_llm_max_retries")
-
-    def test_old_reviewer_model_name_is_not_loaded(self, monkeypatch: pytest.MonkeyPatch):
-        """The removed reviewer prefix is not accepted as a compatibility alias."""
-        monkeypatch.setenv("TRADING_REVIEWER_LLM_MODEL", "old-model")
-        monkeypatch.delenv("TRADING_REVIEWER_MODEL", raising=False)
-
-        assert Settings().reviewer_model == ""
-
-
 class TestOpenAITemperatureSettings:
     """Tests for the openai_temperature Settings field.
 
@@ -347,44 +312,6 @@ class TestOpenAIInstructorModeAndTimeout:
         monkeypatch.setenv("TRADING_OPENAI_TIMEOUT", "0")
         with pytest.raises(ValueError):
             Settings()
-
-
-class TestReviewerInstructorModeAndTimeout:
-    """Tests for the reviewer instructor_mode and timeout Settings fields.
-
-    Empty string / None mean "inherit the primary" (ADR 0001 convention).
-    """
-
-    def test_reviewer_instructor_mode_default_inherits(self, monkeypatch: pytest.MonkeyPatch):
-        """reviewer_instructor_mode defaults to '' (inherit primary)."""
-        monkeypatch.delenv("TRADING_REVIEWER_INSTRUCTOR_MODE", raising=False)
-        assert Settings().reviewer_instructor_mode == ""
-
-    def test_reviewer_instructor_mode_accepts_tool_call(self, monkeypatch: pytest.MonkeyPatch):
-        """'tool_call' is a valid reviewer override."""
-        monkeypatch.setenv("TRADING_REVIEWER_INSTRUCTOR_MODE", "tool_call")
-        assert Settings().reviewer_instructor_mode == "tool_call"
-
-    def test_reviewer_instructor_mode_rejects_unknown_value(self, monkeypatch: pytest.MonkeyPatch):
-        """An unsupported reviewer instructor_mode value is rejected."""
-        monkeypatch.setenv("TRADING_REVIEWER_INSTRUCTOR_MODE", "bogus")
-        with pytest.raises(ValueError, match="instructor_mode"):
-            Settings()
-
-    def test_reviewer_timeout_default_inherits(self, monkeypatch: pytest.MonkeyPatch):
-        """reviewer_timeout defaults to None (inherit primary)."""
-        monkeypatch.delenv("TRADING_REVIEWER_TIMEOUT", raising=False)
-        assert Settings().reviewer_timeout is None
-
-    def test_reviewer_timeout_empty_env_inherits(self, monkeypatch: pytest.MonkeyPatch):
-        """An explicitly-empty TRADING_REVIEWER_TIMEOUT means inherit primary."""
-        monkeypatch.setenv("TRADING_REVIEWER_TIMEOUT", "")
-        assert Settings().reviewer_timeout is None
-
-    def test_reviewer_timeout_from_env(self, monkeypatch: pytest.MonkeyPatch):
-        """TRADING_REVIEWER_TIMEOUT env var overrides the default."""
-        monkeypatch.setenv("TRADING_REVIEWER_TIMEOUT", "30")
-        assert Settings().reviewer_timeout == 30.0
 
 
 class TestSynthesizerCacheEnabled:

@@ -1,59 +1,60 @@
 # Domain Glossary
 
-## LLM Agents
+## Analysis Pipeline
 
 | Term | Definition |
 |---|---|
-| **Primary LLM** | The LLM client used by the Synthesizer and Decider agents. Configured via `TRADING_OPENAI_*` environment variables. |
-| **Reviewer LLM** | The LLM client used by the Reviewer agent. Configured via reviewer-specific environment variables. Can override most primary LLM settings independently. |
+| **Closed candle** | An OHLC candle whose closure has been verified and which is the only candle eligible for deterministic analysis. |
+| **Deterministic facts** | Values calculated exclusively from closed OHLC data, configured formulas, and deterministic policy: structure, events, liquidity, levels, RR, grading, blockers, and geometry. |
+| **Deterministic decision** | The machine-readable setup outcome derived from deterministic facts and policy. It selects `BUY_SETUP`, `SELL_SETUP`, or `no_trade`; it is not produced by an LLM. |
+| **Invalid analysis** | A deterministic result that violates an invariant or cannot be trusted. It is distinct from `NO_SETUP`, which is a valid analysis with no opportunity. |
+| **Deterministic validation** | The invariant-checking stage that produces `validation_status` and `validation_errors` before and after the Synthesizer boundary. It never retries through an LLM. |
+| **Synthesizer** | The single LLM agent. It explains deterministic facts and risks in readable prose; it cannot change facts, decisions, blockers, or validation outcomes. |
 
-## LLM Temperature
-
-| Term | Definition |
-|---|---|
-| **LLM Temperature** | Float (0.0–2.0) controlling randomness in LLM output. 0.0 = fully deterministic; higher values = more creative/random output. Set independently for the Primary LLM and the Reviewer LLM. |
-| **`TRADING_OPENAI_TEMPERATURE`** | Environment variable for the Primary LLM temperature. Default: `0.0`. Maps to `Settings.openai_temperature`. |
-| **`TRADING_REVIEWER_TEMPERATURE`** | Environment variable for the Reviewer LLM temperature. Default: `0.0`. Maps to `Settings.reviewer_temperature`. |
-
-## Structured Output
+## Setup and Decision
 
 | Term | Definition |
 |---|---|
-| **Structured output mode** | The mode by which an LLM agent returns schema-validated data, via `response_format` (e.g. `{"type": "json_object"}`) or tool-calls. Default: `json_mode` for both the Primary LLM and the Reviewer LLM. _Avoid_: instructor mode, response mode. |
-| **`TRADING_OPENAI_INSTRUCTOR_MODE`** | Environment variable for the Primary LLM structured output mode. Valid values: `json_mode`, `tool_call`. Default: `json_mode`. Maps to `Settings.openai_instructor_mode`. |
-| **`TRADING_REVIEWER_INSTRUCTOR_MODE`** | Environment variable for the Reviewer LLM structured output mode. Empty = inherit the Primary LLM. Maps to `Settings.reviewer_instructor_mode`. |
-| **`TRADING_OPENAI_TIMEOUT`** | Environment variable for the Primary LLM per-attempt request timeout in seconds. Default: `120`. Maps to `Settings.openai_timeout`. |
-| **`TRADING_REVIEWER_TIMEOUT`** | Environment variable for the Reviewer LLM per-attempt request timeout in seconds. Empty = inherit the Primary LLM. Maps to `Settings.reviewer_timeout`. |
+| **Setup status** | Deterministic classification: `READY`, `NO_SETUP`, or `INVALID`. `NO_SETUP` means valid analysis without an opportunity; `INVALID` means the analysis is untrusted. |
+| **Direction** | Canonical human-facing direction: `LONG`, `SHORT`, or `NONE`. It is derived from deterministic trade direction. |
+| **Decision action** | Existing serialized enum values `BUY_SETUP`, `SELL_SETUP`, and `no_trade`. `INVALID` is never an action value. |
+| **Blocker** | A deterministic machine-readable reason that prevents or limits a setup. A `READY` setup cannot contain blockers. |
+| **Validation status** | `VALID` or `INVALID`, representing invariant validity rather than trade availability. |
+| **Validation errors** | Machine-readable or stable error descriptions explaining why deterministic facts are invalid. |
 
-## Design Decisions
+## Structural Events
 
-- **Same temperature for Synthesizer and Decider**: Intentional choice. Both share the Primary LLM client and its temperature. No future split is planned.
-- **Reviewer temperature is independent**, not an override of the primary temperature. Both default to `0.0` but are configured via separate env vars.
-- **Temperatures are always explicit floats**, never `None`. When not set, `0.0` is used (not the provider default). This ensures reproducibility across different providers.
-- **`json_mode` is the default structured output mode** because OpenAI-compatible providers reject forced `tool_choice` under thinking mode and reject `response_format: json_schema`; only `json_mode` is accepted. The JSON schema is injected into the prompt instead (see `docs/adr/0002`).
-- **A hung LLM upstream fails fast** via a per-attempt request timeout (`TRADING_OPENAI_TIMEOUT`, default 120s) and surfaces as an explicit `status=error` analysis result, never a silent multi-minute blockage.
+| Term | Definition |
+|---|---|
+| **Event history** | Chronologically ordered structural or liquidity interactions, including failed and later confirmed events. History is never replaced by the latest state. |
+| **Latest event** | The most recent relevant event in chronological history for the requested scope. |
+| **Current state** | The state obtained by replaying valid chronological transitions over an event history. |
+| **BOS** | A confirmed structural break in the same directional regime that existed immediately before the event. |
+| **CHoCH** | A confirmed structural break opposite to the immediately preceding directional regime. |
+| **Structural break / unclassified break** | A confirmed directional break observed while the prior regime is `RANGE`, `TRANSITION`, or `UNKNOWN`; it updates the regime without inventing BOS or CHoCH. |
+| **Structural scope** | The immutable provenance of an event: `PRIMARY` or `INTERNAL`. It cannot be reinterpreted downstream. |
+
+## Liquidity and Levels
+
+| Term | Definition |
+|---|---|
+| **Liquidity event history** | All valid pool transitions, such as sweep, reclaim, acceptance beyond, and later reclaim. |
+| **Liquidity current state** | The state after the last valid transition for a pool. |
+| **Freshness** | Deterministic level validity based on age and interaction history. Only `FRESH` and `TESTED` levels within the timeframe age limit can be automatic invalidation candidates. |
+| **Historical level** | A retained level that may explain context but is not automatically eligible for stop/invalidation selection. |
+| **Eligible invalidation** | A level satisfying freshness, age, break, reclaim, and acceptance constraints for deterministic stop selection. |
+
+## Risk and LLM Boundary
+
+| Term | Definition |
+|---|---|
+| **Minimum RR** | The single deterministic threshold `2.0`, shared by context, risk policy, execution policy, validator, and Synthesizer input. |
+| **RR pass** | Deterministic boolean indicating calculated RR is mathematically valid and at least the minimum RR. |
+| **LLM boundary** | The point after deterministic validation where only already-calculated facts are supplied to the Synthesizer. |
+| **Advisory explanation** | Synthesizer prose that describes facts and risks without authority to modify them. |
 
 ## Analysis Runs
 
 | Term | Definition |
 |---|---|
-| **Fatal analysis failure** | An analysis attempt that cannot produce usable market context and a decision. It is diagnostic information, not a reportable analysis run. |
-
-## Trade Levels
-
-| Term | Definition |
-|---|---|
-| **Planned entry / open** | The deterministic setup's `entry_price`. It is distinct from the latest market price and from an OHLC candle's `open` value. |
-| **Deterministic stop loss** | The setup's `invalidation_price`, authoritative for risk and execution geometry. |
-| **Deterministic take profit** | The setup's `target_price`, authoritative for risk and execution geometry. |
-| **Advisory level** | An entry, stop-loss, or take-profit level proposed or discussed by an LLM. It must remain visibly separate from deterministic levels and cannot authorize execution. |
-| **Incomplete setup** | A setup whose deterministic entry, stop-loss, or take-profit values are missing. It is non-actionable; advisory suggestions may be shown only as advisory text or levels. |
-| **Structured advisory level** | An advisory price carried in an explicit LLM output field. Numeric advisory levels are never extracted from free-form reasoning or review prose. |
-| **Authoritative chart overlay** | A deterministic entry, stop-loss, or take-profit level shown on the price chart. Advisory levels are displayed separately and are not chart overlays by default. |
-| **Order type** | The deterministic, direction-aware execution classification for a planned entry: `MARKET`, `LIMIT`, or `STOP`. It uses trade direction plus planned entry versus canonical current price. The LLM may explain it but cannot override it. |
-| **Market order** | An entry intended at the current market price; represented when planned entry equals the canonical current price. |
-| **Limit order** | An entry intended at a more favorable price than the canonical current price: below current price for a buy or above current price for a sell. |
-| **Stop order** | An entry intended after price moves through a confirmation level: above current price for a buy or below current price for a sell. |
-| **Unavailable order type** | The order type when planned entry or canonical current price is missing. It is not a `MARKET` fallback and makes the setup non-actionable. |
-| **Generic order type** | The result-level `MARKET`, `LIMIT`, or `STOP` value stored alongside `trade_direction`; side-specific broker order names are derived only at an execution boundary. |
-| **Immutable order-type context** | The deterministic order type supplied to the LLM for explanation and consistency checks. The LLM cannot alter the canonical value. |
+| **Fatal analysis failure** | An infrastructure or processing failure that cannot produce a usable analysis result. It is distinct from deterministic `INVALID` analysis. |

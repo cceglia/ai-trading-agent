@@ -21,6 +21,7 @@ Grade-specific values (Section 7):
 
 from __future__ import annotations
 
+from .config import MIN_RR
 from .models import RiskPolicyState, SetupGrade
 
 # ---------------------------------------------------------------------------
@@ -32,13 +33,13 @@ from .models import RiskPolicyState, SetupGrade
 # ---------------------------------------------------------------------------
 
 GRADE_RISK_TABLE: dict[SetupGrade, tuple[float, float]] = {
-    SetupGrade.AAA: (2.0, 1.0),
-    SetupGrade.AA: (2.0, 0.5),
+    SetupGrade.AAA: (MIN_RR, 1.0),
+    SetupGrade.AA: (MIN_RR, 0.5),
     SetupGrade.COUNTERTREND: (2.5, 0.25),
 }
 
 # Sensible defaults used when a grade is not present in the table.
-_DEFAULT_MIN_RR: float = 1.0
+_DEFAULT_MIN_RR: float = MIN_RR
 _DEFAULT_RISK_MULTIPLIER: float = 1.0
 
 

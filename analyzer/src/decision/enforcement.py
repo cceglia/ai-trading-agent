@@ -16,7 +16,7 @@ Violation checks performed:
         without a classified candidate from the deterministic pipeline.
 
     EXECUTION_NOT_ACTIONABLE
-        An executable action was selected while the pre-review execution
+        An executable action was selected while the execution
         status is not ACTIONABLE (i.e. execution blockers are active).
 
     DIRECTION_MISMATCH
@@ -36,7 +36,6 @@ from __future__ import annotations
 
 import logging
 
-from config.settings import Settings
 from src.analysis.market_structure_engine.models import (
     DecisionAction,
     DeterministicSetupState,
@@ -46,10 +45,9 @@ from src.analysis.market_structure_engine.models import (
     ExecutionStatus,
     FinalDecisionState,
     GeometryStatus,
-    RiskPolicyState,
     TradeDirection,
 )
-from src.decision.models import DecisionOutput, ReviewVerdict
+from src.decision.models import DecisionOutput
 
 logger = logging.getLogger(__name__)
 
@@ -75,17 +73,16 @@ class DeterministicEnforcementGate:
     The gate inspects the full pipeline state and collects any violations
     of deterministic invariants.  If violations are found, the final
     status is set to ``BLOCKED_BY_ENFORCEMENT`` and the action is forced
-    to ``NO_TRADE``.  If the review has not approved an executable action,
-    the status is ``BLOCKED_BY_REVIEW``.  Otherwise the pre-review
-    execution status and decision action are passed through unchanged.
+    to ``NO_TRADE``.  Otherwise the deterministic execution status and
+    decision action are passed through unchanged.
 
     The class follows SOLID principles:
 
     * **SRP** — single responsibility: enforce deterministic invariants.
     * **OCP** — new violation checks can be added as new private methods
       without modifying existing logic.
-    * **ISP** — focused solely on enforcement; does not perform review,
-      grading, or execution-mode logic.
+    * **ISP** — focused solely on enforcement; does not perform grading or
+      execution-mode logic.
     * **DIP** — depends only on engine model abstractions, never on
       concrete implementations.
     """
@@ -95,24 +92,16 @@ class DeterministicEnforcementGate:
         *,
         setup: DeterministicSetupState,
         policy: ExecutionPolicyState,
-        risk: RiskPolicyState,
         decision: DecisionOutput,
-        review: ReviewVerdict,
-        settings: Settings,
         provider_retry_count: int = 0,
-        review_revision_count: int = 0,
     ) -> FinalDecisionState:
         """Evaluate all enforcement checks and produce a final decision state.
 
         Args:
             setup: Classified setup from the deterministic grading stage.
             policy: Execution policy derived from the setup and blockers.
-            risk: Risk policy derived from the setup grade.
             decision: LLM decision output (action + reasoning).
-            review: Review verdict from the reviewer agent.
-            settings: Runtime settings (reserved for future policy knobs).
             provider_retry_count: Number of LLM provider retries so far.
-            review_revision_count: Number of review revision cycles so far.
 
         Returns:
             An immutable :class:`FinalDecisionState` with the resolved
@@ -143,27 +132,16 @@ class DeterministicEnforcementGate:
                     v.code.value,
                     v.reason,
                 )
-        elif decision.action in _EXECUTABLE_ACTION_VALUES and not review.approved:
-            # Executable action requires an approved review.
-            final_status = ExecutionStatus.BLOCKED_BY_REVIEW
-            final_action = DecisionAction.NO_TRADE
-            logger.info(
-                "Enforcement gate: BLOCKED_BY_REVIEW — action %s not approved",
-                decision.action,
-            )
         else:
             # Pass through the deterministic execution status and decision action.
-            final_status = policy.pre_review_execution_status
+            final_status = policy.execution_status
             final_action = decision.action
 
         return FinalDecisionState(
-            review_status=review.status,
             final_execution_status=final_status,
             final_action=final_action,
             enforcement_violations=violations_tuple,
-            review_attempts=0,
             provider_retry_count=provider_retry_count,
-            review_revision_count=review_revision_count,
         )
 
     # ------------------------------------------------------------------
@@ -197,14 +175,14 @@ class DeterministicEnforcementGate:
     ) -> None:
         """EXECUTION_NOT_ACTIONABLE: executable action while not ACTIONABLE."""
         if decision.action in _EXECUTABLE_ACTION_VALUES:
-            if policy.pre_review_execution_status != ExecutionStatus.ACTIONABLE:
+            if policy.execution_status != ExecutionStatus.ACTIONABLE:
                 violations.append(
                     EnforcementViolation(
                         code=EnforcementViolationCode.EXECUTION_NOT_ACTIONABLE,
                         reason=(
                             f"Action {decision.action} requires ACTIONABLE status "
                             f"but current status is "
-                            f"{policy.pre_review_execution_status.value}"
+                            f"{policy.execution_status.value}"
                         ),
                     )
                 )

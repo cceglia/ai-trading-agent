@@ -11,10 +11,16 @@ def _scope(swing: dict[str, Any]) -> str:
     return "PRIMARY" if swing["classification"] == "MAJOR_STRUCTURAL_SWING" else "INTERNAL"
 
 
-def _event_type(direction: str, structure_at_start: str) -> str:
+def _event_type(direction: str, structure_at_start: str) -> tuple[str, str]:
+    if structure_at_start not in ("BULLISH", "BEARISH"):
+        return f"{direction}_STRUCTURAL_BREAK", "STRUCTURAL_BREAK"
     if direction == "BULLISH":
-        return "BULLISH_BOS" if structure_at_start == "BULLISH" else "BULLISH_CHOCH"
-    return "BEARISH_BOS" if structure_at_start == "BEARISH" else "BEARISH_CHOCH"
+        return (
+            ("BULLISH_BOS", "BOS")
+            if structure_at_start == "BULLISH"
+            else ("BULLISH_CHOCH", "CHOCH")
+        )
+    return ("BEARISH_BOS", "BOS") if structure_at_start == "BEARISH" else ("BEARISH_CHOCH", "CHOCH")
 
 
 def _quality(close_distance_atr: float, body_ratio: float) -> str:
@@ -75,7 +81,17 @@ def scan_events(
     raw: list[dict[str, Any]] = []
     failed: list[dict[str, Any]] = []
     usable_swings = [s for s in swings["all"] if s["classification"] != "UNCONFIRMED_SWING"]
-    prior_structure = structure.get("previous_primary_structure") or structure["primary_structure"]
+    regimes = {
+        "PRIMARY": structure.get("previous_primary_structure")
+        if structure.get("previous_primary_structure") in ("BULLISH", "BEARISH")
+        else structure.get("primary_structure")
+        if structure.get("primary_structure") in ("BULLISH", "BEARISH")
+        else "UNKNOWN",
+        "INTERNAL": structure.get("internal_structure", {}).get("direction", "UNKNOWN"),
+    }
+    if regimes["INTERNAL"] not in ("BULLISH", "BEARISH"):
+        regimes["INTERNAL"] = "UNKNOWN"
+    initial_regimes = dict(regimes)
 
     for swing in usable_swings:
         for index in range(max(start_index, swing["index"] + 1), len(bars)):
@@ -98,14 +114,16 @@ def scan_events(
                             "confirming_close": bar["close"],
                         }
                     )
-                    break
+                    continue
                 threshold = swing["price"] + profile.bos_close_buffer_atr * atr
                 if bar["close"] > threshold:
                     distance = safe_div(bar["close"] - swing["price"], atr)
+                    event_type, classification = _event_type("BULLISH", regimes[_scope(swing)])
                     raw.append(
                         {
                             "event_index": index,
-                            "event_type": _event_type("BULLISH", prior_structure),
+                            "event_type": event_type,
+                            "classification": classification,
                             "direction": "BULLISH",
                             "structural_scope": _scope(swing),
                             "broken_level": swing["price"],
@@ -118,6 +136,7 @@ def scan_events(
                             "quality": _quality(distance, body_ratio),
                         }
                     )
+                    regimes[_scope(swing)] = "BULLISH"
                     break
             else:
                 if bar["low"] < swing["price"] and bar["close"] >= swing["price"]:
@@ -134,14 +153,16 @@ def scan_events(
                             "confirming_close": bar["close"],
                         }
                     )
-                    break
+                    continue
                 threshold = swing["price"] - profile.bos_close_buffer_atr * atr
                 if bar["close"] < threshold:
                     distance = safe_div(swing["price"] - bar["close"], atr)
+                    event_type, classification = _event_type("BEARISH", regimes[_scope(swing)])
                     raw.append(
                         {
                             "event_index": index,
-                            "event_type": _event_type("BEARISH", prior_structure),
+                            "event_type": event_type,
+                            "classification": classification,
                             "direction": "BEARISH",
                             "structural_scope": _scope(swing),
                             "broken_level": swing["price"],
@@ -154,7 +175,25 @@ def scan_events(
                             "quality": _quality(distance, body_ratio),
                         }
                     )
+                    regimes[_scope(swing)] = "BEARISH"
                     break
+
+    # A swing is discovered in source order, but break classification is a
+    # property of the event timeline. Replaying confirmed events after sorting
+    # prevents a later source swing from changing the regime of an earlier bar.
+    replay_regimes = {
+        "PRIMARY": initial_regimes["PRIMARY"],
+        "INTERNAL": initial_regimes["INTERNAL"],
+    }
+    for event in sorted(
+        raw,
+        key=lambda item: (item["event_index"], item["source_swing_index"], item["source_swing_id"]),
+    ):
+        scope = event["structural_scope"]
+        event_type, classification = _event_type(event["direction"], replay_regimes[scope])
+        event["event_type"] = event_type
+        event["classification"] = classification
+        replay_regimes[scope] = event["direction"]
 
     canonical, removed = _canonicalize(raw, profile.max_events_per_category)
     canonical_failed, failed_removed = _canonicalize(failed, profile.max_events_per_category)
@@ -169,6 +208,7 @@ def scan_events(
         "primary_events": primary,
         "internal_events": internal,
         "failed_breakouts": canonical_failed,
+        "event_history": combined,
         "latest_material_event": combined[-1] if combined else None,
         "latest_primary_event": primary[-1] if primary else None,
         "latest_internal_event": internal[-1] if internal else None,

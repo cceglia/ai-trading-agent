@@ -162,39 +162,20 @@ function goBack() {
         </div>
       </section>
 
-      <!-- Review -->
-      <section class="border border-terminal-border bg-terminal-surface p-3" v-if="result.review">
-        <h2 class="text-xs font-sans font-medium text-terminal-text-secondary uppercase tracking-wider mb-2">Review</h2>
+      <!-- Deterministic Validation -->
+      <section class="border border-terminal-border bg-terminal-surface p-3">
+        <h2 class="text-xs font-sans font-medium text-terminal-text-secondary uppercase tracking-wider mb-2">Deterministic Validation</h2>
         <div class="flex items-center gap-2 mb-2">
-          <span :class="['text-xs font-mono', (result.review.approved ?? (result.review.status === 'APPROVED')) ? 'text-terminal-gain' : 'text-terminal-loss']">
-            {{ result.review.status ?? (result.review.approved ? "APPROVED" : "REJECTED") }}
+          <span :class="['text-xs font-mono', result.validation_status === 'VALID' ? 'text-terminal-gain' : 'text-terminal-loss']">
+            {{ result.validation_status }}
           </span>
-          <span v-if="result.review.risk_management_ok === false" class="text-xs font-mono text-terminal-warning">&#9888; Risk</span>
-          <span v-if="result.review.htf_alignment_ok === false" class="text-xs font-mono text-terminal-warning">&#9888; HTF</span>
-          <span v-if="result.review.calendar_clear === false" class="text-xs font-mono text-terminal-warning">&#9888; Calendar</span>
+          <span class="text-xs font-mono text-terminal-text-secondary">{{ result.setup_status }} / {{ result.direction }}</span>
         </div>
-        <div v-if="result.review.concerns?.length">
-          <span class="text-2xs font-sans text-terminal-text-tertiary block">Concerns</span>
+        <div v-if="result.validation_errors?.length">
+          <span class="text-2xs font-sans text-terminal-text-tertiary block">Validation Errors</span>
           <ul class="mt-0.5 space-y-0.5">
-            <li v-for="(c, i) in result.review.concerns" :key="i" class="text-xs font-mono text-terminal-warning">&bull; {{ c }}</li>
+            <li v-for="(c, i) in result.validation_errors" :key="i" class="text-xs font-mono text-terminal-warning">&bull; {{ c }}</li>
           </ul>
-        </div>
-        <div v-if="result.review_advisory_levels" class="mt-3 border-t border-terminal-border pt-2">
-          <span class="text-2xs font-sans text-terminal-text-tertiary block">Review Advisory Levels (informational)</span>
-          <div class="grid grid-cols-3 gap-3 mt-1">
-            <div>
-              <span class="text-2xs font-sans text-terminal-text-tertiary block">Entry</span>
-              <span class="text-sm font-mono text-terminal-text">{{ result.review_advisory_levels.entry_price ?? "N/A" }}</span>
-            </div>
-            <div>
-              <span class="text-2xs font-sans text-terminal-text-tertiary block">Stop Loss</span>
-              <span class="text-sm font-mono text-terminal-loss">{{ result.review_advisory_levels.stop_loss ?? "N/A" }}</span>
-            </div>
-            <div>
-              <span class="text-2xs font-sans text-terminal-text-tertiary block">Take Profit</span>
-              <span class="text-sm font-mono text-terminal-gain">{{ result.review_advisory_levels.take_profit ?? "N/A" }}</span>
-            </div>
-          </div>
         </div>
       </section>
 

@@ -10,54 +10,49 @@ from .utils import round_or_none, stable_id
 def _pool_status(
     pool: dict[str, Any],
     bars: list[dict[str, Any]],
-) -> tuple[str, dict[str, Any] | None]:
+) -> tuple[str, list[dict[str, Any]]]:
     source_last = pool["last_source_index"]
     price = pool["price"]
     side = pool["side"]
-    swept_index = None
-    reclaimed = False
-    accepted = False
-    event = None
+    state = "INTACT"
+    history: list[dict[str, Any]] = []
     for index in range(source_last + 1, len(bars)):
         bar = bars[index]
         if side == "BUY_SIDE":
-            if bar["high"] > price:
-                swept_index = index
+            if state in ("SWEPT", "SWEPT_AND_RECLAIMED") and bar["close"] > price:
+                state = "ACCEPTED_BEYOND"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif bar["high"] > price:
                 if bar["close"] <= price:
-                    reclaimed = True
-                    event = "SWEEP_AND_RECLAIM"
-                    break
-                if index + 1 < len(bars) and bars[index + 1]["close"] > price:
-                    accepted = True
-                    event = "ACCEPTED_BEYOND"
-                    break
+                    state = "SWEPT_AND_RECLAIMED"
+                    history.append(
+                        {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                    )
+                else:
+                    state = "SWEPT"
+                    history.append(
+                        {"event_type": "SWEEP", "event_index": index, "timestamp": bar["open_time"]}
+                    )
         else:
-            if bar["low"] < price:
-                swept_index = index
+            if state in ("SWEPT", "SWEPT_AND_RECLAIMED") and bar["close"] < price:
+                state = "ACCEPTED_BEYOND"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif bar["low"] < price:
                 if bar["close"] >= price:
-                    reclaimed = True
-                    event = "SWEEP_AND_RECLAIM"
-                    break
-                if index + 1 < len(bars) and bars[index + 1]["close"] < price:
-                    accepted = True
-                    event = "ACCEPTED_BEYOND"
-                    break
-    if accepted:
-        status = "ACCEPTED_BEYOND"
-    elif reclaimed:
-        status = "SWEPT_AND_RECLAIMED"
-    elif swept_index is not None:
-        status = "SWEPT"
-    else:
-        status = "INTACT"
-    details = None
-    if swept_index is not None:
-        details = {
-            "event_type": event or "SWEEP",
-            "event_index": swept_index,
-            "timestamp": bars[swept_index]["open_time"],
-        }
-    return status, details
+                    state = "SWEPT_AND_RECLAIMED"
+                    history.append(
+                        {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                    )
+                else:
+                    state = "SWEPT"
+                    history.append(
+                        {"event_type": "SWEEP", "event_index": index, "timestamp": bar["open_time"]}
+                    )
+    return state, history
 
 
 def _build_equal_pools(
@@ -171,11 +166,12 @@ def analyze_liquidity(
     )
     events: list[dict[str, Any]] = []
     for pool in pools:
-        status, event = _pool_status(pool, bars)
+        status, history = _pool_status(pool, bars)
         pool["status"] = status
+        pool["event_history"] = history
         pool["distance_atr"] = round_or_none(abs(pool["price"] - close) / atr, 6)
         pool["position"] = "ABOVE_PRICE" if pool["price"] > close else "BELOW_PRICE"
-        if event:
+        for event in history:
             canonical_event = {
                 "liquidity_event_id": stable_id(
                     "liqevt",
@@ -222,6 +218,8 @@ def analyze_liquidity(
     return {
         "pools": sorted(pools, key=lambda p: (p["price"], p["pool_id"])),
         "events": events,
+        "event_history": events,
+        "current_state": {pool["pool_id"]: pool["status"] for pool in pools},
         "latest_event": events[-1] if events else None,
         "nearest_buy_side": nearest_buy,
         "nearest_sell_side": nearest_sell,

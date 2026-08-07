@@ -1,16 +1,11 @@
 from __future__ import annotations
 
-import logging
-
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field
 
 from src.analysis.market_structure_engine.models import (
     BiasLevel,
     DecisionAction,
-    ReviewStatus,
 )
-
-logger = logging.getLogger(__name__)
 
 # Re-export engine enums for backward compatibility — consumers can continue
 # to import BiasLevel, DecisionAction from this module.
@@ -20,8 +15,6 @@ __all__ = [
     "MarketContextSummary",
     "AdvisoryLevels",
     "DecisionOutput",
-    "ReviewVerdict",
-    "ReviewStatus",
 ]
 
 
@@ -70,55 +63,5 @@ class DecisionOutput(BaseModel):
         default=None,
         description="Optional advisory levels; deterministic levels remain authoritative",
     )
-
-    model_config = {"use_enum_values": True}
-
-
-class ReviewVerdict(BaseModel):
-    """Review verdict from reviewer agent.
-
-    The ``approved`` property derives from ``status`` so that existing
-    code checking ``verdict.approved`` continues to work.
-    """
-
-    status: ReviewStatus = Field(description="Review status")
-    reasoning: str = Field(description="Reasoning for the verdict")
-    concerns: tuple[str, ...] = Field(
-        default=(),
-        description="Tuple of concerns",
-    )
-    suggested_improvements: str | None = Field(
-        default=None,
-        description="Suggested improvements",
-    )
-    deterministic_compliance_ok: bool = Field(
-        default=True,
-        description="Deterministic compliance check passed",
-    )
-    risk_management_ok: bool = Field(default=True, description="Risk management compliance")
-    htf_alignment_ok: bool = Field(default=True, description="Higher-timeframe alignment")
-    calendar_clear: bool = Field(default=True, description="No blocking calendar events")
-    grade_violation_detected: bool = Field(
-        default=False,
-        description="Grade violation detected during review",
-    )
-    blocker_violation_detected: bool = Field(
-        default=False,
-        description="Blocker violation detected during review",
-    )
-    geometry_violation_detected: bool = Field(
-        default=False,
-        description="Geometry violation detected during review",
-    )
-    advisory_levels: AdvisoryLevels | None = Field(
-        default=None,
-        description="Optional advisory levels; deterministic levels remain authoritative",
-    )
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def approved(self) -> bool:
-        """Compatibility field — canonical source is ``status``."""
-        return self.status == ReviewStatus.APPROVED
 
     model_config = {"use_enum_values": True}

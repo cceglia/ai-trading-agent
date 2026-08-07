@@ -7,13 +7,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
     DecisionOutput,
     MarketContextSummary,
-    ReviewVerdict,
 )
 from src.output.result_models import AnalysisResult, OHLCBar, SLTPOverlay
 from src.output.result_writer import ResultWriter, ResultWriterContractError
@@ -63,7 +61,6 @@ class TestResultWriter:
             "decision": DecisionOutput(
                 symbol="XAUUSD", action=DecisionAction.BUY_SETUP, reasoning="test"
             ),
-            "review": ReviewVerdict(status=ReviewStatus.APPROVED, reasoning="test"),
             "analysis_result": _make_analysis_result(),
             "errors": [],
             "fatal_error": None,
@@ -94,7 +91,6 @@ class TestResultWriter:
             "decision": DecisionOutput(
                 symbol="XAUUSD", action=DecisionAction.BUY_SETUP, reasoning="test"
             ),
-            "review": ReviewVerdict(status=ReviewStatus.APPROVED, reasoning="test"),
             "analysis_result": _make_analysis_result(),
             "errors": [],
             "fatal_error": None,
@@ -104,8 +100,8 @@ class TestResultWriter:
         with open(written) as f:
             data = json.load(f)
         assert data["symbol"] == "XAUUSD"
-        assert data["version"] == "1.0"
-        assert data["status"] == "success"
+        assert data["version"] == "2.0"
+        assert data["status"] == "partial"
 
     def test_with_fatal_error_is_not_persisted(self, tmp_path: Path):
         writer = ResultWriter(tmp_path)
@@ -298,24 +294,20 @@ class TestResultWriter:
             data = json.load(f)
         assert data["run_id"] == "2026-07-26T08:30:00"
 
-    def test_review_status_in_json(self, tmp_path: Path):
-        """Review verdict serializes status field (not approved boolean)."""
-        writer = ResultWriter(tmp_path)
-        symbol = "XAUUSD"
-        broker_now = datetime(2026, 7, 26, 8, 30)
-        result: dict = {
-            "review": ReviewVerdict(
-                status=ReviewStatus.APPROVED,
-                reasoning="All checks pass",
-                concerns=(),
-            ),
-            "analysis_result": _make_analysis_result(),
-            "errors": [],
-            "fatal_error": None,
-        }
-        ohlc: dict = {}
-        written = writer.write(symbol, result, ohlc, broker_now)
-        with open(written) as f:
-            data = json.load(f)
-        assert data["review"]["status"] == "APPROVED"
-        assert data["review"]["reasoning"] == "All checks pass"
+    def test_deterministic_validation_fields_are_persisted(self, tmp_path: Path):
+        result = _make_analysis_result().model_copy(
+            update={
+                "validation_status": "VALID",
+                "entry_authorized": False,
+                "reason_codes": ["VALID_SETUP"],
+            }
+        )
+        written = ResultWriter(tmp_path).write(
+            "XAUUSD",
+            {"analysis_result": result, "errors": [], "fatal_error": None},
+            {},
+            datetime(2026, 7, 26, 8, 30),
+        )
+        data = json.loads(written.read_text())
+        assert data["validation_status"] == "VALID"
+        assert data["entry_authorized"] is False

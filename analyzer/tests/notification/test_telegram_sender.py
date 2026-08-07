@@ -13,7 +13,7 @@ from src.notification.telegram_sender import (
 
 
 class TestSendTradeNotification:
-    def test_sends_buy_message(self, sample_decision, sample_context, sample_review):
+    def test_sends_buy_message(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             mock_resp = MagicMock()
             mock_resp.raise_for_status = MagicMock()
@@ -23,7 +23,6 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -38,7 +37,7 @@ class TestSendTradeNotification:
             assert "BUY" in body["text"]
             assert "2400" in body["text"]
 
-    def test_sends_sell_message(self, sample_decision, sample_context, sample_review):
+    def test_sends_sell_message(self, sample_decision, sample_context):
         decision = dict(sample_decision)
         decision["action"] = "sell_setup"
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
@@ -50,7 +49,6 @@ class TestSendTradeNotification:
                 symbol="EURUSD",
                 decision=decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -60,33 +58,31 @@ class TestSendTradeNotification:
             assert "SELL" in body["text"]
             assert "EURUSD" in body["text"]
 
-    def test_skips_empty_token(self, sample_decision, sample_context, sample_review):
+    def test_skips_empty_token(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             send_trade_notification(
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="",
                 chat_id="test-chat",
             )
             mock_post.assert_not_called()
 
-    def test_skips_empty_chat_id(self, sample_decision, sample_context, sample_review):
+    def test_skips_empty_chat_id(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             send_trade_notification(
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="",
             )
             mock_post.assert_not_called()
 
-    def test_handles_http_error(self, sample_decision, sample_context, sample_review):
+    def test_handles_http_error(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             mock_resp = MagicMock()
             mock_resp.raise_for_status.side_effect = Exception("HTTP 500")
@@ -97,13 +93,12 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
             )
 
-    def test_handles_network_timeout(self, sample_decision, sample_context, sample_review):
+    def test_handles_network_timeout(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             mock_post.side_effect = req.exceptions.Timeout("timeout")
 
@@ -112,13 +107,12 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
             )
 
-    def test_message_contains_all_fields(self, sample_decision, sample_context, sample_review):
+    def test_message_contains_all_fields(self, sample_decision, sample_context):
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             mock_resp = MagicMock()
             mock_resp.raise_for_status = MagicMock()
@@ -128,7 +122,6 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -144,14 +137,13 @@ class TestSendTradeNotification:
             assert "Bias:" in text
             assert "http://localhost:3000/runs/XAUUSD" in text
 
-    def test_skips_no_trade_action(self, sample_context, sample_review):
+    def test_skips_no_trade_action(self, sample_context):
         decision = {"action": "no_trade", "confidence": 0.5}
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
             send_trade_notification(
                 symbol="XAUUSD",
                 decision=decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -173,7 +165,6 @@ class TestSendTradeNotification:
         caplog,
         sample_decision,
         sample_context,
-        sample_review,
     ):
         caplog.set_level(logging.WARNING)
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
@@ -185,7 +176,6 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -201,7 +191,6 @@ class TestSendTradeNotification:
         caplog,
         sample_decision,
         sample_context,
-        sample_review,
     ):
         caplog.set_level(logging.WARNING)
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
@@ -211,7 +200,6 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -227,7 +215,6 @@ class TestSendTradeNotification:
         caplog,
         sample_decision,
         sample_context,
-        sample_review,
     ):
         caplog.set_level(logging.WARNING)
         with patch("src.notification.telegram_sender.requests.post") as mock_post:
@@ -237,7 +224,6 @@ class TestSendTradeNotification:
                 symbol="XAUUSD",
                 decision=sample_decision,
                 context=sample_context,
-                review=sample_review,
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",
@@ -375,6 +361,7 @@ class TestExtractTradeLevels:
                 "take_profit": 1.2500,
             },
             "estimated_reward_risk": 2.0,
+            "validation_status": "VALID",
             "market_context": {"bias": "bullish"},
         }
 
@@ -387,7 +374,6 @@ class TestExtractTradeLevels:
                 symbol="EURUSD",
                 decision=result["decision"],
                 context=result["market_context"],
-                review={"status": "APPROVED"},
                 web_ui_base_url="http://localhost:3000",
                 bot_token="test-token",
                 chat_id="test-chat",

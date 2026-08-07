@@ -14,7 +14,7 @@ from config.settings import Settings
 from src.analysis.structure_analyzer import MarketStructureEngine
 from src.calendar.forexfactory import ForexFactoryCalendar
 from src.data.terminal_data_provider import TerminalDataProvider
-from src.decision.agents import DeciderAgent, ReviewerAgent, SynthesizerAgent
+from src.decision.agents import SynthesizerAgent
 from src.decision.cost_tracker import CostLimitExceeded, CostTracker
 from src.decision.llm_client import create_llm_client
 from src.decision.llm_config import ProviderKind, resolve_model_identity
@@ -74,7 +74,6 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     """Print a compact analysis summary for one symbol to stdout."""
     decision = result.get("decision")
     context = result.get("market_context")
-    review = result.get("review")
     analysis_result = result.get("analysis_result")
     final_output = result.get("final_output")
 
@@ -94,18 +93,10 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     confidence_val = _format_field_int(context, "confidence") if context else 0
     action_str = _format_field(decision, "action") if decision else "N/A"
 
-    approved = False
-    if review is not None:
-        if isinstance(review, dict):
-            approved = bool(review.get("approved", False))
-        else:
-            approved = bool(getattr(review, "approved", False))
-
-    review_mark = " ✅" if approved else ""
     print(f"\n  {symbol}")
     print(f"    Bias       : {bias_str}")
     print(f"    Confidence : {confidence_val}%")
-    print(f"    Action     : {action_str}{review_mark}")
+    print(f"    Action     : {action_str}")
 
     # Show price fields from analysis_result (deterministic engine).
     # DecisionOutput no longer carries entry_price / stop_loss / take_profit;
@@ -198,18 +189,14 @@ def _create_agents(
     settings: Settings,
     cost_tracker: CostTracker,
 ) -> Any:
-    """Create the three LLM agents used in the pipeline.
-
-    Each agent receives its own :class:`LLMCommunicationClient` so that
-    different model / reasoning-effort settings can be assigned per role
-    in future.
+    """Create the single LLM presentation agent used in the pipeline.
 
     Args:
         settings: Application settings.
         cost_tracker: Cost tracker instance.
 
     Returns:
-        Tuple of (synthesizer, decider, reviewer).
+        SynthesizerAgent instance.
     """
     api_key = settings.openai_api_key or ""
     base_url = settings.openai_base_url or None
@@ -238,55 +225,11 @@ def _create_agents(
         model_identity.resolution_status.value,
     )
 
-    # Primary LLM client shared by synthesizer and decider; reviewer gets
-    # its own instance with optional reviewer-specific overrides.
     primary_client = create_llm_client(provider=primary_provider, **client_kwargs)
-
-    # Build reviewer client kwargs, overriding with reviewer-specific settings
-    # when they are explicitly configured.  The provider setting controls
-    # which transport is used — only OPENAI is currently supported; any
-    # other value causes UnsupportedLLMProviderError at construction time.
-    reviewer_provider = ProviderKind(settings.reviewer_llm_provider)
-    reviewer_kwargs: dict[str, Any] = dict(client_kwargs)
-    if settings.reviewer_model:
-        reviewer_kwargs["model"] = settings.reviewer_model
-    if settings.reviewer_api_key:
-        reviewer_kwargs["api_key"] = settings.reviewer_api_key
-    if settings.reviewer_base_url:
-        reviewer_kwargs["base_url"] = settings.reviewer_base_url
-    if settings.reviewer_reasoning_effort:
-        reviewer_kwargs["reasoning_effort"] = settings.reviewer_reasoning_effort
-    if settings.reviewer_model_family_override:
-        reviewer_kwargs["family_override"] = settings.reviewer_model_family_override
-    if settings.reviewer_model_version_override:
-        reviewer_kwargs["version_override"] = settings.reviewer_model_version_override
-    # Reviewer instructor mode and timeout inherit the primary unless the
-    # reviewer-specific settings are explicitly set ("" / None = inherit,
-    # same convention as the string-based overrides above, ADR 0001).
-    if settings.reviewer_instructor_mode:
-        reviewer_kwargs["instructor_mode"] = settings.reviewer_instructor_mode
-    if settings.reviewer_timeout is not None:
-        reviewer_kwargs["timeout"] = settings.reviewer_timeout
-    # Reviewer temperature is always set explicitly as an independent setting.
-    # Unlike string-based overrides (which use "" to mean "inherit from primary"),
-    # temperature is always a meaningful float — defaulting to 0.0 for both.
-    reviewer_kwargs["default_temperature"] = settings.reviewer_temperature
-
-    reviewer_client = create_llm_client(provider=reviewer_provider, **reviewer_kwargs)
-
-    synthesizer = SynthesizerAgent(
+    return SynthesizerAgent(
         llm_client=primary_client,
         cost_tracker=cost_tracker,
     )
-    decider = DeciderAgent(
-        llm_client=primary_client,
-        cost_tracker=cost_tracker,
-    )
-    reviewer = ReviewerAgent(
-        llm_client=reviewer_client,
-        cost_tracker=cost_tracker,
-    )
-    return synthesizer, decider, reviewer
 
 
 def _initialize_pipeline(
@@ -309,15 +252,13 @@ def _initialize_pipeline(
     structure_analyzer = MarketStructureEngine()
     calendar_provider = ForexFactoryCalendar()
 
-    synthesizer, decider, reviewer = _create_agents(settings, cost_tracker)
+    synthesizer = _create_agents(settings, cost_tracker)
 
     graph = TradingGraph(
         data_provider=data_provider,
         structure_analyzer=structure_analyzer,
         calendar_provider=calendar_provider,
         synthesizer=synthesizer,
-        decider=decider,
-        reviewer=reviewer,
     )
 
     writer = ResultWriter(settings.analysis_cache_dir)
@@ -376,8 +317,8 @@ def _send_telegram_notification(
 ) -> None:
     """Send a Telegram notification for an approved trade setup.
 
-    Only sends when the decision is ``buy_setup`` or ``sell_setup``
-    **and** the review has been approved.
+    Only sends when the decision is ``buy_setup`` or ``sell_setup`` and the
+    deterministic validation status is ``VALID``.
 
     Args:
         symbol: Trading symbol.
@@ -386,9 +327,7 @@ def _send_telegram_notification(
     """
     decision = _model_or_dict(result.get("decision"))
     context = _model_or_dict(result.get("market_context", result.get("context")))
-    review = _model_or_dict(result.get("review"))
-
-    if review.get("status") == "APPROVED" and decision.get("action") in (
+    if result.get("validation_status") == "VALID" and decision.get("action") in (
         "buy_setup",
         "sell_setup",
     ):
@@ -396,7 +335,6 @@ def _send_telegram_notification(
             symbol=symbol,
             decision=decision,
             context=context,
-            review=review,
             web_ui_base_url=settings.web_ui_base_url,
             bot_token=settings.telegram_bot_token,
             chat_id=settings.telegram_chat_id,

@@ -105,6 +105,9 @@ class ResultWriter:
                     "AnalysisResult is required to write deterministic trade levels"
                 )
 
+        if assembled_result is not None and assembled_result.validation_status == "INVALID":
+            status = "partial"
+
         if assembled_result is None:
             analysis_result = AnalysisResult(
                 symbol=symbol,
@@ -116,7 +119,6 @@ class ResultWriter:
                 fatal_error=fatal_error,
                 market_context=result.get("market_context"),
                 decision=result.get("decision"),
-                review=result.get("review"),
                 ohlc=ohlc_data,
             )
         else:
@@ -134,7 +136,6 @@ class ResultWriter:
                     "fatal_error": fatal_error,
                     "market_context": result.get("market_context", assembled_result.market_context),
                     "decision": result.get("decision", assembled_result.decision),
-                    "review": result.get("review", assembled_result.review),
                     "ohlc": ohlc_data,
                 }
             )

@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from src.decision.models import AdvisoryLevels, DecisionOutput, MarketContextSummary, ReviewVerdict
+from src.decision.models import AdvisoryLevels, DecisionOutput, MarketContextSummary
 
 
 class OHLCBar(BaseModel):
@@ -39,7 +39,7 @@ class AnalysisResult(BaseModel):
 
     Fields are grouped by their provenance within the pipeline:
 
-    * ``market_context``, ``decision``, ``review`` — LLM-derived (interpretive).
+    * ``market_context`` and ``decision.reasoning`` — LLM-derived (interpretive).
     * ``sl_tp_overlay``, and ``setup_*`` / ``trade_direction`` / ``estimated_reward_risk`` —
       deterministic engine values (authoritative).
     * ``risk_multiplier``, ``final_risk_percentage`` — risk policy evaluation.
@@ -47,7 +47,7 @@ class AnalysisResult(BaseModel):
     * ``final_action``, ``enforcement_violations`` — enforcement gate resolution.
     """
 
-    version: str = "1.0"
+    version: str = "2.0"
     symbol: str
     run_id: str
     started_at: datetime
@@ -57,17 +57,25 @@ class AnalysisResult(BaseModel):
     fatal_error: str | None = None
     market_context: MarketContextSummary | None = None
     decision: DecisionOutput | None = None
-    review: ReviewVerdict | None = None
     ohlc: OHLCData = Field(default_factory=OHLCData)
     sl_tp_overlay: SLTPOverlay = Field(default_factory=SLTPOverlay)
     advisory_levels: AdvisoryLevels | None = Field(
         default=None,
         description="Optional advisory levels from the decision; never authoritative",
     )
-    review_advisory_levels: AdvisoryLevels | None = Field(
-        default=None,
-        description="Optional advisory levels from the review; never authoritative",
-    )
+
+    # ── Canonical deterministic contract ───────────────────────────────
+    validation_status: str = "INVALID"
+    validation_errors: list[str] = Field(default_factory=list)
+    rr: float | None = None
+    calculated_rr: float | None = None
+    minimum_required_rr: float = 2.0
+    rr_pass: bool = False
+    deterministic_blockers: list[dict[str, Any]] = Field(default_factory=list)
+    reason_codes: list[str] = Field(default_factory=list)
+    setup_status: str = "INVALID"
+    direction: str = "NONE"
+    entry_authorized: bool = False
 
     # ── Deterministic pipeline (authoritative) ─────────────────────────
     setup_grade: str | None = Field(

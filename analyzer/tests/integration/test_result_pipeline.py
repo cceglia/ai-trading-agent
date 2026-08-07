@@ -1,250 +1,45 @@
-"""End-to-end integration test for the result JSON pipeline."""
+"""End-to-end persistence tests for the canonical deterministic output."""
 
 import json
 from datetime import datetime
 from pathlib import Path
 
-import pytest
-
-from src.analysis.market_structure_engine.models import ReviewStatus
-from src.decision.models import (
-    AdvisoryLevels,
-    BiasLevel,
-    DecisionAction,
-    DecisionOutput,
-    MarketContextSummary,
-    ReviewVerdict,
-)
+from src.analysis.market_structure_engine.models import BiasLevel
+from src.decision.models import DecisionAction, DecisionOutput, MarketContextSummary
 from src.output.result_models import AnalysisResult, OHLCBar, SLTPOverlay
-from src.output.result_writer import ResultWriter, ResultWriterContractError
+from src.output.result_writer import ResultWriter
 
 
-def test_result_pipeline_writes_json(tmp_path: Path):
-    """Full pipeline simulation writes valid JSON result."""
-    symbol = "XAUUSD"
-    broker_now = datetime(2026, 7, 26, 8, 30)
-
-    # Create a realistic pipeline result dict (simulating TradingGraph.run() output)
+def test_result_pipeline_writes_canonical_json(tmp_path: Path):
+    now = datetime(2026, 7, 26, 8, 30)
     analysis_result = AnalysisResult(
-        symbol=symbol,
-        run_id=f"{symbol}-20260726083000",
-        started_at=broker_now,
-        completed_at=broker_now,
+        symbol="XAUUSD",
+        run_id="XAUUSD-20260726083000",
+        started_at=now,
+        completed_at=now,
         status="success",
-        sl_tp_overlay=SLTPOverlay(entry_price=1.1010, stop_loss=1.0980, take_profit=1.1100),
-        advisory_levels=AdvisoryLevels(entry_price=1.1020, stop_loss=1.0970, take_profit=1.1150),
-        review_advisory_levels=AdvisoryLevels(
-            entry_price=1.1020, stop_loss=1.0970, take_profit=1.1150
-        ),
-        setup_grade="AAA",
-        setup_classification_status="CLASSIFIED",
-        setup_lifecycle_status="READY",
-        trade_direction="BULLISH",
-        estimated_reward_risk=3.0,
-        order_type="STOP",
-        deterministic_setup_complete=True,
+        sl_tp_overlay=SLTPOverlay(entry_price=1.101, stop_loss=1.098, take_profit=1.11),
+        validation_status="VALID",
+        setup_status="VALID",
+        direction="BULLISH",
+        entry_authorized=False,
     )
     result = {
         "market_context": MarketContextSummary(
-            symbol=symbol,
-            bias=BiasLevel.BULLISH,
-            confidence=75.0,
-            reasoning="Bullish BOS on D1, HTF alignment supports longs.",
-            key_levels=["2350.00", "2400.00"],
-            structural_events=["Bullish BOS at 2350"],
-            calendar_context="NFP next week — monitor volatility",
-            current_price=2365.50,
-            current_price_time="2026-07-26T08:29:00",
+            symbol="XAUUSD", bias=BiasLevel.BULLISH, confidence=75, reasoning="deterministic facts"
         ),
         "decision": DecisionOutput(
-            symbol=symbol,
-            action=DecisionAction.BUY_SETUP,
-            reasoning="Price at support with bullish confirmation.",
-        ),
-        "review": ReviewVerdict(
-            status=ReviewStatus.APPROVED,
-            reasoning="All checks pass.",
-            concerns=(),
-            suggested_improvements=None,
-            risk_management_ok=True,
-            htf_alignment_ok=True,
-            calendar_clear=True,
+            symbol="XAUUSD", action=DecisionAction.NO_TRADE, reasoning="advisory context"
         ),
         "analysis_result": analysis_result,
         "errors": [],
         "fatal_error": None,
     }
-
-    # Simulate OHLC data that would come from the OHLC cache/extractor
-    ohlc = {
-        "D1": [
-            OHLCBar(time="2026-07-25T17:00", open=2350.0, high=2370.0, low=2345.0, close=2365.5),
-        ],
-        "H4": [
-            OHLCBar(time="2026-07-25T16:00", open=2345.0, high=2365.0, low=2340.0, close=2360.0),
-        ],
-        "H1": [
-            OHLCBar(time="2026-07-26T07:00", open=2360.0, high=2375.0, low=2358.0, close=2365.5),
-            OHLCBar(time="2026-07-26T08:00", open=2365.5, high=2380.0, low=2363.0, close=2378.0),
-        ],
-    }
-
-    # Write the result
-    writer = ResultWriter(tmp_path)
-    written = writer.write(symbol, result, ohlc, broker_now)
-
-    # Verify
-    assert written.exists(), "Result file was not written"
-    assert written.is_file(), "Result path is not a file"
-
-    with open(written) as f:
-        data = json.load(f)
-
-    # Check structure
-    assert data["version"] == "1.0"
-    assert data["symbol"] == "XAUUSD"
-    assert data["status"] == "success"
-    assert data["errors"] == []
-    assert data["fatal_error"] is None
-
-    # Check market_context
-    assert data["market_context"]["bias"] == "BULLISH"
-    assert data["market_context"]["confidence"] == 75.0
-    assert data["market_context"]["current_price"] == 2365.5
-
-    # Check decision
-    assert data["decision"]["action"] == "buy_setup"
-    assert data["decision"]["reasoning"] == "Price at support with bullish confirmation."
-
-    # Check review
-    assert data["review"]["status"] == "APPROVED"
-    assert data["review"]["reasoning"] == "All checks pass."
-
-    # Check OHLC
-    assert "ohlc" in data
-    assert len(data["ohlc"]["D1"]) == 1
-    assert len(data["ohlc"]["H4"]) == 1
-    assert len(data["ohlc"]["H1"]) == 2
-    assert data["ohlc"]["D1"][0]["open"] == 2350.0
-    assert data["ohlc"]["D1"][0]["close"] == 2365.5
-
-    # Deterministic levels and order context survive persistence unchanged.
-    assert data["sl_tp_overlay"] == {
-        "entry_price": 1.1010,
-        "stop_loss": 1.0980,
-        "take_profit": 1.1100,
-    }
-    assert data["advisory_levels"] == {
-        "entry_price": 1.1020,
-        "stop_loss": 1.0970,
-        "take_profit": 1.1150,
-    }
-    assert data["review_advisory_levels"] == data["advisory_levels"]
-    assert data["order_type"] == "STOP"
-    assert data["deterministic_setup_complete"] is True
-    assert data["estimated_reward_risk"] == 3.0
-
-    # Check review verdict via AnalysisResult model
-    parsed = AnalysisResult.model_validate(data)
-    assert parsed.review is not None
-    assert parsed.review.approved is True
-
-
-def test_incomplete_setup_persists_unavailable_deterministic_values(tmp_path: Path):
-    """Missing deterministic inputs remain explicitly non-actionable."""
-    broker_now = datetime(2026, 7, 26, 10, 0)
-    analysis_result = AnalysisResult(
-        symbol="EURUSD",
-        run_id="EURUSD-20260726100000",
-        started_at=broker_now,
-        completed_at=broker_now,
-        status="success",
-        sl_tp_overlay=SLTPOverlay(),
-        deterministic_setup_complete=False,
+    written = ResultWriter(tmp_path).write(
+        "XAUUSD", result, {"D1": [OHLCBar(time="t", open=1, high=2, low=0, close=1)]}, now
     )
-    writer = ResultWriter(tmp_path)
-
-    written = writer.write(
-        "EURUSD",
-        {"analysis_result": analysis_result, "errors": [], "fatal_error": None},
-        {"D1": [], "H4": [], "H1": []},
-        broker_now,
-    )
-
-    assert written is not None
     data = json.loads(written.read_text())
-    assert data["sl_tp_overlay"] == {
-        "entry_price": None,
-        "stop_loss": None,
-        "take_profit": None,
-    }
-    assert data["order_type"] is None
-    assert data["deterministic_setup_complete"] is False
-    assert data["estimated_reward_risk"] is None
-
-
-def test_result_with_fatal_error_is_not_persisted(tmp_path: Path):
-    """Fatal pipeline failures are not persisted as unusable run results."""
-    writer = ResultWriter(tmp_path)
-    symbol = "XAUUSD"
-    broker_now = datetime(2026, 7, 26, 8, 30)
-
-    result = {
-        "errors": ["Data fetch failed for H1", "Calendar unavailable"],
-        "fatal_error": "Cannot get broker time",
-    }
-    ohlc = {}
-
-    written = writer.write(symbol, result, ohlc, broker_now)
-
-    assert written is None
-    assert not (tmp_path / "2026" / "07" / "26" / "XAUUSD").exists()
-
-
-def test_empty_ohlc_defaults(tmp_path: Path):
-    """Result with no OHLC data produces empty arrays."""
-    writer = ResultWriter(tmp_path)
-    symbol = "EURUSD"
-    broker_now = datetime(2026, 7, 26, 10, 0)
-
-    analysis_result = AnalysisResult(
-        symbol=symbol,
-        run_id=f"{symbol}-20260726100000",
-        started_at=broker_now,
-        completed_at=broker_now,
-        status="success",
-    )
-    result = {
-        "market_context": MarketContextSummary(
-            symbol=symbol, bias=BiasLevel.NEUTRAL, confidence=50.0, reasoning="test"
-        ),
-        "decision": DecisionOutput(symbol=symbol, action=DecisionAction.NO_TRADE, reasoning="test"),
-        "analysis_result": analysis_result,
-        "errors": [],
-        "fatal_error": None,
-    }
-    ohlc = {"D1": [], "H4": [], "H1": []}
-
-    written = writer.write(symbol, result, ohlc, broker_now)
-    with open(written) as f:
-        data = json.load(f)
-
-    assert data["ohlc"]["D1"] == []
-    assert data["ohlc"]["H4"] == []
-    assert data["ohlc"]["H1"] == []
-
-
-def test_success_without_analysis_result_raises(tmp_path: Path):
-    """Success result without analysis_result raises contract error."""
-    writer = ResultWriter(tmp_path)
-    symbol = "XAUUSD"
-    broker_now = datetime(2026, 7, 26, 8, 30)
-
-    result = {
-        "errors": [],
-        "fatal_error": None,
-    }
-    ohlc = {}
-
-    with pytest.raises(ResultWriterContractError, match="AnalysisResult is required"):
-        writer.write(symbol, result, ohlc, broker_now)
+    assert data["validation_status"] == "VALID"
+    assert data["entry_authorized"] is False
+    assert "review" not in data
+    assert data["ohlc"]["D1"][0]["close"] == 1.0

@@ -5,13 +5,13 @@
     "semantic_hash": ""
   },
   "analyzer/config/settings.py": {
-    "mtime": 1785706766.7985783,
-    "ast_hash": "3aed5560e14f451a6c29de3cb98acda6",
+    "mtime": 1786112521.1780603,
+    "ast_hash": "ad8525ee66c3e4410d62df2980801f3c",
     "semantic_hash": ""
   },
   "analyzer/main.py": {
-    "mtime": 1785733195.2111125,
-    "ast_hash": "d0d4375834f0cf3a4b83e69c70917241",
+    "mtime": 1786113509.5404155,
+    "ast_hash": "43f42641f1be6d109f9ffca3dc680858",
     "semantic_hash": ""
   },
   "analyzer/pyproject.toml": {
@@ -35,8 +35,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/__init__.py": {
-    "mtime": 1785440235.0910282,
-    "ast_hash": "b04d9ec1c9ec42bad85a40e89d5d565a",
+    "mtime": 1786114171.6442363,
+    "ast_hash": "beee2226557a5e41d35b0aaaae956ca5",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/candles.py": {
@@ -45,13 +45,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/config.py": {
-    "mtime": 1785337799.0178902,
-    "ast_hash": "545cb8756920207881e2315b77af8e78",
+    "mtime": 1786111409.5387921,
+    "ast_hash": "f3b92a40abbcc9864a78af21ac0b7222",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/context.py": {
-    "mtime": 1785411811.1827493,
-    "ast_hash": "e276d3830904201c038dc47759f0de07",
+    "mtime": 1786121477.7903776,
+    "ast_hash": "9b4237d7306541d1dd251fa1123f4762",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/engine.py": {
@@ -65,8 +65,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/events.py": {
-    "mtime": 1785337799.0225844,
-    "ast_hash": "d2ae8ee7c915535c305f99b5dde361fa",
+    "mtime": 1786111570.441076,
+    "ast_hash": "4fd23bb93f6b02a4504ec0a87f582a4d",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/indicators.py": {
@@ -75,23 +75,18 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/levels.py": {
-    "mtime": 1785337799.0256748,
-    "ast_hash": "bf969f6b3eef160168092ada89f150a8",
+    "mtime": 1786111570.4500759,
+    "ast_hash": "98c5f30053251f1be71380e2910d84de",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/liquidity.py": {
-    "mtime": 1785337799.0267282,
-    "ast_hash": "c2f0ed52bcd2cc9f504cd488dece917f",
-    "semantic_hash": ""
-  },
-  "analyzer/src/analysis/market_structure_engine/review.py": {
-    "mtime": 1785337799.0277574,
-    "ast_hash": "5befb916e6a38c2f088d0e62f316d22b",
+    "mtime": 1786111570.441076,
+    "ast_hash": "b8cf64583e9a5a8a3ccf688b3f9e5f10",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/scoring.py": {
-    "mtime": 1785350173.3386064,
-    "ast_hash": "0e95deb0ddce3ad9c091ab8a32181560",
+    "mtime": 1786111436.0203452,
+    "ast_hash": "795417eab70d0a32d784155c425d6533",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/structure.py": {
@@ -140,8 +135,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/agents.py": {
-    "mtime": 1785577698.0454483,
-    "ast_hash": "bc3f9631ec19e4b2884ac3899af85fa2",
+    "mtime": 1786111410.0697832,
+    "ast_hash": "47f6f595d2388b9c44cf05e85e727f7f",
     "semantic_hash": ""
   },
   "analyzer/src/decision/cost_tracker.py": {
@@ -150,13 +145,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/models.py": {
-    "mtime": 1785577674.0987992,
-    "ast_hash": "a57bafcf1c3e997a1af73d393098d1f7",
+    "mtime": 1786113454.432264,
+    "ast_hash": "021f5f08e820b306ae49ffe8184a2b1d",
     "semantic_hash": ""
   },
   "analyzer/src/decision/prompts.py": {
-    "mtime": 1785577702.3233855,
-    "ast_hash": "0ff3a2b6628ccd0ca32206ad2ae2280e",
+    "mtime": 1786112682.5165293,
+    "ast_hash": "81ee0d68eefc731e62dc4c5df9dfe27b",
     "semantic_hash": ""
   },
   "analyzer/src/decision/protocols.py": {
@@ -180,8 +175,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/orchestrator/graph.py": {
-    "mtime": 1785878226.8048892,
-    "ast_hash": "d1bfcbd539228c3f6bea9cc1c2c8fb23",
+    "mtime": 1786121477.7823777,
+    "ast_hash": "39f30fd6f67c225fa0cf8749e5058224",
     "semantic_hash": ""
   },
   "analyzer/src/output/__init__.py": {
@@ -200,13 +195,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/output/result_models.py": {
-    "mtime": 1785577712.4642367,
-    "ast_hash": "2de06f061711cdf757c8f2384bb8c7ce",
+    "mtime": 1786113461.7961507,
+    "ast_hash": "e0a8f0e79695cc76c9bbaa33ed2bdc9e",
     "semantic_hash": ""
   },
   "analyzer/src/output/result_writer.py": {
-    "mtime": 1785578860.596494,
-    "ast_hash": "f52ca8adcff0adb0180efbe5f33bcc12",
+    "mtime": 1786113608.4368927,
+    "ast_hash": "95a42210fbe970d6dce69b86f2436f10",
     "semantic_hash": ""
   },
   "analyzer/tests/__init__.py": {
@@ -240,13 +235,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/config/test_settings.py": {
-    "mtime": 1785706670.24199,
-    "ast_hash": "4be8c72efdf881c242ab3ecafa863135",
+    "mtime": 1786114317.2540588,
+    "ast_hash": "ba25da6d0b7071d618dac59287a65084",
     "semantic_hash": ""
   },
   "analyzer/tests/conftest.py": {
-    "mtime": 1785412213.3999207,
-    "ast_hash": "2e41ed416f1be221143ba8a67ecd4f4e",
+    "mtime": 1786114171.6482363,
+    "ast_hash": "d99551c34c8fa15378041f235fe7c356",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/__init__.py": {
@@ -255,18 +250,18 @@
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_agents.py": {
-    "mtime": 1785356424.1183655,
-    "ast_hash": "474dbc8cb03c63fe6cdc0399b1fe2181",
+    "mtime": 1786114208.0746841,
+    "ast_hash": "18b9b3011f58e48f01fce894a9161464",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_agents_api_key.py": {
-    "mtime": 1785443209.339575,
-    "ast_hash": "ce561e5b1f0f6e94bad5c5e57b73e572",
+    "mtime": 1786114325.644934,
+    "ast_hash": "f2d03e90c1728b4284d01a4e768aaf17",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_agents_prompts.py": {
-    "mtime": 1785577746.3347404,
-    "ast_hash": "ae4c35170a2d198b4a20754530a67cf8",
+    "mtime": 1786112622.0065024,
+    "ast_hash": "63d2caa955f14eb238ea771ccc1856b4",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_cost_tracker.py": {
@@ -275,13 +270,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_models.py": {
-    "mtime": 1785577746.3337402,
-    "ast_hash": "c1dfc5b0e36aae4d20b451b178ba26fd",
+    "mtime": 1786114171.657236,
+    "ast_hash": "d00b9e8e58ed40483392058f86a9d3a2",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_prompts.py": {
-    "mtime": 1785337804.584704,
-    "ast_hash": "7930336ab892067b5fe7d08488554d75",
+    "mtime": 1786114171.655236,
+    "ast_hash": "4832c86a915d8f256ac98b9756789688",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_protocols.py": {
@@ -300,8 +295,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/integration/test_result_pipeline.py": {
-    "mtime": 1785577916.2402496,
-    "ast_hash": "8cd264011d92c776cce7804f7bd47bc7",
+    "mtime": 1786114238.3902328,
+    "ast_hash": "a0e44d95b41ea6c1a3e6b5e04e568d4c",
     "semantic_hash": ""
   },
   "analyzer/tests/orchestrator/__init__.py": {
@@ -315,13 +310,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/orchestrator/test_graph.py": {
-    "mtime": 1785878226.7928894,
-    "ast_hash": "708818c88d18fb505024a329e4d34551",
+    "mtime": 1786114208.075684,
+    "ast_hash": "131babfc7641c6791af666c4b7252ff4",
     "semantic_hash": ""
   },
   "analyzer/tests/orchestrator/test_synthesizer_cache.py": {
-    "mtime": 1785579042.1368873,
-    "ast_hash": "8f4fca0e4deb593e1c11a8c432dd32a2",
+    "mtime": 1786114340.5027127,
+    "ast_hash": "d44c3b1f70693525ed95bb084b4d6f82",
     "semantic_hash": ""
   },
   "analyzer/tests/output/__init__.py": {
@@ -340,13 +335,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/output/test_result_models.py": {
-    "mtime": 1785441848.7562594,
-    "ast_hash": "f7a47c218c4532c4eb4a023919c18991",
+    "mtime": 1786114446.1191404,
+    "ast_hash": "64b52528ca013db9411e596a7fee3d41",
     "semantic_hash": ""
   },
   "analyzer/tests/output/test_result_writer.py": {
-    "mtime": 1785578740.40022,
-    "ast_hash": "a6aa347628d7657ebe609970e4b4b912",
+    "mtime": 1786114463.5238814,
+    "ast_hash": "6091446cee6b707ce882ce6d1440ad23",
     "semantic_hash": ""
   },
   "analyzer/tests/test_logging_config.py": {
@@ -355,13 +350,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/test_main.py": {
-    "mtime": 1785706487.9996548,
-    "ast_hash": "861e152e354b8a437aeaefca33469d85",
+    "mtime": 1786112622.0065024,
+    "ast_hash": "c4fd9923b589dfb768292921af682f52",
     "semantic_hash": ""
   },
   "analyzer/tests/test_main_multi_symbol.py": {
-    "mtime": 1785578822.8740356,
-    "ast_hash": "d1a872229b7a848f74e1972432d26408",
+    "mtime": 1786114286.5335162,
+    "ast_hash": "8cd5d0164b24542ce736490b1b1a7c2e",
     "semantic_hash": ""
   },
   "analyzer/tests/test_project_setup.py": {
@@ -395,8 +390,8 @@
     "semantic_hash": ""
   },
   "ui/src/components/RunCard.vue": {
-    "mtime": 1785074803.3158977,
-    "ast_hash": "f18ee24d87d669ac6abfcec2a13e9ceb",
+    "mtime": 1786113493.7126591,
+    "ast_hash": "4749b195700d0f786b8a923d527b3109",
     "semantic_hash": ""
   },
   "ui/src/components/SymbolSidebar.vue": {
@@ -430,8 +425,8 @@
     "semantic_hash": ""
   },
   "ui/src/types.ts": {
-    "mtime": 1785577916.2382498,
-    "ast_hash": "dd929bb6c84a13932b464b7cb9b98b29",
+    "mtime": 1786113735.1299438,
+    "ast_hash": "bf243d4c62efe8f23e140f9907381d4c",
     "semantic_hash": ""
   },
   "ui/src/views/Dashboard.vue": {
@@ -440,8 +435,8 @@
     "semantic_hash": ""
   },
   "ui/src/views/Detail.vue": {
-    "mtime": 1785578960.5670586,
-    "ast_hash": "0ed59cf73c2bc2fc14b8abd119770deb",
+    "mtime": 1786113493.7376587,
+    "ast_hash": "a052618f7ac1d2551fa1ae11dcebe96c",
     "semantic_hash": ""
   },
   "ui/tailwind.config.js": {
@@ -565,8 +560,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/notification/telegram_sender.py": {
-    "mtime": 1785436861.863258,
-    "ast_hash": "37a845272840f4b3a5deee3d01b1f59b",
+    "mtime": 1786113509.515416,
+    "ast_hash": "40f3fa8df02bbb242761c661c74eea97",
     "semantic_hash": ""
   },
   "analyzer/tests/notification/__init__.py": {
@@ -575,13 +570,13 @@
     "semantic_hash": ""
   },
   "analyzer/tests/notification/conftest.py": {
-    "mtime": 1785337804.622482,
-    "ast_hash": "6e42a9af5f5914b299ba1f3c1a565bc7",
+    "mtime": 1786114525.6439567,
+    "ast_hash": "b07bffdbf0283dd746005f364723bfec",
     "semantic_hash": ""
   },
   "analyzer/tests/notification/test_telegram_sender.py": {
-    "mtime": 1785437001.519137,
-    "ast_hash": "d6ae6d8f088eb9a2f147cc406657e626",
+    "mtime": 1786114577.1671896,
+    "ast_hash": "5b5c3cfc1f0d8f6b91997b1104f55d0c",
     "semantic_hash": ""
   },
   "server/src/middleware/__init__.py": {
@@ -635,8 +630,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/models.py": {
-    "mtime": 1785878005.7811275,
-    "ast_hash": "f2db014d00b67ac557a3f5d53fd31b76",
+    "mtime": 1786121477.7783778,
+    "ast_hash": "81b0bf634a1ee9c6e8fcbc51a1c114b4",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/grading.py": {
@@ -645,13 +640,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/risk_policy.py": {
-    "mtime": 1785878055.2204032,
-    "ast_hash": "64d8547a8a5d05c3fb8b354cd34b73ba",
+    "mtime": 1786111555.459329,
+    "ast_hash": "f8e9ea3f51acc8013382b94515e48d22",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/execution_policy.py": {
-    "mtime": 1785878083.7829847,
-    "ast_hash": "d0500dd77a508a81837639a0a58b9498",
+    "mtime": 1786121477.779378,
+    "ast_hash": "eb1cf2b9041a3e388b245b66396c3e0c",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/triggers.py": {
@@ -690,18 +685,18 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/enforcement.py": {
-    "mtime": 1785443209.3341222,
-    "ast_hash": "f63dc480435ff29879004685d711a28c",
+    "mtime": 1786121497.251045,
+    "ast_hash": "5e6cd2ddb9527dbdfcfb67dc99d040d3",
     "semantic_hash": ""
   },
   "analyzer/src/decision/output_assembler.py": {
-    "mtime": 1785577712.4642367,
-    "ast_hash": "f5706f60571003be37129f780836d2ed",
+    "mtime": 1786121477.7893777,
+    "ast_hash": "8c97fedb339d25eeadb4d68b7f800530",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_enforcement_models.py": {
-    "mtime": 1785877899.342687,
-    "ast_hash": "45c934f6b78e46ab363a2e28fdae9020",
+    "mtime": 1786114286.543516,
+    "ast_hash": "34d61df0ee6de3be64ad43fb6d819bdf",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_entry_calculator.py": {
@@ -710,28 +705,28 @@
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_execution_policy.py": {
-    "mtime": 1785878169.8887231,
-    "ast_hash": "7075f885de6028c3e8701e73b3df1fbd",
+    "mtime": 1786121477.7903776,
+    "ast_hash": "e4a0363152621adc62d89ad82a7cc1ab",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_grading.py": {
-    "mtime": 1785878283.6200569,
-    "ast_hash": "24bca4dc2f63af5cd96891f1db82f757",
+    "mtime": 1786121477.7913775,
+    "ast_hash": "e81c82a1c59076d1ec8b9dcac17dc234",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_model_identity.py": {
-    "mtime": 1785426189.2319868,
-    "ast_hash": "a0ff75ee0d4b8979c021e8c9a3150015",
+    "mtime": 1786114317.2590587,
+    "ast_hash": "e9d22112c52aafe1b2f3857848514768",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_output_assembly.py": {
-    "mtime": 1785426193.9969163,
-    "ast_hash": "5292ba0902d94825ff0ef256feebaa52",
+    "mtime": 1786114340.5037127,
+    "ast_hash": "37fd3302c7dfe4aa63f56250bc5f13d7",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_revision_loop.py": {
-    "mtime": 1785426189.232889,
-    "ast_hash": "f5100a0b1dc2507fc4221280d5f34ee6",
+    "mtime": 1786114340.5037127,
+    "ast_hash": "980af17b8551abda9e7a044a1fd19958",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_risk_policy.py": {
@@ -745,8 +740,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_enforcement.py": {
-    "mtime": 1785443209.3141224,
-    "ast_hash": "9aedc86e2c3aad3719b11ef6f3e642d8",
+    "mtime": 1786121497.2520452,
+    "ast_hash": "f37783bb88b37e2095eebc83e5457a50",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_llm_client.py": {
@@ -760,13 +755,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_output_assembler.py": {
-    "mtime": 1785577756.321594,
-    "ast_hash": "d9604a7865e9cd34f773a17010bc66d2",
-    "semantic_hash": ""
-  },
-  "analyzer/tests/integration/test_pipeline_integration.py": {
-    "mtime": 1785426956.1116662,
-    "ast_hash": "744f6a896822a58485a87a2c887f783b",
+    "mtime": 1786114286.542516,
+    "ast_hash": "de9cffa44d298076fb8844a7702e8c8e",
     "semantic_hash": ""
   },
   "docs/agents/domain.md": {
@@ -785,13 +775,13 @@
     "semantic_hash": ""
   },
   "CONTEXT.md": {
-    "mtime": 1785706607.2449112,
-    "ast_hash": "476a43a2935c387d576f039fe93ec56c",
+    "mtime": 1786121342.4206843,
+    "ast_hash": "d51f3db5829a9b5842472fbd2da0c743",
     "semantic_hash": ""
   },
   "docs/adr/0001-reviewer-configuration-names.md": {
-    "mtime": 1785572264.2493422,
-    "ast_hash": "a7864f9ea715f97d24668b42e3a64852",
+    "mtime": 1786121342.4216845,
+    "ast_hash": "7995fd55fa308cea4906e855ff7dc1da",
     "semantic_hash": ""
   },
   "ui/src/__tests__/deterministicSetup.test.ts": {
@@ -845,8 +835,33 @@
     "semantic_hash": ""
   },
   "docs/adr/0002-structured-output-json-mode-default.md": {
-    "mtime": 1785706613.8968139,
-    "ast_hash": "a67d630977378d5ccab3acf22555fea8",
+    "mtime": 1786121342.4226844,
+    "ast_hash": "1c3e40bb2146fe471a2006033cf041c6",
+    "semantic_hash": ""
+  },
+  "analyzer/tests/analysis/market_structure_engine/test_deterministic_regressions.py": {
+    "mtime": 1786111570.441076,
+    "ast_hash": "9bdbd8a5c5f076d8e911e01ecf8b1604",
+    "semantic_hash": ""
+  },
+  "analyzer/src/analysis/market_structure_engine/deterministic_validator.py": {
+    "mtime": 1786113789.2171128,
+    "ast_hash": "bcfb09a5ed9925027c1ea2b8ac463284",
+    "semantic_hash": ""
+  },
+  "analyzer/tests/analysis/market_structure_engine/test_deterministic_validator_contract.py": {
+    "mtime": 1786113693.3085866,
+    "ast_hash": "08c2c7bd176852a5398dc00ad8ce7201",
+    "semantic_hash": ""
+  },
+  "docs/adr/0003-deterministic-decision-single-synthesizer.md": {
+    "mtime": 1786121342.4226844,
+    "ast_hash": "7b7e1aaa7a068e4a85a8089ee275c864",
+    "semantic_hash": ""
+  },
+  "docs/trading-analysis-deterministic-pipeline-v2-spec.md": {
+    "mtime": 1786123285.869519,
+    "ast_hash": "1527bf8c72044337e4e29ff2faa48098",
     "semantic_hash": ""
   }
 }

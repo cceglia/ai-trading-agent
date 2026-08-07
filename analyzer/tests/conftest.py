@@ -2,13 +2,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
     DecisionOutput,
     MarketContextSummary,
-    ReviewVerdict,
 )
 
 
@@ -61,16 +59,6 @@ def sample_decision():
         symbol="EURUSD",
         action=DecisionAction.BUY_SETUP,
         reasoning="Bullish structure with good R/R",
-    )
-
-
-@pytest.fixture
-def sample_review():
-    return ReviewVerdict(
-        status=ReviewStatus.APPROVED,
-        reasoning="All criteria met",
-        concerns=(),
-        suggested_improvements=None,
     )
 
 

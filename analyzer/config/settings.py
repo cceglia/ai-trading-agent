@@ -2,7 +2,7 @@ import json
 import logging
 from typing import ClassVar, Self
 
-from pydantic import Field, ValidationInfo, field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings
 
 # ExecutionMode is defined in the market_structure_engine models (canonical home).
@@ -78,55 +78,6 @@ class Settings(BaseSettings):
         description="Override the detected model version for the primary LLM",
     )
 
-    # Reviewer LLM Configuration
-    reviewer_llm_provider: str = Field(
-        default="openai",
-        description="Provider for the reviewer LLM (e.g. openai, anthropic)",
-    )
-    reviewer_model: str = Field(
-        default="",
-        description="Model identifier for the reviewer LLM (empty = use primary model)",
-    )
-    reviewer_model_family_override: str | None = Field(
-        default=None,
-        description="Override the detected model family for the reviewer",
-    )
-    reviewer_model_version_override: str | None = Field(
-        default=None,
-        description="Override the detected model version for the reviewer",
-    )
-    reviewer_api_key: str = Field(
-        default="",
-        description="API key for the reviewer LLM (empty = use primary API key)",
-    )
-    reviewer_base_url: str = Field(
-        default="",
-        description="Base URL for the reviewer LLM (empty = use default for provider)",
-    )
-    reviewer_temperature: float = Field(
-        default=0.0,
-        description="Temperature setting for the reviewer LLM",
-    )
-    reviewer_reasoning_effort: str = Field(
-        default="",
-        description="Reasoning effort for reviewer (low/medium/high), empty = not set",
-    )
-    reviewer_instructor_mode: str = Field(
-        default="",
-        description=(
-            "Structured output mode for the reviewer "
-            "(json_mode or tool_call); empty = inherit the primary LLM"
-        ),
-    )
-    reviewer_timeout: float | None = Field(
-        default=None,
-        gt=0,
-        description=(
-            "Per-attempt request timeout in seconds for the reviewer; "
-            "None = inherit the primary LLM timeout"
-        ),
-    )
-
     # Terminal MCP Configuration
     terminal_server_url: str = Field(
         default="http://127.0.0.1:22346/mcp", description="Terminal MCP server URL for candle data"
@@ -134,9 +85,6 @@ class Settings(BaseSettings):
     terminal_api_key: str = Field(
         default="", description="Bearer token for terminal MCP server authentication"
     )
-
-    # Review Configuration
-    max_review_attempts: int = Field(default=2, description="Maximum review retry attempts")
 
     # Setup Policy
     enable_countertrend: bool = Field(
@@ -176,20 +124,6 @@ class Settings(BaseSettings):
     setup_expiration_h1_bars: int = Field(
         default=3,
         description="Number of H1 bars before a setup expires",
-    )
-
-    # Reviewer Policy
-    require_reviewer: bool = Field(
-        default=True,
-        description="Require an independent reviewer for executable decisions",
-    )
-    allow_unreviewed_decisions: bool = Field(
-        default=False,
-        description="Allow decisions without review (forbidden in paper/live mode)",
-    )
-    allow_same_model_different_deployment: bool = Field(
-        default=False,
-        description="Allow reviewer to use the same model family with a different deployment",
     )
 
     # Execution Mode
@@ -298,41 +232,24 @@ class Settings(BaseSettings):
     # reject under thinking mode.
     ALLOWED_INSTRUCTOR_MODES: ClassVar[frozenset[str]] = frozenset({"json_mode", "tool_call"})
 
-    @field_validator("openai_instructor_mode", "reviewer_instructor_mode")
+    @field_validator("openai_instructor_mode")
     @classmethod
-    def validate_instructor_mode(cls, v: object, info: ValidationInfo) -> object:
+    def validate_instructor_mode(cls, v: object) -> object:
         """Reject unsupported instructor_mode values at Settings-parse time.
 
-        An invalid mode would otherwise only surface as a deterministic
-        provider error on the first LLM call. The reviewer field additionally
-        accepts ``""`` to mean "inherit the primary" (ADR 0001 convention);
-        the primary field must always name a concrete mode.
+        An invalid mode would otherwise only surface as a provider error on
+        the first LLM call.
         """
         if v == "":
-            if info.field_name == "openai_instructor_mode":
-                raise ValueError(
-                    "openai_instructor_mode must be one of: "
-                    f"{', '.join(sorted(cls.ALLOWED_INSTRUCTOR_MODES))}"
-                )
-            return v  # reviewer: empty string = inherit the primary
+            raise ValueError(
+                "openai_instructor_mode must be one of: "
+                f"{', '.join(sorted(cls.ALLOWED_INSTRUCTOR_MODES))}"
+            )
         if v not in cls.ALLOWED_INSTRUCTOR_MODES:
             raise ValueError(
                 f"invalid instructor_mode {v!r}: must be one of: "
                 f"{', '.join(sorted(cls.ALLOWED_INSTRUCTOR_MODES))}"
             )
-        return v
-
-    @field_validator("reviewer_timeout", mode="before")
-    @classmethod
-    def parse_reviewer_timeout(cls, v: object) -> object:
-        """Map an empty-string env var to ``None`` (inherit the primary timeout).
-
-        ``.env.template`` documents ``TRADING_REVIEWER_TIMEOUT=`` as "inherit
-        the primary LLM's timeout", so an explicitly-empty value must parse to
-        ``None`` rather than failing float parsing.
-        """
-        if v == "":
-            return None
         return v
 
     # Calendar Configuration
@@ -390,23 +307,9 @@ class Settings(BaseSettings):
     def validate_execution_policy(self) -> Self:
         """Validate execution policy settings based on execution mode.
 
-        Paper and Live modes require:
-        - ``require_reviewer`` must be ``True``
-        - ``allow_unreviewed_decisions`` must be ``False``
-        - ``allow_same_model_different_deployment`` must be ``False``
+        Paper and Live modes use the same deterministic enforcement gate as
+        all other modes; no reviewer configuration is required.
         """
-        if self.execution_mode in (ExecutionMode.PAPER, ExecutionMode.LIVE):
-            if not self.require_reviewer:
-                raise ValueError("require_reviewer must be True in paper/live execution mode")
-            if self.allow_unreviewed_decisions:
-                raise ValueError(
-                    "allow_unreviewed_decisions must be False in paper/live execution mode"
-                )
-            if self.allow_same_model_different_deployment:
-                raise ValueError(
-                    "allow_same_model_different_deployment must be False "
-                    "in paper/live execution mode"
-                )
         return self
 
     model_config = {"env_prefix": "TRADING_", "env_file": ".env"}

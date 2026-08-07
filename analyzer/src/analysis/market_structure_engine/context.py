@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .config import MIN_RR
 from .errors import ParentContextError
 from .utils import round_or_none, safe_div
 
@@ -139,7 +140,7 @@ def build_timeframe_context(
             "BEARISH",
         ):
             alignment = "DAILY_BIAS_AT_RISK"
-            operational = "BLOCK_NEW_SETUPS_AND_REVIEW_D1"
+            operational = "BLOCK_NEW_SETUPS_AND_REASSESS_D1"
             parent_status = "AT_RISK"
         else:
             alignment = "TRANSITION"
@@ -176,8 +177,14 @@ def build_timeframe_context(
     preferred = h4_operational.get("preferred_direction") or d1_direction
     event = events.get("latest_material_event")
     liquidity_event = liquidity.get("latest_event")
-    bullish_trigger = bool(event and event["event_type"] in ("BULLISH_BOS", "BULLISH_CHOCH"))
-    bearish_trigger = bool(event and event["event_type"] in ("BEARISH_BOS", "BEARISH_CHOCH"))
+    bullish_trigger = bool(
+        event
+        and event["event_type"] in ("BULLISH_BOS", "BULLISH_CHOCH", "BULLISH_STRUCTURAL_BREAK")
+    )
+    bearish_trigger = bool(
+        event
+        and event["event_type"] in ("BEARISH_BOS", "BEARISH_CHOCH", "BEARISH_STRUCTURAL_BREAK")
+    )
     sweep_support = bool(
         liquidity_event
         and liquidity_event["event_type"] == "SWEEP_AND_RECLAIM"
@@ -219,7 +226,8 @@ def build_timeframe_context(
             risk = invalidation_price - close
         rr = safe_div(reward, risk, 0.0)
     room_ok = nearest_target is not None and nearest_target.get("distance_atr", 0) >= 0.75
-    rr_ok = rr is not None and rr >= 1.5
+    minimum_required_rr = MIN_RR
+    rr_ok = rr is not None and rr >= minimum_required_rr
     if blocker:
         setup_status = "CONFLICT_WITH_HIGHER_TIMEFRAME"
     elif trigger and room_ok and rr_ok:
@@ -249,6 +257,9 @@ def build_timeframe_context(
             "technical_invalidation": invalidation_price,
             "first_objective": target_price,
             "estimated_reward_risk": round_or_none(rr, 4),
+            "calculated_rr": round_or_none(rr, 4),
+            "minimum_required_rr": minimum_required_rr,
+            "rr_pass": rr_ok,
             "room_to_target_passed": room_ok,
             "reward_risk_filter_passed": rr_ok,
             "blockers": ["HIGHER_TIMEFRAME_CONFLICT"] if blocker else [],

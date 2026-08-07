@@ -77,7 +77,6 @@ def send_trade_notification(
     symbol: str,
     decision: dict[str, Any],
     context: dict[str, Any],
-    review: dict[str, Any],
     web_ui_base_url: str,
     bot_token: str,
     chat_id: str,
@@ -96,6 +95,9 @@ def send_trade_notification(
         return
 
     action = decision.get("action", "no_trade")
+    if result is not None and result.get("validation_status") != "VALID":
+        return
+
     if action == "buy_setup":
         emoji = "\U0001f7e2 BUY"
     elif action == "sell_setup":

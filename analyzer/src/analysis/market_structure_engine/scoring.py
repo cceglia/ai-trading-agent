@@ -123,24 +123,41 @@ def calculate_score(
     else:
         bias = "NEUTRAL_BEARISH"
 
+    primary_event = events.get("latest_primary_event")
+    internal_event = events.get("latest_internal_event")
+    event_evidence = 0.0
+    if primary_event and not primary_event["event_type"].startswith("FAILED"):
+        event_evidence += 1.0
+    if internal_event and not internal_event["event_type"].startswith("FAILED"):
+        event_evidence += 0.5
     components = {
-        # structural_bias affects direction, but local RANGE remains lower-
-        # confidence than a confirmed directional swing sequence.
-        "structure": min(
-            40, 35 if structure["primary_structure"] in ("BULLISH", "BEARISH") else 25
-        ),
-        "events": min(25, 25 if events.get("latest_material_event") else 8),
-        "liquidity": min(15, 15 if liquidity.get("latest_event") else 7),
-        "technical": min(12, 12 if indicators["latest"]["ema_alignment"] != "MIXED" else 6),
-        "candle": min(8, int(round(8 * candle["body_to_range_ratio"]))),
+        "structure": {
+            "normalized": 1.0 if structure["primary_structure"] in ("BULLISH", "BEARISH") else 0.5,
+            "weight": 0.40,
+        },
+        "events": {
+            "normalized": min(event_evidence / 1.5, 1.0),
+            "weight": 0.25,
+            "primary_event_weight": 1.0,
+            "internal_event_weight": 0.5,
+        },
+        "liquidity": {"normalized": 1.0 if liquidity.get("latest_event") else 0.0, "weight": 0.15},
+        "technical": {
+            "normalized": 1.0 if indicators["latest"]["ema_alignment"] != "MIXED" else 0.5,
+            "weight": 0.12,
+        },
+        "candle": {"normalized": clamp(candle["body_to_range_ratio"], 0.0, 1.0), "weight": 0.08},
     }
-    assert sum(components.values()) <= 100
+    for component in components.values():
+        component["contribution"] = round(component["normalized"] * component["weight"], 6)
+    confidence_components = {name: dict(value) for name, value in components.items()}
+    confidence = int(round(100 * sum(item["contribution"] for item in components.values())))
     return {
         "bias": bias,
         "confidence_score": confidence,
         "directional_score": round(directional, 4),
         "votes": {key: round(value, 4) for key, value in votes.items()},
-        "confidence_components": components,
+        "confidence_components": confidence_components,
         "component_maximums": {
             "structure": 40,
             "events": 25,

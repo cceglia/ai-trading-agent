@@ -13,10 +13,9 @@ Responsibility boundaries
 grading / execution-policy / risk-policy / enforcement engines.  These
 always override any conflicting LLM-produced value.
 
-*Interpretive (LLM advisory)* — reasoning strings, review verdicts, and
-concerns produced by the LLM agents.  These fill the ``decision`` and
-``review`` sub-models on :class:`~src.output.result_models.AnalysisResult`
-but the deterministic ``final_action`` overrides the LLM's chosen action.
+*Interpretive (LLM advisory)* — reasoning strings produced by the synthesizer.
+  These fill the ``decision`` field, while deterministic enforcement remains
+  authoritative for the final action.
 
 SOLID compliance
 ----------------
@@ -37,13 +36,14 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from src.analysis.market_structure_engine.deterministic_validator import DeterministicValidation
 from src.analysis.market_structure_engine.models import (
     DeterministicSetupState,
     ExecutionPolicyState,
     FinalDecisionState,
     RiskPolicyState,
 )
-from src.decision.models import DecisionOutput, ReviewVerdict
+from src.decision.models import DecisionOutput
 from src.output.result_models import AnalysisResult, SLTPOverlay
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,6 @@ class FinalOutputAssembler:
             policy=execution_policy,
             risk=risk_policy,
             decision=llm_decision,
-            review=llm_review,
             enforcement=final_state,
         )
         # Override metadata fields as needed:
@@ -83,8 +82,8 @@ class FinalOutputAssembler:
         policy: ExecutionPolicyState,
         risk: RiskPolicyState,
         decision: DecisionOutput,
-        review: ReviewVerdict,
         enforcement: FinalDecisionState,
+        validation: DeterministicValidation | None = None,
     ) -> AnalysisResult:
         """Map all pipeline states into a unified :class:`AnalysisResult`.
 
@@ -98,8 +97,6 @@ class FinalOutputAssembler:
             Risk policy derived from the setup grade.
         decision:
             LLM decision output (action + reasoning).
-        review:
-            Review verdict from the reviewer agent.
         enforcement:
             Final decision state after the enforcement gate.
 
@@ -135,7 +132,12 @@ class FinalOutputAssembler:
         # ── Status inference ──────────────────────────────────────────
         # If there are enforcement violations, mark as partial.
         # The caller may override this with "error" or "success".
-        status: str = "partial" if enforcement.enforcement_violations else "success"
+        status: str = (
+            "partial"
+            if enforcement.enforcement_violations
+            or (validation is not None and not validation.valid)
+            else "success"
+        )
 
         # ── Serialise blockers and violations to dicts ────────────────
         execution_blockers: list[dict[str, Any]] = [
@@ -155,10 +157,8 @@ class FinalOutputAssembler:
             status=status,
             # Sub-models
             decision=final_decision,
-            review=review,
             sl_tp_overlay=sl_tp_overlay,
             advisory_levels=decision.advisory_levels,
-            review_advisory_levels=review.advisory_levels,
             # Deterministic setup (authoritative)
             setup_grade=setup.setup_grade.value if setup.setup_grade is not None else None,
             setup_classification_status=setup.setup_classification_status.value,
@@ -172,11 +172,28 @@ class FinalOutputAssembler:
             risk_multiplier=risk.grade_risk_multiplier,
             final_risk_percentage=risk.final_risk_percentage,
             # Execution policy
-            execution_status=policy.pre_review_execution_status.value,
+            execution_status=policy.execution_status.value,
             execution_blockers=execution_blockers,
             # Enforcement
             final_action=enforcement.final_action.value,
             enforcement_violations=enforcement_violations_list,
+            validation_status=validation.validation_status if validation else "INVALID",
+            validation_errors=list(validation.validation_errors)
+            if validation
+            else ["validation unavailable"],
+            rr=validation.rr if validation else setup.estimated_reward_risk,
+            calculated_rr=validation.calculated_rr if validation else setup.estimated_reward_risk,
+            minimum_required_rr=validation.minimum_required_rr if validation else 2.0,
+            rr_pass=validation.rr_pass if validation else False,
+            deterministic_blockers=list(validation.deterministic_blockers)
+            if validation
+            else execution_blockers,
+            reason_codes=list(validation.reason_codes)
+            if validation
+            else list(setup.rejection_codes),
+            setup_status=validation.setup_status if validation else "INVALID",
+            direction=validation.direction if validation else "NONE",
+            entry_authorized=False,
         )
 
         logger.debug(

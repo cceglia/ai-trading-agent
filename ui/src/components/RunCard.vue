@@ -48,8 +48,8 @@ function formatConfidence(confidence: number): string {
     </div>
     <div class="flex items-center justify-between mt-1">
       <span class="text-xs font-mono text-terminal-text-tertiary uppercase">{{ run.action.replace("_", " ") }}</span>
-      <span :class="['text-xs', run.review_approved ? 'text-terminal-gain' : 'text-terminal-warning']">
-        {{ run.review_approved ? "✓" : "?" }}
+      <span :class="['text-xs', run.validation_status === 'VALID' ? 'text-terminal-gain' : 'text-terminal-loss']">
+        {{ run.validation_status }}
       </span>
     </div>
   </button>

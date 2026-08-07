@@ -1,7 +1,7 @@
 """Tests for deterministic execution policy evaluation (Section 16.2).
 
 Tests the evaluate_execution_policy() function and its helpers:
-- Each blocker type (POLICY, CALENDAR, RISK_REWARD, REVIEW, DATA_QUALITY, GEOMETRY)
+    - Each blocker type (POLICY, CALENDAR, RISK_REWARD, DATA_QUALITY, GEOMETRY)
 - Status derivation priority order
 - Allowed actions derivation for ACTIONABLE vs blocked states
 - Factory construction via ExecutionPolicyState.create()
@@ -201,7 +201,7 @@ class TestRiskRewardBlocker:
 
 
 class TestTriggerBlocker:
-    """Review blocker for unconfirmed trigger."""
+    """Policy blocker for unconfirmed trigger."""
 
     def test_unconfirmed_trigger_blocks(self) -> None:
         setup = _make_setup(trigger_status=TriggerStatus.PENDING_CONFIRMATION)
@@ -210,7 +210,7 @@ class TestTriggerBlocker:
 
         state = evaluate_execution_policy(setup=setup, risk_policy=policy, settings=settings)
         assert any(
-            b.code == ExecutionBlockerCode.REVIEW_TRIGGER_NOT_CONFIRMED
+            b.code == ExecutionBlockerCode.POLICY_TRIGGER_NOT_CONFIRMED
             for b in state.execution_blockers
         )
 
@@ -221,7 +221,7 @@ class TestTriggerBlocker:
 
         state = evaluate_execution_policy(setup=setup, risk_policy=policy, settings=settings)
         assert not any(
-            b.code == ExecutionBlockerCode.REVIEW_TRIGGER_NOT_CONFIRMED
+            b.code == ExecutionBlockerCode.POLICY_TRIGGER_NOT_CONFIRMED
             for b in state.execution_blockers
         )
 
@@ -319,14 +319,14 @@ class TestStatusDerivation:
         state = evaluate_execution_policy(
             setup=setup, risk_policy=policy, has_high_impact_event=True
         )
-        assert state.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_CALENDAR
+        assert state.execution_status == ExecutionStatus.BLOCKED_BY_CALENDAR
 
     def test_actionable_when_no_blockers(self) -> None:
         setup = _make_setup()
         policy = _make_risk_policy()
 
         state = evaluate_execution_policy(setup=setup, risk_policy=policy)
-        assert state.pre_review_execution_status == ExecutionStatus.ACTIONABLE
+        assert state.execution_status == ExecutionStatus.ACTIONABLE
 
     def test_incomplete_deterministic_plan_is_blocked(self) -> None:
         setup = _make_setup().model_copy(update={"entry_price": None})
@@ -336,7 +336,7 @@ class TestStatusDerivation:
             settings=PolicySettings(require_confirmed_trigger=False),
         )
 
-        assert policy.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
+        assert policy.execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
         assert policy.allowed_actions == (DecisionAction.NO_TRADE,)
         assert any(
             blocker.code == ExecutionBlockerCode.DATA_QUALITY_INCOMPLETE_SETUP
@@ -355,7 +355,7 @@ class TestStatusDerivation:
         state = evaluate_execution_policy(setup=setup, risk_policy=policy)
         # Should have DATA_QUALITY (missing D1), RISK_REWARD (missing rr), GEOMETRY (invalid)
         # DATA_QUALITY has higher priority than both RISK_REWARD and GEOMETRY
-        assert state.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
+        assert state.execution_status == ExecutionStatus.BLOCKED_BY_DATA_QUALITY
 
 
 class TestNoCandidateExecutionStatus:
@@ -388,7 +388,7 @@ class TestNoCandidateExecutionStatus:
 
         state = evaluate_execution_policy(setup=setup, risk_policy=policy)
 
-        assert state.pre_review_execution_status == ExecutionStatus.NON_EXECUTABLE
+        assert state.execution_status == ExecutionStatus.NON_EXECUTABLE
         assert state.allowed_actions == (DecisionAction.NO_TRADE,)
         # No symptom blockers that mislabel "no candidate" as a data problem
         assert not any(
@@ -456,7 +456,7 @@ class TestExecutionPolicyStateCreate:
         state = ExecutionPolicyState.create(setup=setup, execution_blockers=blockers)
         assert state.trade_direction == TradeDirection.BULLISH
         assert len(state.execution_blockers) == 1
-        assert state.pre_review_execution_status == ExecutionStatus.BLOCKED_BY_POLICY
+        assert state.execution_status == ExecutionStatus.BLOCKED_BY_POLICY
         assert state.allowed_actions == (DecisionAction.NO_TRADE,)
 
     def test_creates_with_empty_blockers(self) -> None:

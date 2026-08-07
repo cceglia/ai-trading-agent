@@ -712,5 +712,5 @@ class TestNoCandidatePipeline:
         assert not any(
             b.blocker_type == ExecutionBlockerType.RISK_REWARD for b in policy.execution_blockers
         )
-        assert policy.pre_review_execution_status == ExecutionStatus.NON_EXECUTABLE
+        assert policy.execution_status == ExecutionStatus.NON_EXECUTABLE
         assert policy.allowed_actions == (DecisionAction.NO_TRADE,)

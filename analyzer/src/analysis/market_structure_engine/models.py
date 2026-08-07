@@ -8,7 +8,7 @@ the entire engine, providing type-safe definitions for:
 - Execution status and blockers
 - Trigger and entry types
 - Decision and bias levels
-- Review and enforcement status
+- Enforcement status
 - Model identity resolution
 
 This module has no external dependencies beyond pydantic and the standard library,
@@ -65,7 +65,6 @@ class ExecutionStatus(StrEnum):
     BLOCKED_BY_CALENDAR = "BLOCKED_BY_CALENDAR"
     BLOCKED_BY_POLICY = "BLOCKED_BY_POLICY"
     BLOCKED_BY_ENFORCEMENT = "BLOCKED_BY_ENFORCEMENT"
-    BLOCKED_BY_REVIEW = "BLOCKED_BY_REVIEW"
     BLOCKED_BY_DATA_QUALITY = "BLOCKED_BY_DATA_QUALITY"
     NOT_READY = "NOT_READY"
     NON_EXECUTABLE = "NON_EXECUTABLE"
@@ -84,7 +83,6 @@ class ExecutionBlockerType(StrEnum):
     POLICY = "POLICY"
     CALENDAR = "CALENDAR"
     DATA_QUALITY = "DATA_QUALITY"
-    REVIEW = "REVIEW"
     EXECUTION_MODE = "EXECUTION_MODE"
     RISK_REWARD = "RISK_REWARD"
     GEOMETRY = "GEOMETRY"
@@ -99,7 +97,7 @@ class ExecutionBlockerCode(StrEnum):
     POLICY_MAX_DAILY_LOSS = "POLICY_MAX_DAILY_LOSS"
     POLICY_MAX_POSITION_SIZE = "POLICY_MAX_POSITION_SIZE"
     POLICY_BLACKOUT_HOUR = "POLICY_BLACKOUT_HOUR"
-    POLICY_REQUIRES_REVIEW = "POLICY_REQUIRES_REVIEW"
+    POLICY_TRIGGER_NOT_CONFIRMED = "POLICY_TRIGGER_NOT_CONFIRMED"
     POLICY_COUNTERTREND_DISABLED = "POLICY_COUNTERTREND_DISABLED"
 
     # Calendar blockers
@@ -116,13 +114,6 @@ class ExecutionBlockerCode(StrEnum):
     DATA_QUALITY_MISSING_H4_DATA = "DATA_QUALITY_MISSING_H4_DATA"
     DATA_QUALITY_MISSING_H1_DATA = "DATA_QUALITY_MISSING_H1_DATA"
     DATA_QUALITY_INCOMPLETE_SETUP = "DATA_QUALITY_INCOMPLETE_SETUP"
-
-    # Review blockers
-    REVIEW_PENDING = "REVIEW_PENDING"
-    REVIEW_REJECTED = "REVIEW_REJECTED"
-    REVIEW_REVISION_REQUIRED = "REVIEW_REVISION_REQUIRED"
-    REVIEW_UNAVAILABLE = "REVIEW_UNAVAILABLE"
-    REVIEW_TRIGGER_NOT_CONFIRMED = "REVIEW_TRIGGER_NOT_CONFIRMED"
 
     # Execution mode blockers
     EXECUTION_MODE_NOT_LIVE = "EXECUTION_MODE_NOT_LIVE"
@@ -170,7 +161,6 @@ class InvalidationReason(StrEnum):
     POLICY_VIOLATION = "POLICY_VIOLATION"
     CALENDAR_BLOCK = "CALENDAR_BLOCK"
     DATA_QUALITY = "DATA_QUALITY"
-    REVIEW_REJECTED = "REVIEW_REJECTED"
 
 
 class GeometryStatus(StrEnum):
@@ -259,29 +249,6 @@ class TradeDirection(StrEnum):
 
 
 # ---------------------------------------------------------------------------
-# Review Enums
-# ---------------------------------------------------------------------------
-
-
-class ReviewStatus(StrEnum):
-    """Status of the review process."""
-
-    APPROVED = "APPROVED"
-    REJECTED = "REJECTED"
-    REVISION_REQUIRED = "REVISION_REQUIRED"
-    REVIEW_UNAVAILABLE = "REVIEW_UNAVAILABLE"
-    REVIEW_ERROR = "REVIEW_ERROR"
-    NOT_REQUIRED = "NOT_REQUIRED"
-
-
-class ReviewerIndependenceLevel(StrEnum):
-    """Independence level of the reviewer."""
-
-    NONE = "NONE"
-    WEAK = "WEAK"
-    STRONG = "STRONG"
-
-
 # ---------------------------------------------------------------------------
 # Execution Mode Enums
 # ---------------------------------------------------------------------------
@@ -359,8 +326,7 @@ def derive_execution_status(blockers: tuple[ExecutionBlocker, ...]) -> Execution
     4. Any POLICY blocker → BLOCKED_BY_POLICY
     5. Any RISK_REWARD blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
     6. Any GEOMETRY blocker with INVALIDATES_GRADE severity → BLOCKED_BY_ENFORCEMENT
-    7. Any REVIEW blocker → BLOCKED_BY_REVIEW
-    8. No blockers → ACTIONABLE
+     7. No blockers → ACTIONABLE
     """
     types = {b.blocker_type for b in blockers}
     if ExecutionBlockerType.CANDIDATE in types:
@@ -383,8 +349,6 @@ def derive_execution_status(blockers: tuple[ExecutionBlocker, ...]) -> Execution
         for b in blockers
     ):
         return ExecutionStatus.BLOCKED_BY_ENFORCEMENT
-    if ExecutionBlockerType.REVIEW in types:
-        return ExecutionStatus.BLOCKED_BY_REVIEW
     return ExecutionStatus.ACTIONABLE
 
 
@@ -686,7 +650,7 @@ class RiskPolicyState(BaseModel, frozen=True):
         description="Multiplier applied based on setup grade",
     )
     minimum_reward_risk: float = Field(
-        default=1.0,
+        default=2.0,
         gt=0,
         description="Minimum acceptable reward-to-risk ratio",
     )
@@ -731,15 +695,15 @@ class ExecutionPolicyState(BaseModel, frozen=True):
 
     @computed_field  # type: ignore[prop-decorator]
     @property
-    def pre_review_execution_status(self) -> ExecutionStatus:
-        """Derive execution status from blockers before review stage."""
+    def execution_status(self) -> ExecutionStatus:
+        """Derive execution status from the active blockers."""
         return derive_execution_status(self.execution_blockers)
 
     @computed_field  # type: ignore[prop-decorator]
     @property
     def allowed_actions(self) -> tuple[DecisionAction, ...]:
         """Derive allowed actions from direction and execution status."""
-        return derive_allowed_actions(self.trade_direction, self.pre_review_execution_status)
+        return derive_allowed_actions(self.trade_direction, self.execution_status)
 
     @classmethod
     def create(
@@ -769,19 +733,12 @@ class FinalDecisionState(BaseModel, frozen=True):
     """Immutable state representing the final decision outcome.
 
     Attributes:
-        review_status: Status of the review process.
         final_execution_status: Final execution status after all stages.
         final_action: Decision action taken.
         enforcement_violations: Tuple of enforcement violations detected.
-        review_attempts: Number of review attempts made.
         provider_retry_count: Number of provider retries.
-        review_revision_count: Number of review revisions.
     """
 
-    review_status: ReviewStatus = Field(
-        default=ReviewStatus.NOT_REQUIRED,
-        description="Status of the review process",
-    )
     final_execution_status: ExecutionStatus = Field(
         default=ExecutionStatus.NOT_READY,
         description="Final execution status after all stages",
@@ -794,15 +751,7 @@ class FinalDecisionState(BaseModel, frozen=True):
         default=(),
         description="Tuple of enforcement violations detected",
     )
-    review_attempts: int = Field(
-        default=0,
-        description="Number of review attempts made",
-    )
     provider_retry_count: int = Field(
         default=0,
         description="Number of provider retries",
-    )
-    review_revision_count: int = Field(
-        default=0,
-        description="Number of review revisions",
     )

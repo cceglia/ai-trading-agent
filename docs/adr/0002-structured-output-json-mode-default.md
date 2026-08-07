@@ -1,4 +1,7 @@
-# Default the structured output mode to `json_mode`
+# Superseded: default the structured output mode to `json_mode`
+
+> **Status: Superseded** by ADR 0003. The transport decision remains historical;
+> reviewer-specific configuration is no longer part of the active domain.
 
 The analyzer's structured output transport defaults to instructor's `json_mode`
 (`response_format={"type": "json_object"}`) instead of `Mode.TOOLS`.

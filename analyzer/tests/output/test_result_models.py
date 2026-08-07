@@ -2,13 +2,11 @@
 
 from datetime import datetime
 
-from src.analysis.market_structure_engine.models import ReviewStatus
 from src.decision.models import (
     BiasLevel,
     DecisionAction,
     DecisionOutput,
     MarketContextSummary,
-    ReviewVerdict,
 )
 from src.output.result_models import AnalysisResult, OHLCBar, OHLCData, SLTPOverlay
 
@@ -67,7 +65,7 @@ class TestAnalysisResult:
             completed_at=datetime.now(),
             status="success",
         )
-        assert result.version == "1.0"
+        assert result.version == "2.0"
 
     def test_with_market_context(self):
         ctx = MarketContextSummary(
@@ -97,18 +95,16 @@ class TestAnalysisResult:
         assert result.decision is not None
         assert result.decision.action == "buy_setup"
 
-    def test_with_review(self):
-        rev = ReviewVerdict(status=ReviewStatus.APPROVED, reasoning="test")
+    def test_deterministic_validation_defaults_are_safe(self):
         result = AnalysisResult(
             symbol="XAUUSD",
             run_id="test",
             started_at=datetime.now(),
             completed_at=datetime.now(),
             status="success",
-            review=rev,
         )
-        assert result.review is not None
-        assert result.review.approved is True
+        assert result.validation_status == "INVALID"
+        assert result.entry_authorized is False
 
     def test_serialization_roundtrip(self):
         ctx = MarketContextSummary(
@@ -125,7 +121,7 @@ class TestAnalysisResult:
         serialized = result.model_dump(mode="json")
         deserialized = AnalysisResult.model_validate(serialized)
         assert deserialized.symbol == "XAUUSD"
-        assert deserialized.version == "1.0"
+        assert deserialized.version == "2.0"
         assert deserialized.market_context is not None
 
     def test_status_enum_values(self):
@@ -175,11 +171,6 @@ class TestAnalysisResult:
             action=DecisionAction.BUY_SETUP,
             reasoning="Good R/R",
         )
-        rev = ReviewVerdict(
-            status=ReviewStatus.APPROVED,
-            reasoning="Looks good",
-            concerns=("Spread a bit wide",),
-        )
         ohlc = OHLCData(
             D1=[
                 OHLCBar(time="2026-07-25T17:00", open=2350.0, high=2370.0, low=2345.0, close=2365.5)
@@ -198,7 +189,6 @@ class TestAnalysisResult:
             fatal_error=None,
             market_context=ctx,
             decision=dec,
-            review=rev,
             ohlc=ohlc,
             sl_tp_overlay=sltp,
         )
@@ -206,7 +196,7 @@ class TestAnalysisResult:
         assert result.version == "2.0"
         assert result.market_context.bias == "BULLISH"
         assert result.decision.action == "buy_setup"
-        assert result.review.approved is True
+        assert result.entry_authorized is False
         assert len(result.ohlc.D1) == 1
         assert result.sl_tp_overlay.entry_price == 2350.0
 

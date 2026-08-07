@@ -14,6 +14,10 @@ from src.analysis.candle_cache import (
     should_run_analysis,
 )
 from src.analysis.market_structure_engine.config import get_profile
+from src.analysis.market_structure_engine.deterministic_validator import (
+    DeterministicValidation,
+    DeterministicValidator,
+)
 from src.analysis.market_structure_engine.errors import (
     InvalidTradeDirectionError,
     StructureSchemaError,
@@ -26,19 +30,15 @@ from src.analysis.market_structure_engine.grading import grade_setup
 from src.analysis.market_structure_engine.models import (
     DecisionAction,
     DeterministicSetupState,
-    ExecutionBlockerType,
     ExecutionPolicyState,
-    ExecutionStatus,
     FinalDecisionState,
-    GeometryStatus,
-    ReviewStatus,
     RiskPolicyState,
 )
 from src.analysis.market_structure_engine.risk_policy import build_risk_policy
 from src.data.snapshot_builder import SnapshotBuilder
 from src.decision.cost_tracker import CostLimitExceeded
 from src.decision.enforcement import DeterministicEnforcementGate
-from src.decision.models import DecisionOutput, MarketContextSummary, ReviewVerdict
+from src.decision.models import DecisionOutput, MarketContextSummary
 from src.decision.output_assembler import FinalOutputAssembler
 from src.decision.synthesizer_cache import (
     load_cached_synthesis,
@@ -266,7 +266,7 @@ class AgentState(TypedDict):
     * **Market data** — positions, orders, prices, calendar events.
     * **Structure analysis** — per-timeframe engine output.
     * **Deterministic pipeline** — graded setup, risk policy, execution policy.
-    * **LLM agents** — synthesised context, decision, review.
+    * **LLM agent** — synthesised presentation context only.
     * **Enforcement & output** — final decision state, assembled result.
     """
 
@@ -281,14 +281,10 @@ class AgentState(TypedDict):
     # ── Structure analysis (engine output) ────────────────────────────
     structure_analysis: dict[str, Any] | None
 
-    # ── LLM agents (interpretive) ─────────────────────────────────────
+    # ── LLM presentation (interpretive) ───────────────────────────────
     market_context: MarketContextSummary | None
     decision: DecisionOutput | None
-    review: ReviewVerdict | None
-
-    # ── Review loop ───────────────────────────────────────────────────
-    review_attempts: int
-    review_feedback: str | None
+    deterministic_validation: DeterministicValidation | None
 
     # ── Deterministic pipeline (authoritative) ────────────────────────
     deterministic_setup: DeterministicSetupState | None
@@ -316,23 +312,15 @@ def _has_high_impact_calendar_event(calendar_events: list[dict[str, Any]] | None
     return False
 
 
-def _deterministic_order_type(state: AgentState) -> str | None:
-    """Return the canonical order type for LLM context, never an LLM value."""
-    setup = state.get("deterministic_setup")
-    return setup.entry_type.value if setup is not None and setup.entry_type is not None else None
-
-
 class TradingGraph:
     """LangGraph orchestrator for trading analysis with multi-timeframe pipeline.
 
     The pipeline flow (per symbol):
 
     ``fetch_data`` → ``analyze_structure`` → ``evaluate_calendar`` →
-    ``synthesize_context`` → ``grade_setup`` → ``build_risk_policy`` →
-    ``evaluate_execution_policy`` → ``early_execution_routing`` →
-    (``decide`` | deterministic NO_TRADE) → ``pre_review_decision_validation`` →
-    ``review`` → (retry to ``decide`` | ``final_enforcement``) →
-    ``assemble_output`` → END
+    ``grade_setup`` → ``build_risk_policy`` → ``evaluate_execution_policy`` →
+    ``pre_llm_validation`` → ``synthesize_context`` → ``deterministic_decision``
+    → ``final_enforcement`` → ``assemble_output`` → END
     """
 
     def __init__(
@@ -341,9 +329,6 @@ class TradingGraph:
         structure_analyzer: Any,
         calendar_provider: Any,
         synthesizer: Any,
-        decider: Any,
-        reviewer: Any,
-        max_review_attempts: int | None = None,
     ) -> None:
         """Initialize trading graph with dependencies.
 
@@ -352,24 +337,15 @@ class TradingGraph:
             structure_analyzer: StructureAnalyzer implementation
             calendar_provider: CalendarProvider implementation
             synthesizer: SynthesizerAgent
-            decider: DeciderAgent
-            reviewer: ReviewerAgent
-            max_review_attempts: Maximum review retry attempts (default from Settings)
         """
         self.data_provider = data_provider
         self.structure_analyzer = structure_analyzer
         self.calendar_provider = calendar_provider
         self.synthesizer = synthesizer
-        self.decider = decider
-        self.reviewer = reviewer
-        self.max_review_attempts = (
-            max_review_attempts
-            if max_review_attempts is not None
-            else Settings().max_review_attempts
-        )
         self._settings = Settings()
         self._snapshot_builder = SnapshotBuilder()
         self._enforcement_gate = DeterministicEnforcementGate()
+        self._deterministic_validator = DeterministicValidator()
         self._output_assembler = FinalOutputAssembler()
 
         self.graph = self._build_graph()
@@ -388,18 +364,16 @@ class TradingGraph:
         graph.add_node("evaluate_calendar", self._evaluate_calendar)
 
         # ── LLM agents ────────────────────────────────────────────────
-        graph.add_node("synthesize_context", self._synthesize_context)
-        graph.add_node("decide", self._decide)
-        graph.add_node("review", self._review)
-
         # ── Deterministic pipeline ────────────────────────────────────
         graph.add_node("grade_setup", self._grade_setup)
         graph.add_node("build_risk_policy", self._build_risk_policy)
         graph.add_node("evaluate_execution_policy", self._evaluate_execution_policy)
-        graph.add_node("early_execution_routing", self._early_execution_routing)
+        graph.add_node("pre_llm_validation", self._pre_llm_validation)
+        graph.add_node("synthesize_context", self._synthesize_context)
+        graph.add_node("post_llm_validation", self._post_llm_validation)
+        graph.add_node("deterministic_decision", self._deterministic_decision)
 
         # ── Validation & enforcement ──────────────────────────────────
-        graph.add_node("pre_review_decision_validation", self._pre_review_decision_validation)
         graph.add_node("final_enforcement", self._final_enforcement)
         graph.add_node("assemble_output", self._assemble_output)
 
@@ -409,41 +383,26 @@ class TradingGraph:
         # ── Sequential data pipeline ──────────────────────────────────
         graph.add_edge("fetch_data", "analyze_structure")
         graph.add_edge("analyze_structure", "evaluate_calendar")
-        graph.add_edge("evaluate_calendar", "synthesize_context")
-
-        # ── Deterministic pipeline (after LLM synthesis) ──────────────
-        graph.add_edge("synthesize_context", "grade_setup")
+        graph.add_edge("evaluate_calendar", "grade_setup")
         graph.add_edge("grade_setup", "build_risk_policy")
         graph.add_edge("build_risk_policy", "evaluate_execution_policy")
-        graph.add_edge("evaluate_execution_policy", "early_execution_routing")
-
-        # ── Early execution routing ───────────────────────────────────
-        # NON_EXECUTABLE / BLOCKED_BY_DATA_QUALITY → skip LLM
-        # All other statuses → proceed to LLM decide
+        graph.add_edge("evaluate_execution_policy", "pre_llm_validation")
         graph.add_conditional_edges(
-            "early_execution_routing",
-            self._early_execution_router,
+            "pre_llm_validation",
+            lambda state: (
+                "synthesize_context"
+                if state.get("deterministic_validation") is not None
+                and state["deterministic_validation"].valid
+                else "deterministic_decision"
+            ),
             {
-                "deterministic_continue": "pre_review_decision_validation",
-                "llm_decide": "decide",
+                "synthesize_context": "synthesize_context",
+                "deterministic_decision": "deterministic_decision",
             },
         )
-
-        # ── Decide → pre-review validation → review ──────────────────
-        graph.add_edge("decide", "pre_review_decision_validation")
-        graph.add_edge("pre_review_decision_validation", "review")
-
-        # ── Review routing ────────────────────────────────────────────
-        # approved / NOT_REQUIRED / max attempts → enforcement
-        # rejected with attempts remaining → retry decide
-        graph.add_conditional_edges(
-            "review",
-            self._review_router,
-            {
-                "continue_enforcement": "final_enforcement",
-                "retry_decide": "decide",
-            },
-        )
+        graph.add_edge("synthesize_context", "post_llm_validation")
+        graph.add_edge("post_llm_validation", "deterministic_decision")
+        graph.add_edge("deterministic_decision", "final_enforcement")
 
         # ── Final enforcement → output → END ──────────────────────────
         graph.add_edge("final_enforcement", "assemble_output")
@@ -719,6 +678,9 @@ class TradingGraph:
                 symbol=symbol,
                 current_price=current_price,
                 current_price_time=current_price_time,
+                deterministic_setup=state.get("deterministic_setup"),
+                risk_policy=state.get("risk_policy"),
+                execution_policy=state.get("execution_policy"),
             )
 
             # If the LLM-returned summary omits the canonical price, stamp
@@ -736,86 +698,67 @@ class TradingGraph:
         except Exception as e:
             msg = f"Context synthesis failed: {e}"
             logger.error(msg)
+            validation = state.get("deterministic_validation")
+            if validation is not None:
+                return {
+                    "deterministic_validation": validation.model_copy(
+                        update={
+                            "validation_status": "INVALID",
+                            "validation_errors": tuple((*validation.validation_errors, msg)),
+                            "reason_codes": tuple((*validation.reason_codes, "LLM_OUTPUT_INVALID")),
+                            "setup_status": "INVALID",
+                        }
+                    )
+                }
             return {"fatal_error": msg}
 
-    def _decide(self, state: AgentState) -> dict[str, Any]:
-        """Make trading decision."""
+    def _deterministic_decision(self, state: AgentState) -> dict[str, Any]:
+        """Project the deterministic policy into the legacy decision model."""
         logger.info("Making decision for %s", state["symbol"])
 
         if state.get("fatal_error"):
             return {}
 
         try:
-            context = state.get("market_context")
-            if not context:
-                return {"fatal_error": "No market context available — cannot decide"}
-
-            feedback = state.get("review_feedback")
-            attempts = state.get("review_attempts", 0)
-
-            decision = self.decider.decide(
-                context=context,
-                positions=state.get("current_positions", []),
-                pending_orders=state.get("current_pending_orders", []),
-                feedback=feedback if attempts > 0 else None,
-                current_price=context.current_price,
-                order_type=_deterministic_order_type(state),
+            policy = state.get("execution_policy")
+            if policy is None:
+                return {"fatal_error": "No execution policy available — cannot decide"}
+            action = (
+                policy.allowed_actions[0] if policy.allowed_actions else DecisionAction.NO_TRADE
             )
-            return {"decision": decision, "review_attempts": attempts}
+            decision = DecisionOutput(
+                symbol=state["symbol"],
+                action=action,
+                reasoning=(
+                    "Deterministic action selected from execution policy; "
+                    "LLM synthesis is explanatory only."
+                ),
+            )
+            validation = state.get("deterministic_validation")
+            setup = state.get("deterministic_setup")
+            if validation is not None and setup is not None:
+                action_validation = self._deterministic_validator.validate(
+                    setup=setup,
+                    policy=policy,
+                    structure_analysis=state.get("structure_analysis"),
+                    action=action,
+                )
+                if not action_validation.valid or validation.valid:
+                    validation = action_validation
+            if validation is not None and not validation.valid:
+                decision = decision.model_copy(
+                    update={
+                        "action": DecisionAction.NO_TRADE,
+                        "reasoning": (
+                            "Deterministic facts invalid; no LLM explanation was requested."
+                        ),
+                    }
+                )
+            return {"decision": decision, "deterministic_validation": validation}
         except CostLimitExceeded:
             raise
         except Exception as e:
             msg = f"Decision failed: {e}"
-            logger.error(msg)
-            return {"fatal_error": msg}
-
-    def _review(self, state: AgentState) -> dict[str, Any]:
-        """Review the decision.
-
-        If a review is already present in state (set by the deterministic
-        early-exit path), skip calling the LLM reviewer and pass through.
-        """
-        logger.info("Reviewing decision for %s", state["symbol"])
-
-        if state.get("fatal_error"):
-            return {}
-
-        # ── Deterministic early exit: review already populated ─────────
-        if state.get("review") is not None:
-            logger.info("Review already present — skipping LLM review")
-            return {
-                "review_attempts": state.get("review_attempts", 0) + 1,
-            }
-
-        try:
-            decision = state.get("decision")
-            context = state.get("market_context")
-            calendar_events = state.get("calendar_events", [])
-
-            if not decision or not context:
-                return {"fatal_error": "Missing decision or context for review — cannot review"}
-
-            verdict = self.reviewer.review(
-                decision=decision,
-                context=context,
-                calendar_events=calendar_events,
-                order_type=_deterministic_order_type(state),
-            )
-
-            feedback = None
-            if not verdict.approved:
-                feedback = f"Concerns: {verdict.concerns}\n"
-                feedback += f"Suggestions: {verdict.suggested_improvements}"
-
-            return {
-                "review": verdict,
-                "review_feedback": feedback,
-                "review_attempts": state.get("review_attempts", 0) + 1,
-            }
-        except CostLimitExceeded:
-            raise
-        except Exception as e:
-            msg = f"Review failed: {e}"
             logger.error(msg)
             return {"fatal_error": msg}
 
@@ -994,7 +937,7 @@ class TradingGraph:
             )
             logger.info(
                 "Execution policy: status=%s blockers=%d",
-                policy.pre_review_execution_status.value,
+                policy.execution_status.value,
                 len(policy.execution_blockers),
             )
             return {"execution_policy": policy}
@@ -1007,154 +950,53 @@ class TradingGraph:
     # Routing & validation nodes
     # ==================================================================
 
-    def _early_execution_routing(self, state: AgentState) -> dict[str, Any]:
-        """Deterministic early execution routing.
+    def _pre_llm_validation(self, state: AgentState) -> dict[str, Any]:
+        """Validate deterministic facts before the optional LLM call.
 
-        When the execution policy status is NON_EXECUTABLE or
-        BLOCKED_BY_DATA_QUALITY, create a deterministic
-        DecisionOutput(NO_TRADE) and ReviewVerdict(NOT_REQUIRED)
-        so the LLM agents are bypassed entirely.
-
-        The review flags are derived from the deterministic state instead of
-        using the model defaults: a no-candidate / HTF-conflict setup must not
-        report htf_alignment_ok / calendar_clear / risk_management_ok as true
-        (regression: result-23.json, US100.cash).
-
-        For all other statuses, return empty (the LLM decide node
-        handles the decision).
+        This is the integration point for the validator/output-contract agent:
+        the LLM receives only facts that have already passed deterministic
+        grading, risk, and execution-policy construction.
         """
+        logger.info("Pre-LLM validation for %s", state["symbol"])
+
         if state.get("fatal_error"):
             return {}
 
-        execution_policy = state.get("execution_policy")
-        if not execution_policy:
-            return {"fatal_error": "No execution policy available for routing"}
+        if state.get("deterministic_setup") is None:
+            return {"fatal_error": "No deterministic setup present before LLM synthesis"}
+        if state.get("risk_policy") is None or state.get("execution_policy") is None:
+            return {"fatal_error": "Incomplete deterministic policy before LLM synthesis"}
 
-        status = execution_policy.pre_review_execution_status
+        setup = state["deterministic_setup"]
+        policy = state["execution_policy"]
+        assert setup is not None and policy is not None
+        validation = self._deterministic_validator.validate(
+            setup=setup,
+            policy=policy,
+            structure_analysis=state.get("structure_analysis"),
+        )
+        return {"deterministic_validation": validation}
 
-        if status in (ExecutionStatus.NON_EXECUTABLE, ExecutionStatus.BLOCKED_BY_DATA_QUALITY):
-            logger.info(
-                "Early execution routing: %s — creating deterministic NO_TRADE",
-                status.value,
-            )
-            decision = DecisionOutput(
-                symbol=state["symbol"],
-                action=DecisionAction.NO_TRADE,
-                reasoning=f"Early-exit: execution status is {status.value}",
-            )
-
-            setup = state.get("deterministic_setup")
-            calendar_events = state.get("calendar_events")
-
-            # Derive honest review flags from the deterministic state.
-            # - HTF alignment: only explicit ALIGNED_* statuses count.
-            # - Calendar: unknown (no events fetched) is not clear.
-            # - Risk management: no RISK_REWARD / GEOMETRY blockers remain.
-            htf_alignment_ok = setup is not None and setup.h4_alignment_status in (
-                "ALIGNED_CONTINUATION",
-                "ALIGNED_PULLBACK",
-            )
-            calendar_clear = (
-                calendar_events is not None
-                and bool(calendar_events)
-                and not _has_high_impact_calendar_event(calendar_events)
-            )
-            risk_management_ok = not any(
-                b.blocker_type in (ExecutionBlockerType.RISK_REWARD, ExecutionBlockerType.GEOMETRY)
-                for b in execution_policy.execution_blockers
-            )
-            geometry_violation_detected = (
-                setup is not None and setup.geometry_status != GeometryStatus.VALID
-            )
-
-            review = ReviewVerdict(
-                status=ReviewStatus.NOT_REQUIRED,
-                reasoning="Deterministic early exit — review not required",
-                concerns=(),
-                suggested_improvements=None,
-                risk_management_ok=risk_management_ok,
-                htf_alignment_ok=htf_alignment_ok,
-                calendar_clear=calendar_clear,
-                blocker_violation_detected=bool(execution_policy.execution_blockers),
-                geometry_violation_detected=geometry_violation_detected,
-            )
+    def _post_llm_validation(self, state: AgentState) -> dict[str, Any]:
+        """Reject missing or malformed interpretive output without retrying."""
+        validation = state.get("deterministic_validation")
+        if validation is None:
+            return {}
+        context = state.get("market_context")
+        if context is None or context.symbol != state["symbol"] or not context.reasoning.strip():
             return {
-                "decision": decision,
-                "review": review,
+                "deterministic_validation": validation.model_copy(
+                    update={
+                        "validation_status": "INVALID",
+                        "validation_errors": tuple(
+                            (*validation.validation_errors, "LLM explanation/schema is invalid")
+                        ),
+                        "reason_codes": tuple((*validation.reason_codes, "LLM_OUTPUT_INVALID")),
+                        "setup_status": "INVALID",
+                    }
+                )
             }
-
         return {}
-
-    def _early_execution_router(self, state: AgentState) -> str:
-        """Route after early execution routing.
-
-        Returns:
-            - ``"deterministic_continue"`` when execution status is
-              NON_EXECUTABLE or BLOCKED_BY_DATA_QUALITY (bypass LLM).
-            - ``"llm_decide"`` for all other statuses (proceed to LLM).
-        """
-        execution_policy = state.get("execution_policy")
-        if not execution_policy:
-            return "deterministic_continue"
-
-        status = execution_policy.pre_review_execution_status
-        if status in (ExecutionStatus.NON_EXECUTABLE, ExecutionStatus.BLOCKED_BY_DATA_QUALITY):
-            return "deterministic_continue"
-        return "llm_decide"
-
-    def _pre_review_decision_validation(self, state: AgentState) -> dict[str, Any]:
-        """Validate the decision before it reaches the reviewer.
-
-        Ensures the decision is present and the symbol matches.
-        Logs a warning if the decision action is NO_TRADE with no
-        deterministic early-exit reason — this is advisory only.
-        """
-        logger.info("Pre-review validation for %s", state["symbol"])
-
-        if state.get("fatal_error"):
-            return {}
-
-        decision = state.get("decision")
-        if not decision:
-            return {"fatal_error": "No decision present for pre-review validation"}
-
-        if decision.symbol != state["symbol"]:
-            logger.warning(
-                "Decision symbol %s does not match state symbol %s",
-                decision.symbol,
-                state["symbol"],
-            )
-
-        return {}
-
-    def _review_router(self, state: AgentState) -> str:
-        """Route after the review node.
-
-        - ``"continue_enforcement"`` when review is approved / NOT_REQUIRED
-          / max attempts exceeded / fatal error.
-        - ``"retry_decide"`` when review is rejected/REVISION_REQUIRED and
-          attempts remain.
-        """
-        if state.get("fatal_error"):
-            return "continue_enforcement"
-
-        review = state.get("review")
-        attempts = state.get("review_attempts", 0)
-
-        # Deterministic early exit — review not required
-        if review is not None and review.status == ReviewStatus.NOT_REQUIRED:
-            return "continue_enforcement"
-
-        # Approved → proceed to enforcement
-        if review is not None and review.approved:
-            return "continue_enforcement"
-
-        # Rejected/REVISION_REQUIRED with attempts remaining → retry
-        if attempts <= self.max_review_attempts:
-            return "retry_decide"
-
-        # Max attempts exceeded → proceed to enforcement with current result
-        return "continue_enforcement"
 
     # ==================================================================
     # Enforcement & output nodes
@@ -1175,10 +1017,9 @@ class TradingGraph:
         policy = state.get("execution_policy")
         risk = state.get("risk_policy")
         decision = state.get("decision")
-        review = state.get("review")
 
         # If any required state is missing, this is a fatal error.
-        # The enforcement gate requires all five inputs.
+        # The enforcement gate requires deterministic facts and a decision.
         missing: list[str] = []
         if setup is None:
             missing.append("deterministic_setup")
@@ -1188,8 +1029,6 @@ class TradingGraph:
             missing.append("risk_policy")
         if decision is None:
             missing.append("decision")
-        if review is None:
-            missing.append("review")
 
         if missing:
             # If everything is missing due to a fatal_error earlier in
@@ -1201,20 +1040,17 @@ class TradingGraph:
             logger.error(msg)
             return {"fatal_error": msg}
 
-        # At this point all five required states have been validated as
+        # At this point all required states have been validated as
         # present (the check above returned early if any were missing).
         # Assert so mypy is satisfied about the types.
         assert setup is not None and policy is not None and risk is not None
-        assert decision is not None and review is not None
+        assert decision is not None
 
         try:
             final_state = self._enforcement_gate.enforce(
                 setup=setup,
                 policy=policy,
-                risk=risk,
                 decision=decision,
-                review=review,
-                settings=self._settings,
             )
             logger.info(
                 "Enforcement: final_action=%s execution_status=%s violations=%d",
@@ -1237,7 +1073,6 @@ class TradingGraph:
         policy = state.get("execution_policy")
         risk = state.get("risk_policy")
         decision = state.get("decision")
-        review = state.get("review")
         enforcement = state.get("final_decision")
 
         if not enforcement:
@@ -1272,11 +1107,6 @@ class TradingGraph:
                 action=DecisionAction.NO_TRADE,
                 reasoning="Pipeline error — no decision available",
             )
-        if review is None:
-            review = ReviewVerdict(
-                status=ReviewStatus.REVIEW_UNAVAILABLE,
-                reasoning="Pipeline error — no review available",
-            )
 
         try:
             result = self._output_assembler.assemble(
@@ -1284,8 +1114,8 @@ class TradingGraph:
                 policy=policy,
                 risk=risk,
                 decision=decision,
-                review=review,
                 enforcement=enforcement,
+                validation=state.get("deterministic_validation"),
             )
 
             # Override metadata fields
@@ -1340,10 +1170,7 @@ class TradingGraph:
             # LLM agents
             market_context=None,
             decision=None,
-            review=None,
-            # Review loop
-            review_attempts=0,
-            review_feedback=None,
+            deterministic_validation=None,
             # Deterministic pipeline
             deterministic_setup=None,
             risk_policy=None,

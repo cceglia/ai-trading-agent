@@ -18,8 +18,3 @@ def sample_decision():
 @pytest.fixture
 def sample_context():
     return {"bias": "bullish", "current_price": 2400.0}
-
-
-@pytest.fixture
-def sample_review():
-    return {"approved": True, "feedback": "Good setup"}

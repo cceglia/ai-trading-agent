@@ -4,6 +4,8 @@ from dataclasses import asdict, dataclass, replace
 from typing import Any
 
 SUPPORTED_TIMEFRAMES = ("D1", "H4", "H1")
+MIN_RR = 2.0
+MAX_LEVEL_AGE = {"H1": 100, "H4": 80, "D1": 60}
 
 
 @dataclass(frozen=True)

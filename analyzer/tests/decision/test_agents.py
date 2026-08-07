@@ -51,7 +51,7 @@ class TestLogLlmCall:
 
         usage = LLMUsage()  # all zeroes — simulates no usage data
 
-        enriched = _log_llm_call("DeciderAgent", "gpt-4o", usage, ct)
+        enriched = _log_llm_call("SynthesizerAgent", "gpt-4o", usage, ct)
 
         assert enriched.total_cost == 0.0
         assert "cost=$0.000000" in caplog.text
@@ -68,7 +68,7 @@ class TestLogLlmCall:
             total_tokens=1500,
         )
 
-        _log_llm_call("ReviewerAgent", "gpt-4o", usage, ct)
+        _log_llm_call("SynthesizerAgent", "gpt-4o", usage, ct)
 
         assert ct.call_count == 1
         assert ct.total_cost == pytest.approx(0.0075)

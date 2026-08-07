@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .config import TimeframeProfile
+from .config import MAX_LEVEL_AGE, TimeframeProfile
 from .utils import round_or_none, safe_div, stable_id
 
 
@@ -72,6 +72,48 @@ def build_levels(
     close = bars[-1]["close"]
 
     for level in resistance + support:
+        level["age_bars"] = max(0, len(bars) - 1 - level["last_index"])
+        level["break_count"] = 0
+        level["reclaim_count"] = 0
+        touches = len(level["source_swing_ids"])
+        broken = False
+        reclaimed = False
+        for bar in bars[level["last_index"] + 1 :]:
+            touched = (
+                bar["high"] >= level["price"]
+                if level["side"] == "HIGH"
+                else bar["low"] <= level["price"]
+            )
+            if touched:
+                touches += 1
+            crossed = (
+                bar["close"] > level["price"]
+                if level["side"] == "HIGH"
+                else bar["close"] < level["price"]
+            )
+            returned = (
+                bar["close"] < level["price"]
+                if level["side"] == "HIGH"
+                else bar["close"] > level["price"]
+            )
+            if crossed and not broken:
+                level["break_count"] += 1
+                broken = True
+            if broken and returned:
+                level["reclaim_count"] += 1
+                reclaimed = True
+                broken = False
+        level["touch_count"] = touches
+        level["current_status"] = (
+            "BROKEN" if broken else "RECLAIMED" if reclaimed else "TESTED" if touches else "FRESH"
+        )
+        level["freshness"] = "FRESH" if touches == len(level["source_swing_ids"]) else "TESTED"
+        level["eligible_for_invalidation"] = (
+            level["freshness"] in ("FRESH", "TESTED")
+            and level["break_count"] == 0
+            and level["current_status"] != "ACCEPTED_BEYOND"
+            and level["age_bars"] <= MAX_LEVEL_AGE[profile.timeframe]
+        )
         level["distance_atr"] = round_or_none(abs(level["price"] - close) / atr, 6)
         if level["side"] == "HIGH":
             level["location"] = "ABOVE_PRICE" if level["price"] > close else "BELOW_PRICE"
