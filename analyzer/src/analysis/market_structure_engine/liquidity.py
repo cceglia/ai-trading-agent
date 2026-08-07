@@ -19,39 +19,53 @@ def _pool_status(
     for index in range(source_last + 1, len(bars)):
         bar = bars[index]
         if side == "BUY_SIDE":
-            if state in ("SWEPT", "SWEPT_AND_RECLAIMED") and bar["close"] > price:
+            breached = bar["high"] > price
+            returned = bar["close"] <= price
+            accepted = bar["close"] > price
+            if state in ("SWEPT", "RECLAIMED", "RECLAIMED_AGAIN") and accepted:
                 state = "ACCEPTED_BEYOND"
                 history.append(
                     {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
                 )
-            elif bar["high"] > price:
-                if bar["close"] <= price:
-                    state = "SWEPT_AND_RECLAIMED"
-                    history.append(
-                        {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
-                    )
-                else:
-                    state = "SWEPT"
-                    history.append(
-                        {"event_type": "SWEEP", "event_index": index, "timestamp": bar["open_time"]}
-                    )
+            elif state == "ACCEPTED_BEYOND" and returned:
+                state = "RECLAIMED_AGAIN"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif breached and returned and state in ("INTACT", "SWEPT", "RECLAIMED_AGAIN"):
+                state = "RECLAIMED"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif breached and accepted and state == "INTACT":
+                state = "SWEPT"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
         else:
-            if state in ("SWEPT", "SWEPT_AND_RECLAIMED") and bar["close"] < price:
+            breached = bar["low"] < price
+            returned = bar["close"] >= price
+            accepted = bar["close"] < price
+            if state in ("SWEPT", "RECLAIMED", "RECLAIMED_AGAIN") and accepted:
                 state = "ACCEPTED_BEYOND"
                 history.append(
                     {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
                 )
-            elif bar["low"] < price:
-                if bar["close"] >= price:
-                    state = "SWEPT_AND_RECLAIMED"
-                    history.append(
-                        {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
-                    )
-                else:
-                    state = "SWEPT"
-                    history.append(
-                        {"event_type": "SWEEP", "event_index": index, "timestamp": bar["open_time"]}
-                    )
+            elif state == "ACCEPTED_BEYOND" and returned:
+                state = "RECLAIMED_AGAIN"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif breached and returned and state in ("INTACT", "SWEPT", "RECLAIMED_AGAIN"):
+                state = "RECLAIMED"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
+            elif breached and accepted and state == "INTACT":
+                state = "SWEPT"
+                history.append(
+                    {"event_type": state, "event_index": index, "timestamp": bar["open_time"]}
+                )
     return state, history
 
 
@@ -168,7 +182,7 @@ def analyze_liquidity(
     for pool in pools:
         status, history = _pool_status(pool, bars)
         pool["status"] = status
-        pool["event_history"] = history
+        pool["event_history"] = history[-profile.max_events_per_category :]
         pool["distance_atr"] = round_or_none(abs(pool["price"] - close) / atr, 6)
         pool["position"] = "ABOVE_PRICE" if pool["price"] > close else "BELOW_PRICE"
         for event in history:
@@ -215,10 +229,11 @@ def analyze_liquidity(
         dominant = "UNCLEAR"
 
     events.sort(key=lambda event: (event["event_index"], event["liquidity_event_id"]))
+    public_events = events[-profile.max_events_per_category :]
     return {
         "pools": sorted(pools, key=lambda p: (p["price"], p["pool_id"])),
-        "events": events,
-        "event_history": events,
+        "events": public_events,
+        "event_history": public_events,
         "current_state": {pool["pool_id"]: pool["status"] for pool in pools},
         "latest_event": events[-1] if events else None,
         "nearest_buy_side": nearest_buy,

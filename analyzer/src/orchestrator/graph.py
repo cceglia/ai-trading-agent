@@ -91,15 +91,25 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
     if "scoring" in tf_data:
         summary["scoring"] = tf_data["scoring"]
 
-    # Events — keep only latest_material_event and latest_primary_event,
-    # drop the full event lists (primary_events, internal_events, failed_breakouts)
+    # Events — preserve the bounded chronological handoff contract. The raw
+    # engine lists are already bounded, so retaining them does not reintroduce
+    # the large swing/intermediate-bar payloads removed above.
     events = tf_data.get("events", {})
     if events is not None and not isinstance(events, dict):
         logger.warning("Unexpected type for 'events' in timeframe data: %s", type(events).__name__)
         events = {}
     if isinstance(events, dict):
         compact_events: dict[str, Any] = {}
-        for key in ("latest_material_event", "latest_primary_event", "failed_bos_count"):
+        for key in (
+            "event_history",
+            "failed_breakouts",
+            "primary_events",
+            "internal_events",
+            "latest_material_event",
+            "latest_primary_event",
+            "latest_internal_event",
+            "failed_bos_count",
+        ):
             if key in events:
                 compact_events[key] = events[key]
         if compact_events:
@@ -124,7 +134,7 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
         if compact_levels:
             summary["levels"] = compact_levels
 
-    # Liquidity — keep only summary fields, drop pools/events lists
+    # Liquidity — preserve bounded transition history and replayed pool state.
     liquidity = tf_data.get("liquidity", {})
     if liquidity is not None and not isinstance(liquidity, dict):
         logger.warning(
@@ -134,7 +144,14 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
         liquidity = {}
     if isinstance(liquidity, dict):
         compact_liquidity: dict[str, Any] = {}
-        for key in ("nearest_buy_side", "nearest_sell_side", "dominant_draw", "latest_event"):
+        for key in (
+            "event_history",
+            "current_state",
+            "latest_event",
+            "nearest_buy_side",
+            "nearest_sell_side",
+            "dominant_draw",
+        ):
             if key in liquidity:
                 compact_liquidity[key] = liquidity[key]
         if compact_liquidity:

@@ -5,7 +5,7 @@ from src.analysis.market_structure_engine.models import (
     ExecutionBlockerType,
 )
 from src.decision.models import BiasLevel, MarketContextSummary
-from src.orchestrator.graph import TradingGraph
+from src.orchestrator.graph import TradingGraph, _summarize_timeframe
 
 
 def _graph(synthesizer=None):
@@ -90,3 +90,29 @@ def test_synthesis_receives_deterministic_facts(monkeypatch):
     assert call["deterministic_setup"] is setup
     assert call["risk_policy"] is risk
     assert call["execution_policy"] is policy
+
+
+def test_synthesizer_structure_summary_preserves_event_and_liquidity_histories():
+    timeframe = {
+        "source_audit": {},
+        "market_structure": {"primary_structure": "RANGE"},
+        "events": {
+            "event_history": [{"event_index": 1}],
+            "failed_breakouts": [{"event_index": 2}],
+            "primary_events": [{"event_index": 3}],
+            "internal_events": [{"event_index": 4}],
+            "latest_material_event": {"event_index": 4},
+            "latest_primary_event": {"event_index": 3},
+            "latest_internal_event": {"event_index": 4},
+        },
+        "liquidity": {
+            "event_history": [{"event_index": 5}],
+            "current_state": {"pool-1": "RECLAIMED"},
+            "latest_event": {"event_index": 5},
+        },
+    }
+
+    summary = _summarize_timeframe(timeframe)
+
+    assert summary["events"] == timeframe["events"]
+    assert summary["liquidity"] == timeframe["liquidity"]

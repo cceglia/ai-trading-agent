@@ -56,15 +56,32 @@ def _directional_votes(
             "MEDIUM_QUALITY": 0.75,
             "LOW_QUALITY": 0.45,
         }.get(latest_event.get("quality"), 0.5)
-        event_points = 22 * quality_multiplier
+        scope_multiplier = {"PRIMARY": 1.0, "INTERNAL": 0.5}.get(
+            latest_event.get("structural_scope"), 1.0
+        )
+        event_points = 22 * quality_multiplier * scope_multiplier
         if "BULLISH" in event_type and not event_type.startswith("FAILED"):
             bullish += event_points
         elif "BEARISH" in event_type and not event_type.startswith("FAILED"):
             bearish += event_points
-        elif event_type == "FAILED_BEARISH_BREAKOUT":
-            bullish += 8
-        elif event_type == "FAILED_BULLISH_BREAKOUT":
-            bearish += 8
+
+    # Failed breakouts remain evidence even when a later confirmation becomes
+    # the latest material event. Score the bounded canonical failed history
+    # separately so the confirmation cannot erase that evidence.
+    failed_events = events.get("failed_breakouts", [])
+    if not failed_events and latest_event and latest_event["event_type"].startswith("FAILED"):
+        # Keep the compact single-event seam backward-compatible while the
+        # engine output supplies the full failed history.
+        failed_events = [latest_event]
+    for failed_event in failed_events:
+        scope_multiplier = {"PRIMARY": 1.0, "INTERNAL": 0.5}.get(
+            failed_event.get("structural_scope"), 1.0
+        )
+        failed_points = 8 * scope_multiplier
+        if failed_event["event_type"] == "FAILED_BEARISH_BREAKOUT":
+            bullish += failed_points
+        elif failed_event["event_type"] == "FAILED_BULLISH_BREAKOUT":
+            bearish += failed_points
 
     alignment = indicators["latest"]["ema_alignment"]
     if alignment == "BULLISH":
@@ -82,7 +99,11 @@ def _directional_votes(
             bearish += 4
 
     latest_liquidity = liquidity.get("latest_event")
-    if latest_liquidity and latest_liquidity["event_type"] == "SWEEP_AND_RECLAIM":
+    if latest_liquidity and latest_liquidity["event_type"] in (
+        "RECLAIMED",
+        "RECLAIMED_AGAIN",
+        "SWEEP_AND_RECLAIM",
+    ):
         if latest_liquidity["side"] == "SELL_SIDE":
             bullish += 9
         else:
@@ -133,20 +154,20 @@ def calculate_score(
     components = {
         "structure": {
             "normalized": 1.0 if structure["primary_structure"] in ("BULLISH", "BEARISH") else 0.5,
-            "weight": 0.40,
+            "weight": 0.30,
         },
         "events": {
             "normalized": min(event_evidence / 1.5, 1.0),
-            "weight": 0.25,
+            "weight": 0.30,
             "primary_event_weight": 1.0,
             "internal_event_weight": 0.5,
         },
         "liquidity": {"normalized": 1.0 if liquidity.get("latest_event") else 0.0, "weight": 0.15},
         "technical": {
             "normalized": 1.0 if indicators["latest"]["ema_alignment"] != "MIXED" else 0.5,
-            "weight": 0.12,
+            "weight": 0.15,
         },
-        "candle": {"normalized": clamp(candle["body_to_range_ratio"], 0.0, 1.0), "weight": 0.08},
+        "candle": {"normalized": clamp(candle["body_to_range_ratio"], 0.0, 1.0), "weight": 0.10},
     }
     for component in components.values():
         component["contribution"] = round(component["normalized"] * component["weight"], 6)
@@ -159,11 +180,11 @@ def calculate_score(
         "votes": {key: round(value, 4) for key, value in votes.items()},
         "confidence_components": confidence_components,
         "component_maximums": {
-            "structure": 40,
-            "events": 25,
+            "structure": 30,
+            "events": 30,
             "liquidity": 15,
-            "technical": 12,
-            "candle": 8,
+            "technical": 15,
+            "candle": 10,
         },
         "maximum_total": 100,
     }

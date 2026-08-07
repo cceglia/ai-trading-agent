@@ -177,17 +177,11 @@ def build_timeframe_context(
     preferred = h4_operational.get("preferred_direction") or d1_direction
     event = events.get("latest_material_event")
     liquidity_event = liquidity.get("latest_event")
-    bullish_trigger = bool(
-        event
-        and event["event_type"] in ("BULLISH_BOS", "BULLISH_CHOCH", "BULLISH_STRUCTURAL_BREAK")
-    )
-    bearish_trigger = bool(
-        event
-        and event["event_type"] in ("BEARISH_BOS", "BEARISH_CHOCH", "BEARISH_STRUCTURAL_BREAK")
-    )
+    bullish_trigger = bool(event and event["event_type"] in ("BULLISH_BOS", "BULLISH_CHOCH"))
+    bearish_trigger = bool(event and event["event_type"] in ("BEARISH_BOS", "BEARISH_CHOCH"))
     sweep_support = bool(
         liquidity_event
-        and liquidity_event["event_type"] == "SWEEP_AND_RECLAIM"
+        and liquidity_event["event_type"] in ("RECLAIMED", "RECLAIMED_AGAIN", "SWEEP_AND_RECLAIM")
         and (
             (preferred == "BULLISH" and liquidity_event["side"] == "SELL_SIDE")
             or (preferred == "BEARISH" and liquidity_event["side"] == "BUY_SIDE")

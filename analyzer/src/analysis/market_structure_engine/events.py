@@ -81,11 +81,15 @@ def scan_events(
     raw: list[dict[str, Any]] = []
     failed: list[dict[str, Any]] = []
     usable_swings = [s for s in swings["all"] if s["classification"] != "UNCONFIRMED_SWING"]
+    current_primary_structure = structure.get("primary_structure")
+    previous_primary_structure = structure.get("previous_primary_structure")
     regimes = {
-        "PRIMARY": structure.get("previous_primary_structure")
-        if structure.get("previous_primary_structure") in ("BULLISH", "BEARISH")
-        else structure.get("primary_structure")
-        if structure.get("primary_structure") in ("BULLISH", "BEARISH")
+        "PRIMARY": (
+            previous_primary_structure
+            if previous_primary_structure in ("BULLISH", "BEARISH")
+            else current_primary_structure
+        )
+        if current_primary_structure in ("BULLISH", "BEARISH")
         else "UNKNOWN",
         "INTERNAL": structure.get("internal_structure", {}).get("direction", "UNKNOWN"),
     }
@@ -195,26 +199,33 @@ def scan_events(
         event["classification"] = classification
         replay_regimes[scope] = event["direction"]
 
-    canonical, removed = _canonicalize(raw, profile.max_events_per_category)
-    canonical_failed, failed_removed = _canonicalize(failed, profile.max_events_per_category)
-    combined = sorted(
+    canonical, removed = _canonicalize(raw, len(raw))
+    canonical_failed, failed_removed = _canonicalize(failed, len(failed))
+    complete_history = sorted(
         canonical + canonical_failed,
-        key=lambda event: (event["event_index"], event["event_type"]),
+        key=lambda event: (event["event_index"], event["event_id"]),
     )
-    primary = [event for event in combined if event["structural_scope"] == "PRIMARY"]
-    internal = [event for event in combined if event["structural_scope"] == "INTERNAL"]
+    complete_primary = [
+        event for event in complete_history if event["structural_scope"] == "PRIMARY"
+    ]
+    complete_internal = [
+        event for event in complete_history if event["structural_scope"] == "INTERNAL"
+    ]
+    combined = complete_history[-profile.max_events_per_category :]
+    primary = complete_primary[-profile.max_events_per_category :]
+    internal = complete_internal[-profile.max_events_per_category :]
     return {
         "all_canonical_events": combined,
         "primary_events": primary,
         "internal_events": internal,
-        "failed_breakouts": canonical_failed,
+        "failed_breakouts": canonical_failed[-profile.max_events_per_category :],
         "event_history": combined,
-        "latest_material_event": combined[-1] if combined else None,
-        "latest_primary_event": primary[-1] if primary else None,
-        "latest_internal_event": internal[-1] if internal else None,
+        "latest_material_event": complete_history[-1] if complete_history else None,
+        "latest_primary_event": complete_primary[-1] if complete_primary else None,
+        "latest_internal_event": complete_internal[-1] if complete_internal else None,
         "deduplication": {
             "raw_event_count": len(raw) + len(failed),
-            "canonical_event_count": len(combined),
+            "canonical_event_count": len(complete_history),
             "duplicates_removed": removed + failed_removed,
             "key": ["event_index", "event_type", "direction", "structural_scope"],
             "source_traceability_preserved": True,
