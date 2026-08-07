@@ -15,7 +15,7 @@ Grade-specific values (Section 7):
     ========================  ===============  =================
     AAA                       2.0              1.0
     AA                        2.0              0.5
-    COUNTERTREND              2.5              0.25
+    COUNTERTREND              2.0              0.25
     ========================  ===============  =================
 """
 
@@ -35,7 +35,7 @@ from .models import RiskPolicyState, SetupGrade
 GRADE_RISK_TABLE: dict[SetupGrade, tuple[float, float]] = {
     SetupGrade.AAA: (MIN_RR, 1.0),
     SetupGrade.AA: (MIN_RR, 0.5),
-    SetupGrade.COUNTERTREND: (2.5, 0.25),
+    SetupGrade.COUNTERTREND: (MIN_RR, 0.25),
 }
 
 # Sensible defaults used when a grade is not present in the table.

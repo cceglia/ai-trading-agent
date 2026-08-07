@@ -57,3 +57,8 @@ def last_non_none(values: Iterable[float | None]) -> float | None:
 def stable_id(prefix: str, *parts: object) -> str:
     payload = "|".join(str(part) for part in parts)
     return f"{prefix}_{hashlib.sha1(payload.encode('utf-8')).hexdigest()[:12]}"
+
+
+def canonical_level_id(side: object, price: float | int, source_swing_ids: Iterable[object]) -> str:
+    serialized_price = f"{round_or_none(float(price)):.10f}"
+    return stable_id("level", side, serialized_price, *source_swing_ids)

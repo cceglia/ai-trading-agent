@@ -422,7 +422,11 @@ def test_reclaim_evidence_is_consumed_by_context_and_scoring(event_type: str) ->
             "internal_structure": {"phase": "CONTINUATION"},
         },
         {"latest_material_event": None},
-        {"nearest_support": {"price": 98}, "nearest_resistance": None},
+        {
+            "nearest_support": {"price": 98},
+            "nearest_eligible_support": {"price": 98},
+            "nearest_resistance": None,
+        },
         {"latest_event": liquidity_event, "nearest_buy_side": {"price": 105, "distance_atr": 2}},
         {"latest_close": 100},
         parent_context,
@@ -521,7 +525,7 @@ def test_confidence_uses_required_component_weights() -> None:
         name: component["weight"] for name, component in result["confidence_components"].items()
     } == {
         "structure": 0.30,
-        "events": 0.30,
+        "event": 0.30,
         "liquidity": 0.15,
         "technical": 0.15,
         "candle": 0.10,
@@ -550,7 +554,11 @@ def test_unclassified_structural_break_does_not_trigger_h1_setup() -> None:
         market,
         {"primary_structure": "BULLISH", "internal_structure": {"phase": "CONTINUATION"}},
         {"latest_material_event": {"event_type": "BULLISH_STRUCTURAL_BREAK"}},
-        {"nearest_support": {"price": 98}, "nearest_resistance": None},
+        {
+            "nearest_support": {"price": 98},
+            "nearest_eligible_support": {"price": 98},
+            "nearest_resistance": None,
+        },
         {"latest_event": None, "nearest_buy_side": {"price": 105, "distance_atr": 2}},
         {"latest_close": 100},
         parent_context,
@@ -558,6 +566,43 @@ def test_unclassified_structural_break_does_not_trigger_h1_setup() -> None:
     )
 
     assert context["setup_context"]["setup_status"] == "NO_SETUP"
+
+
+def test_h1_context_does_not_fallback_to_historical_invalidation_level() -> None:
+    market = {"symbol": "TEST", "provider": "fixture"}
+    parent_context = {
+        "D1": {
+            "approved_for_decision_agent": True,
+            "market": market,
+            "strategic_bias": {"bias": "STRONG_BULLISH"},
+        },
+        "H4": {
+            "approved_for_decision_agent": True,
+            "market": market,
+            "operational_context": {
+                "alignment_status": "ALIGNED_CONTINUATION",
+                "preferred_direction": "BULLISH",
+            },
+        },
+    }
+
+    context = build_timeframe_context(
+        "H1",
+        market,
+        {"primary_structure": "BULLISH", "internal_structure": {"phase": "CONTINUATION"}},
+        {"latest_material_event": {"event_type": "BULLISH_BOS"}},
+        {
+            "nearest_support": {"price": 98},
+            "nearest_resistance": None,
+        },
+        {"latest_event": None, "nearest_buy_side": {"price": 105, "distance_atr": 2}},
+        {"latest_close": 100},
+        parent_context,
+        "PARENT_APPROVED",
+    )
+
+    assert context["setup_context"]["setup_status"] == "BLOCKED_BY_INVALIDATION_LEVEL"
+    assert context["setup_context"]["entry_interest_zone"] is None
 
 
 def test_level_lifecycle_exposes_policy_fields() -> None:

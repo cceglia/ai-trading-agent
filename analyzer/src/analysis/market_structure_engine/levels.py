@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from .config import MAX_LEVEL_AGE, TimeframeProfile
-from .utils import round_or_none, safe_div, stable_id
+from .utils import canonical_level_id, round_or_none, safe_div
 
 
 def _cluster_side(
@@ -32,12 +32,7 @@ def _cluster_side(
         center = sum(prices) / len(prices)
         output.append(
             {
-                "level_id": stable_id(
-                    "level",
-                    side,
-                    f"{center:.10f}",
-                    *[m["swing_id"] for m in members],
-                ),
+                "level_id": canonical_level_id(side, center, [m["swing_id"] for m in members]),
                 "side": side,
                 "price": round_or_none(center),
                 "zone_low": round_or_none(min(prices)),
@@ -75,6 +70,8 @@ def build_levels(
         level["age_bars"] = max(0, len(bars) - 1 - level["last_index"])
         level["break_count"] = 0
         level["reclaim_count"] = 0
+        level["accepted_beyond_count"] = 0
+        level["accepted_beyond"] = False
         touches = len(level["source_swing_ids"])
         broken = False
         reclaimed = False
@@ -103,15 +100,26 @@ def build_levels(
                 level["reclaim_count"] += 1
                 reclaimed = True
                 broken = False
+            elif broken and crossed:
+                level["accepted_beyond_count"] += 1
+                level["accepted_beyond"] = True
         level["touch_count"] = touches
         level["current_status"] = (
-            "BROKEN" if broken else "RECLAIMED" if reclaimed else "TESTED" if touches else "FRESH"
+            "STALE"
+            if level["age_bars"] > MAX_LEVEL_AGE[profile.timeframe]
+            else "BROKEN"
+            if broken
+            else "RECLAIMED"
+            if reclaimed
+            else "TESTED"
+            if touches > len(level["source_swing_ids"])
+            else "FRESH"
         )
         level["freshness"] = "FRESH" if touches == len(level["source_swing_ids"]) else "TESTED"
         level["eligible_for_invalidation"] = (
             level["freshness"] in ("FRESH", "TESTED")
             and level["break_count"] == 0
-            and level["current_status"] != "ACCEPTED_BEYOND"
+            and not level["accepted_beyond"]
             and level["age_bars"] <= MAX_LEVEL_AGE[profile.timeframe]
         )
         level["distance_atr"] = round_or_none(abs(level["price"] - close) / atr, 6)
@@ -132,6 +140,18 @@ def build_levels(
         key=lambda level: close - level["price"],
         default=None,
     )
+    eligible_resistance = [level for level in resistance if level["eligible_for_invalidation"]]
+    eligible_support = [level for level in support if level["eligible_for_invalidation"]]
+    nearest_eligible_resistance = min(
+        (level for level in eligible_resistance if level["price"] > close),
+        key=lambda level: level["price"] - close,
+        default=None,
+    )
+    nearest_eligible_support = min(
+        (level for level in eligible_support if level["price"] < close),
+        key=lambda level: close - level["price"],
+        default=None,
+    )
 
     # Previous-period levels are derived only from OHLC. For H1/H4 these are rolling
     # period proxies, while the orchestrator may also supply parent levels separately.
@@ -142,6 +162,13 @@ def build_levels(
         "resistance_levels": sorted(resistance, key=lambda level: level["price"]),
         "nearest_support": nearest_support,
         "nearest_resistance": nearest_resistance,
+        "nearest_eligible_support": nearest_eligible_support,
+        "nearest_eligible_resistance": nearest_eligible_resistance,
+        "invalidation_blocker": (
+            "NO_ELIGIBLE_INVALIDATION_LEVEL"
+            if nearest_eligible_support is None or nearest_eligible_resistance is None
+            else None
+        ),
         "reference_levels": {
             "previous_bar_high": round_or_none(prior["high"]),
             "previous_bar_low": round_or_none(prior["low"]),

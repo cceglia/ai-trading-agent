@@ -55,7 +55,7 @@ def _directional_votes(
             "HIGH_QUALITY": 1.0,
             "MEDIUM_QUALITY": 0.75,
             "LOW_QUALITY": 0.45,
-        }.get(latest_event.get("quality"), 0.5)
+        }.get(latest_event.get("quality"), 0.45)
         scope_multiplier = {"PRIMARY": 1.0, "INTERNAL": 0.5}.get(
             latest_event.get("structural_scope"), 1.0
         )
@@ -156,7 +156,7 @@ def calculate_score(
             "normalized": 1.0 if structure["primary_structure"] in ("BULLISH", "BEARISH") else 0.5,
             "weight": 0.30,
         },
-        "events": {
+        "event": {
             "normalized": min(event_evidence / 1.5, 1.0),
             "weight": 0.30,
             "primary_event_weight": 1.0,
@@ -181,7 +181,7 @@ def calculate_score(
         "confidence_components": confidence_components,
         "component_maximums": {
             "structure": 30,
-            "events": 30,
+            "event": 30,
             "liquidity": 15,
             "technical": 15,
             "candle": 10,

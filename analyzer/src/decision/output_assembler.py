@@ -36,6 +36,7 @@ import logging
 from datetime import datetime
 from typing import Any
 
+from src.analysis.market_structure_engine.config import MIN_RR
 from src.analysis.market_structure_engine.deterministic_validator import DeterministicValidation
 from src.analysis.market_structure_engine.models import (
     DeterministicSetupState,
@@ -183,7 +184,7 @@ class FinalOutputAssembler:
             else ["validation unavailable"],
             rr=validation.rr if validation else setup.estimated_reward_risk,
             calculated_rr=validation.calculated_rr if validation else setup.estimated_reward_risk,
-            minimum_required_rr=validation.minimum_required_rr if validation else 2.0,
+            minimum_required_rr=validation.minimum_required_rr if validation else MIN_RR,
             rr_pass=validation.rr_pass if validation else False,
             deterministic_blockers=list(validation.deterministic_blockers)
             if validation

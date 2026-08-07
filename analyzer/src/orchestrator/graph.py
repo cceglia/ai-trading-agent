@@ -128,6 +128,9 @@ def _summarize_timeframe(tf_data: dict[str, Any]) -> dict[str, Any]:
             "nearest_resistance",
             "nearest_support_distance_atr",
             "nearest_resistance_distance_atr",
+            "nearest_eligible_support",
+            "nearest_eligible_resistance",
+            "invalidation_blocker",
         ):
             if key in levels:
                 compact_levels[key] = levels[key]

@@ -116,3 +116,48 @@ def test_synthesizer_structure_summary_preserves_event_and_liquidity_histories()
 
     assert summary["events"] == timeframe["events"]
     assert summary["liquidity"] == timeframe["liquidity"]
+
+
+def test_synthesizer_structure_summary_preserves_selected_level_lifecycle_and_blocker():
+    selected_support = {
+        "price": 99.0,
+        "eligible_for_invalidation": True,
+        "current_status": "TESTED",
+        "freshness": "TESTED",
+        "age_bars": 4,
+        "touch_count": 2,
+        "break_count": 0,
+        "reclaim_count": 0,
+        "accepted_beyond_count": 0,
+        "accepted_beyond": False,
+    }
+    selected_resistance = {"price": 101.0, "eligible_for_invalidation": True}
+    timeframe = {
+        "market_structure": {"primary_structure": "RANGE"},
+        "levels": {
+            "nearest_support": {"price": 98.0},
+            "nearest_resistance": {"price": 102.0},
+            "nearest_eligible_support": selected_support,
+            "nearest_eligible_resistance": selected_resistance,
+            "invalidation_blocker": None,
+            "support_levels": [{"price": 98.0}],
+            "resistance_levels": [{"price": 102.0}],
+        },
+    }
+
+    summary = _summarize_timeframe(timeframe)
+
+    assert summary["levels"]["nearest_eligible_support"] == selected_support
+    assert summary["levels"]["nearest_eligible_resistance"] == selected_resistance
+    assert summary["levels"]["invalidation_blocker"] is None
+
+
+def test_synthesizer_structure_summary_preserves_invalidation_blocker():
+    summary = _summarize_timeframe(
+        {
+            "market_structure": {"primary_structure": "RANGE"},
+            "levels": {"invalidation_blocker": "NO_ELIGIBLE_INVALIDATION_LEVEL"},
+        }
+    )
+
+    assert summary["levels"] == {"invalidation_blocker": "NO_ELIGIBLE_INVALIDATION_LEVEL"}

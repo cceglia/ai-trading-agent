@@ -20,7 +20,9 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Self
 
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, field_validator
+
+from .config import MIN_RR
 
 # ---------------------------------------------------------------------------
 # Setup Enums
@@ -587,6 +589,14 @@ class DeterministicSetupState(BaseModel, frozen=True):
         default=None,
         description="Price level for trigger",
     )
+    invalidation_level_id: str | None = Field(
+        default=None,
+        description="Canonical identity of the selected invalidation level",
+    )
+    invalidation_timeframe: str | None = Field(
+        default=None,
+        description="Timeframe owning the selected invalidation level",
+    )
     invalidation_price: float | None = Field(
         default=None,
         description="Price that invalidates the setup",
@@ -650,7 +660,7 @@ class RiskPolicyState(BaseModel, frozen=True):
         description="Multiplier applied based on setup grade",
     )
     minimum_reward_risk: float = Field(
-        default=2.0,
+        default=MIN_RR,
         gt=0,
         description="Minimum acceptable reward-to-risk ratio",
     )
@@ -659,6 +669,13 @@ class RiskPolicyState(BaseModel, frozen=True):
         gt=0,
         description="Calculated reward-to-risk ratio, if available",
     )
+
+    @field_validator("minimum_reward_risk")
+    @classmethod
+    def require_canonical_minimum_rr(cls, value: float) -> float:
+        if value != MIN_RR:
+            raise ValueError(f"minimum_reward_risk must equal canonical MIN_RR={MIN_RR}")
+        return value
 
     @computed_field  # type: ignore[prop-decorator]
     @property
@@ -670,10 +687,7 @@ class RiskPolicyState(BaseModel, frozen=True):
     @property
     def risk_reward_ok(self) -> bool:
         """Whether the estimated reward-to-risk meets the minimum threshold."""
-        return (
-            self.estimated_reward_risk is not None
-            and self.estimated_reward_risk >= self.minimum_reward_risk
-        )
+        return self.estimated_reward_risk is not None and self.estimated_reward_risk >= MIN_RR
 
 
 class ExecutionPolicyState(BaseModel, frozen=True):

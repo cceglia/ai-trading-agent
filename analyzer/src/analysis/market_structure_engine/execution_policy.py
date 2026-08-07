@@ -65,6 +65,10 @@ class PolicySettings:
     require_confirmed_trigger: bool = True
     require_valid_geometry: bool = True
 
+    def __post_init__(self) -> None:
+        if self.minimum_reward_risk != MIN_RR:
+            raise ValueError(f"minimum_reward_risk must equal canonical MIN_RR={MIN_RR}")
+
 
 # ---------------------------------------------------------------------------
 # Helper: build blockers

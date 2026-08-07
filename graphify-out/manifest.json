@@ -50,8 +50,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/context.py": {
-    "mtime": 1786129948.2642987,
-    "ast_hash": "a29b073014448a5b94bd1b93d778a093",
+    "mtime": 1786133237.1386027,
+    "ast_hash": "082003401cccddcce7ecace5216e3217",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/engine.py": {
@@ -75,8 +75,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/levels.py": {
-    "mtime": 1786124689.1965983,
-    "ast_hash": "98c5f30053251f1be71380e2910d84de",
+    "mtime": 1786134942.9226093,
+    "ast_hash": "2c4377a4f2a0596083615599bc4cedd4",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/liquidity.py": {
@@ -85,8 +85,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/scoring.py": {
-    "mtime": 1786129958.1651423,
-    "ast_hash": "478e7e70238ffeb838cf0e3cd43d4f86",
+    "mtime": 1786131315.9654355,
+    "ast_hash": "120850fd51df484a91891172f4bd46d1",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/structure.py": {
@@ -100,8 +100,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/utils.py": {
-    "mtime": 1785337799.0321257,
-    "ast_hash": "707779fcab50b35a769b89f81a9ec5da",
+    "mtime": 1786133545.6836946,
+    "ast_hash": "d69da7f3c162e0da30e03bd3ddc73c73",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/validation.py": {
@@ -175,8 +175,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/orchestrator/graph.py": {
-    "mtime": 1786129948.2612987,
-    "ast_hash": "8f2255862802dce3bb97fa61da506647",
+    "mtime": 1786136298.2202666,
+    "ast_hash": "414ca2ccbac31cbc24e1f336ddaf73c6",
     "semantic_hash": ""
   },
   "analyzer/src/output/__init__.py": {
@@ -195,8 +195,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/output/result_models.py": {
-    "mtime": 1786124691.7315588,
-    "ast_hash": "e0a8f0e79695cc76c9bbaa33ed2bdc9e",
+    "mtime": 1786131346.4199417,
+    "ast_hash": "047d7d0b7229eb37270347fc43fe8eb0",
     "semantic_hash": ""
   },
   "analyzer/src/output/result_writer.py": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/orchestrator/test_graph.py": {
-    "mtime": 1786129948.2642987,
-    "ast_hash": "c9decbefd72eeacdb0d3fdc8bca98754",
+    "mtime": 1786136278.0545814,
+    "ast_hash": "7ae0e9c99f633cba09fed1659a034950",
     "semantic_hash": ""
   },
   "analyzer/tests/orchestrator/test_synthesizer_cache.py": {
@@ -630,8 +630,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/models.py": {
-    "mtime": 1786124690.870572,
-    "ast_hash": "81b0bf634a1ee9c6e8fcbc51a1c114b4",
+    "mtime": 1786133237.1386027,
+    "ast_hash": "d90b058a8ef20ff01937262ceb0b5bad",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/grading.py": {
@@ -640,13 +640,13 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/risk_policy.py": {
-    "mtime": 1786111555.459329,
-    "ast_hash": "f8e9ea3f51acc8013382b94515e48d22",
+    "mtime": 1786131229.7518342,
+    "ast_hash": "af2c472a3ebccf9d4d3b17d1b8f2b3a0",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/execution_policy.py": {
-    "mtime": 1786121477.779378,
-    "ast_hash": "eb1cf2b9041a3e388b245b66396c3e0c",
+    "mtime": 1786131239.1786811,
+    "ast_hash": "6bb5a116656d081abd7963274423cee1",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/triggers.py": {
@@ -655,8 +655,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/entry_calculator.py": {
-    "mtime": 1785878217.7600217,
-    "ast_hash": "e3033cc12d0f8e8fcac171f9e64edd93",
+    "mtime": 1786133237.1396027,
+    "ast_hash": "af8a3843379aaeffb904ed32240c75f5",
     "semantic_hash": ""
   },
   "analyzer/src/decision/adapters/__init__.py": {
@@ -690,8 +690,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/decision/output_assembler.py": {
-    "mtime": 1786121477.7893777,
-    "ast_hash": "8c97fedb339d25eeadb4d68b7f800530",
+    "mtime": 1786131239.179681,
+    "ast_hash": "4296d0dc93e8caf3599513a42f8ad233",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_enforcement_models.py": {
@@ -730,8 +730,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_risk_policy.py": {
-    "mtime": 1785877868.3391411,
-    "ast_hash": "d451f9802a5a51f7a1f4ad4da87bfe2e",
+    "mtime": 1786131266.7002347,
+    "ast_hash": "eb892b090d18cad5f05958ed54133210",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_triggers.py": {
@@ -840,23 +840,28 @@
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_deterministic_regressions.py": {
-    "mtime": 1786130460.6142046,
-    "ast_hash": "8f1fadfc67ac2e545957d63d5a3dfbef",
+    "mtime": 1786132101.1087642,
+    "ast_hash": "6533f19dabdc8f1d7647cc5f207fbb1a",
     "semantic_hash": ""
   },
   "analyzer/src/analysis/market_structure_engine/deterministic_validator.py": {
-    "mtime": 1786113789.2171128,
-    "ast_hash": "bcfb09a5ed9925027c1ea2b8ac463284",
+    "mtime": 1786136328.1117997,
+    "ast_hash": "b54583dbb94b8d06431dbe78d7b4bcb8",
     "semantic_hash": ""
   },
   "analyzer/tests/analysis/market_structure_engine/test_deterministic_validator_contract.py": {
-    "mtime": 1786113693.3085866,
-    "ast_hash": "08c2c7bd176852a5398dc00ad8ce7201",
+    "mtime": 1786136278.0555813,
+    "ast_hash": "f5c22d834d8adfbd8958fa71371a88f2",
     "semantic_hash": ""
   },
   "docs/adr/0003-deterministic-decision-single-synthesizer.md": {
     "mtime": 1786121342.4226844,
     "ast_hash": "7b7e1aaa7a068e4a85a8089ee275c864",
+    "semantic_hash": ""
+  },
+  "analyzer/tests/analysis/market_structure_engine/test_ticket_16_contract.py": {
+    "mtime": 1786135981.519211,
+    "ast_hash": "f202ae57ff51f040d4258a821a8ac8a1",
     "semantic_hash": ""
   }
 }

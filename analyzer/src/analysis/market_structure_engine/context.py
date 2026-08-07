@@ -203,9 +203,9 @@ def build_timeframe_context(
         else liquidity.get("nearest_sell_side")
     )
     nearest_invalidation = (
-        levels.get("nearest_support")
+        levels.get("nearest_eligible_support")
         if preferred == "BULLISH"
-        else levels.get("nearest_resistance")
+        else levels.get("nearest_eligible_resistance")
     )
     close = scoring.get("latest_close")
     target_price = nearest_target.get("price") if nearest_target else None
@@ -224,6 +224,8 @@ def build_timeframe_context(
     rr_ok = rr is not None and rr >= minimum_required_rr
     if blocker:
         setup_status = "CONFLICT_WITH_HIGHER_TIMEFRAME"
+    elif nearest_invalidation is None:
+        setup_status = "BLOCKED_BY_INVALIDATION_LEVEL"
     elif trigger and room_ok and rr_ok:
         setup_status = "VALID_SETUP"
     elif trigger and not room_ok:
@@ -248,6 +250,10 @@ def build_timeframe_context(
             "latest_trigger_event": event,
             "supportive_liquidity_event": liquidity_event if sweep_support else None,
             "entry_interest_zone": nearest_invalidation,
+            "invalidation_level_id": (
+                nearest_invalidation.get("level_id") if nearest_invalidation else None
+            ),
+            "invalidation_timeframe": timeframe,
             "technical_invalidation": invalidation_price,
             "first_objective": target_price,
             "estimated_reward_risk": round_or_none(rr, 4),
@@ -256,7 +262,13 @@ def build_timeframe_context(
             "rr_pass": rr_ok,
             "room_to_target_passed": room_ok,
             "reward_risk_filter_passed": rr_ok,
-            "blockers": ["HIGHER_TIMEFRAME_CONFLICT"] if blocker else [],
+            "blockers": (
+                ["HIGHER_TIMEFRAME_CONFLICT"]
+                if blocker
+                else ["NO_ELIGIBLE_INVALIDATION_LEVEL"]
+                if nearest_invalidation is None
+                else []
+            ),
             "lower_timeframe_confirmation_required": False,
         },
         "multi_timeframe_decision_allowed": parent_context_mode != "STANDALONE",

@@ -48,7 +48,7 @@ class TestBuildRiskPolicy:
             estimated_reward_risk=3.0,
         )
         assert result.grade_risk_multiplier == 0.25
-        assert result.minimum_reward_risk == 2.5
+        assert result.minimum_reward_risk == 2.0
 
     def test_none_grade_zero_multiplier(self) -> None:
         """A setup without a grade (NO_SETUP) must not fabricate a multiplier.
@@ -80,7 +80,7 @@ class TestGRADERiskTable:
 
     def test_countertrend_entry(self) -> None:
         assert SetupGrade.COUNTERTREND in GRADE_RISK_TABLE
-        assert GRADE_RISK_TABLE[SetupGrade.COUNTERTREND] == (2.5, 0.25)
+        assert GRADE_RISK_TABLE[SetupGrade.COUNTERTREND] == (2.0, 0.25)
 
 
 # ============================================================================
@@ -207,7 +207,7 @@ class TestBuildRiskPolicyComputedFields:
             estimated_reward_risk=3.0,
         )
         assert result.final_risk_percentage == 0.5  # multiplier 0.25
-        assert result.risk_reward_ok is True  # 3.0 >= 2.5
+        assert result.risk_reward_ok is True  # 3.0 >= 2.0
 
     def test_missing_rr_risk_reward_ok_false(self) -> None:
         """Missing R/R leads to risk_reward_ok=False even if minimum is technically met."""

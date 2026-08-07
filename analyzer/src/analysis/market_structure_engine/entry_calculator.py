@@ -313,6 +313,8 @@ def _calculate_entry_plan_inner(setup_data: dict[str, Any]) -> DeterministicSetu
         entry_zone_low=prices["entry_zone_low"],
         entry_zone_high=prices["entry_zone_high"],
         trigger_level=prices["trigger_level"],
+        invalidation_level_id=setup_data.get("invalidation_level_id"),
+        invalidation_timeframe=setup_data.get("invalidation_timeframe"),
         invalidation_price=prices["invalidation_price"],
         target_price=target_price,
         estimated_reward_risk=reward_risk,

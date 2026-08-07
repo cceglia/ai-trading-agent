@@ -5,6 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from src.analysis.market_structure_engine.config import MIN_RR
 from src.decision.models import AdvisoryLevels, DecisionOutput, MarketContextSummary
 
 
@@ -69,7 +70,7 @@ class AnalysisResult(BaseModel):
     validation_errors: list[str] = Field(default_factory=list)
     rr: float | None = None
     calculated_rr: float | None = None
-    minimum_required_rr: float = 2.0
+    minimum_required_rr: float = MIN_RR
     rr_pass: bool = False
     deterministic_blockers: list[dict[str, Any]] = Field(default_factory=list)
     reason_codes: list[str] = Field(default_factory=list)
