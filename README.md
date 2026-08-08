@@ -306,9 +306,6 @@ the environment.
 | `TRADING_MODEL_PRICING` | *(see below)* | JSON dict of per-model token prices: `{"model": {"input_per_million": $/M, "cached_input_per_million": $/M, "output_per_million": $/M}}` |
 | **Setup Policy** | | |
 | `TRADING_ENABLE_COUNTERTREND` | `False` | Allow countertrend setups |
-| `TRADING_MIN_RR_AAA` | `2.0` | Minimum reward-to-risk ratio for AAA-grade setups |
-| `TRADING_MIN_RR_AA` | `2.0` | Minimum reward-to-risk ratio for AA-grade setups |
-| `TRADING_MIN_RR_COUNTERTREND` | `2.5` | Minimum reward-to-risk ratio for countertrend setups |
 | `TRADING_RISK_MULTIPLIER_AAA` | `1.0` | Risk multiplier for AAA-grade setups |
 | `TRADING_RISK_MULTIPLIER_AA` | `0.5` | Risk multiplier for AA-grade setups |
 | `TRADING_RISK_MULTIPLIER_COUNTERTREND` | `0.25` | Risk multiplier for countertrend setups |

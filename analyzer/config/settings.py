@@ -92,20 +92,6 @@ class Settings(BaseSettings):
         description="Allow countertrend setups when enabled",
     )
 
-    # R/R Thresholds
-    min_rr_aaa: float = Field(
-        default=2.0,
-        description="Minimum reward-to-risk ratio for AAA-grade setups",
-    )
-    min_rr_aa: float = Field(
-        default=2.0,
-        description="Minimum reward-to-risk ratio for AA-grade setups",
-    )
-    min_rr_countertrend: float = Field(
-        default=2.5,
-        description="Minimum reward-to-risk ratio for countertrend setups",
-    )
-
     # Risk Multipliers
     risk_multiplier_aaa: float = Field(
         default=1.0,

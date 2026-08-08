@@ -354,3 +354,30 @@ class TestSynthesizerCacheEnabled:
         monkeypatch.setenv("TRADING_SYNTHESIZER_CACHE_ENABLED", "banana")
         with pytest.raises(Exception):
             Settings()
+
+
+class TestMinRewardRiskThreshold:
+    """G-005 / FR-016: MIN_RR=2.0 is the sole production R/R threshold.
+
+    The per-grade ``min_rr_aaa``/``min_rr_aa``/``min_rr_countertrend``
+    Settings fields were removed — nothing consumed them and they
+    contradicted the single-threshold invariant.  Only the canonical
+    ``MIN_RR`` constant in the market-structure-engine config remains.
+    """
+
+    def test_canonical_min_rr_is_2_0(self):
+        """The canonical production threshold is exactly 2.0."""
+        from src.analysis.market_structure_engine.config import MIN_RR
+
+        assert MIN_RR == 2.0
+
+    def test_no_alternate_production_threshold_in_settings(self):
+        """Settings exposes no alternate R/R threshold fields."""
+        settings = Settings()
+        for field in ("min_rr_aaa", "min_rr_aa", "min_rr_countertrend"):
+            assert not hasattr(settings, field), f"{field} must be removed"
+
+    def test_settings_model_fields_exclude_min_rr_variants(self):
+        """The Settings model defines no per-grade R/R threshold field."""
+        fields = set(Settings.model_fields)
+        assert not {"min_rr_aaa", "min_rr_aa", "min_rr_countertrend"} & fields

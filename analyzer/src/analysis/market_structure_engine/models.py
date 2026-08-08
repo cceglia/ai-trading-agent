@@ -211,9 +211,6 @@ class EntryType(StrEnum):
     MARKET = "MARKET"
     LIMIT = "LIMIT"
     STOP = "STOP"
-    WAIT_FOR_CLOSE = "WAIT_FOR_CLOSE"
-    WAIT_FOR_RETEST = "WAIT_FOR_RETEST"
-    WAIT_FOR_ZONE = "WAIT_FOR_ZONE"
 
 
 # ---------------------------------------------------------------------------
@@ -222,10 +219,14 @@ class EntryType(StrEnum):
 
 
 class DecisionAction(StrEnum):
-    """Decision action taken by the decision agent."""
+    """Decision action taken by the decision agent.
+
+    Canonical deterministic actions (DEC-002). The legacy string
+    ``wait_for_setup`` is no longer a member; legacy persisted files
+    containing it are normalized by the reader/writer collapse path.
+    """
 
     NO_TRADE = "no_trade"
-    WAIT_FOR_SETUP = "wait_for_setup"
     BUY_SETUP = "buy_setup"
     SELL_SETUP = "sell_setup"
 

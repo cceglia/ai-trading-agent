@@ -10,8 +10,8 @@
     "semantic_hash": ""
   },
   "analyzer/main.py": {
-    "mtime": 1786197744.8357697,
-    "ast_hash": "d86867ec5fbc0fde19b190d915d8612b",
+    "mtime": 1786199558.8388474,
+    "ast_hash": "69eafc9e6c2486c551b54e9cc306e3e2",
     "semantic_hash": ""
   },
   "analyzer/pyproject.toml": {
@@ -355,8 +355,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/test_main_multi_symbol.py": {
-    "mtime": 1786182878.0613165,
-    "ast_hash": "b10e9987a089f259a0fe7d5c555547e4",
+    "mtime": 1786199554.600907,
+    "ast_hash": "cbd20d783b4e2874359cc5e34c57a2f6",
     "semantic_hash": ""
   },
   "analyzer/tests/test_project_setup.py": {
@@ -520,8 +520,8 @@
     "semantic_hash": ""
   },
   "server/src/main.py": {
-    "mtime": 1786197694.8772886,
-    "ast_hash": "6b32f08c16f048cf79be30e4df9c247b",
+    "mtime": 1786199566.2807426,
+    "ast_hash": "2279b0c6feb68865b3576968b36ac708",
     "semantic_hash": ""
   },
   "server/tests/__init__.py": {
@@ -920,8 +920,8 @@
     "semantic_hash": ""
   },
   "analyzer/src/output/run_metrics.py": {
-    "mtime": 1786197979.4011624,
-    "ast_hash": "1df1ab73a3e3f0abbba1b913e0d51fc6",
+    "mtime": 1786199571.3326714,
+    "ast_hash": "7c2f241206007b8299540790a6200d30",
     "semantic_hash": ""
   },
   "analyzer/tests/output/test_fs_preflight.py": {
@@ -930,8 +930,8 @@
     "semantic_hash": ""
   },
   "analyzer/tests/output/test_run_metrics.py": {
-    "mtime": 1786198116.5575202,
-    "ast_hash": "55655af779cd97366695398c51431099",
+    "mtime": 1786199533.040211,
+    "ast_hash": "ee1bdfe717360b1562f4407d553d2fff",
     "semantic_hash": ""
   },
   "scripts/verify_release.py": {
@@ -940,13 +940,13 @@
     "semantic_hash": ""
   },
   "server/src/health.py": {
-    "mtime": 1786198549.2083392,
-    "ast_hash": "446acaa8cca9c3c920661bbd7d031276",
+    "mtime": 1786199574.6466248,
+    "ast_hash": "5f2f8acf0433db5a7dd553b707a525e6",
     "semantic_hash": ""
   },
   "server/tests/test_health.py": {
-    "mtime": 1786198611.2775958,
-    "ast_hash": "a7795eeecf991c01d75fc246956afb1b",
+    "mtime": 1786199633.9297895,
+    "ast_hash": "53352e34debc00d15fd55034dd4e6dba",
     "semantic_hash": ""
   },
   "docs/runbook.md": {
