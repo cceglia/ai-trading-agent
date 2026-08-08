@@ -6,6 +6,7 @@ fail RED with ``ModuleNotFoundError``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import pathlib
@@ -14,7 +15,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.decision.models import MarketContextSummary
+from src.decision.models import MarketContextSummary, SynthesisResponse
 
 # This import will fail with ModuleNotFoundError — expected RED behaviour.
 from src.decision.synthesizer_cache import (  # type: ignore[import-untyped]
@@ -369,8 +370,67 @@ class TestDayKeyAndCrossSymbol:
 
 
 # ===================================================================
+# Facts-digest cache contract (SYNTH-007)
+# ===================================================================
+class TestFactsDigestCache:
+    """The cache is keyed by a deterministic-facts digest: identical facts hit,
+    changed facts miss, and the file carries the digest in its name."""
+
+    def test_same_digest_is_a_cache_hit(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        now = datetime(2026, 7, 25, 12, 0, 0)
+        digest = hashlib.sha256(b"facts-a").hexdigest()
+        save_synthesis("EURUSD", now, _synthesis_response(), digest)
+        assert should_run_synthesis("EURUSD", now, digest) is False
+        loaded = load_cached_synthesis("EURUSD", now, digest)
+        assert loaded is not None
+        assert loaded.explanation == "deterministic context"
+
+    def test_changed_digest_is_a_cache_miss(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        now = datetime(2026, 7, 25, 12, 0, 0)
+        digest_a = hashlib.sha256(b"facts-a").hexdigest()
+        digest_b = hashlib.sha256(b"facts-b").hexdigest()
+        save_synthesis("EURUSD", now, _synthesis_response(), digest_a)
+        assert should_run_synthesis("EURUSD", now, digest_b) is True
+        assert load_cached_synthesis("EURUSD", now, digest_b) is None
+
+    def test_round_trip_preserves_presentation_fields(
+        self, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", str(tmp_path / "analysis"))
+        now = datetime(2026, 7, 25, 12, 0, 0)
+        digest = hashlib.sha256(b"facts-a").hexdigest()
+        response = _synthesis_response(
+            explanation="  padded  ",
+            risks=["Calendar risk", "Wide spread"],
+            confluences=["Confirmed structure"],
+        )
+        save_synthesis("EURUSD", now, response, digest)
+        loaded = load_cached_synthesis("EURUSD", now, digest)
+        assert loaded is not None
+        assert loaded.explanation == "padded"
+        assert loaded.risks == ["Calendar risk", "Wide spread"]
+        assert loaded.confluences == ["Confirmed structure"]
+
+
+# ===================================================================
 # Internal helpers (not exported from the test module)
 # ===================================================================
+def _synthesis_response(**overrides: object) -> SynthesisResponse:
+    defaults: dict[str, object] = {
+        "explanation": "deterministic context",
+        "risks": [],
+        "confluences": [],
+    }
+    defaults.update(overrides)
+    return SynthesisResponse(**defaults)  # type: ignore[arg-type]
+
+
 def _write_raw_cache(
     tmp_path: pathlib.Path,
     symbol: str,

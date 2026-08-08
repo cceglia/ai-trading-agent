@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.analysis.market_structure_engine.models import (
     BiasLevel,
@@ -15,7 +15,35 @@ __all__ = [
     "MarketContextSummary",
     "AdvisoryLevels",
     "DecisionOutput",
+    "SynthesisResponse",
 ]
+
+
+class SynthesisResponse(BaseModel):
+    """Presentation-only output from the single Synthesizer call."""
+
+    explanation: str = Field(min_length=1, max_length=4000)
+    risks: list[str] = Field(default_factory=list, max_length=20)
+    confluences: list[str] = Field(default_factory=list, max_length=20)
+
+    model_config = {"extra": "forbid"}
+
+    @field_validator("explanation")
+    @classmethod
+    def normalize_explanation(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("explanation must contain non-whitespace characters")
+        return normalized
+
+    @field_validator("risks", "confluences")
+    @classmethod
+    def validate_items(cls, values: list[str]) -> list[str]:
+        if any(not item.strip() or len(item) > 500 for item in values):
+            raise ValueError("presentation list items must be non-empty and at most 500 chars")
+        if len(values) != len(set(values)):
+            raise ValueError("presentation lists must not contain exact duplicates")
+        return values
 
 
 class MarketContextSummary(BaseModel):
@@ -49,12 +77,7 @@ class AdvisoryLevels(BaseModel):
 
 
 class DecisionOutput(BaseModel):
-    """Decision output from decider agent.
-
-    The LLM selects an action and explains its reasoning.  Deterministic
-    values (entry price, stop-loss, take-profit) are computed by the
-    engine and are **not** part of the LLM output.
-    """
+    """Deterministic decision projection used by the existing output seam."""
 
     symbol: str = Field(description="Trading symbol")
     action: DecisionAction = Field(description="Decision action")

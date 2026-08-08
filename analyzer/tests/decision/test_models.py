@@ -1,7 +1,12 @@
 import pytest
 
 from src.analysis.market_structure_engine.models import BiasLevel, DecisionAction
-from src.decision.models import AdvisoryLevels, DecisionOutput, MarketContextSummary
+from src.decision.models import (
+    AdvisoryLevels,
+    DecisionOutput,
+    MarketContextSummary,
+    SynthesisResponse,
+)
 
 
 class TestMarketContextSummary:
@@ -36,3 +41,34 @@ class TestDecisionOutput:
             "reasoning",
             "advisory_levels",
         }
+
+
+class TestSynthesisResponse:
+    def test_accepts_presentation_fields_only(self):
+        response = SynthesisResponse(
+            explanation="The deterministic context is mixed.",
+            risks=["Calendar risk"],
+            confluences=["Confirmed structure"],
+        )
+        assert set(response.model_dump()) == {"explanation", "risks", "confluences"}
+
+    @pytest.mark.parametrize(
+        "payload",
+        [
+            {"explanation": "", "risks": [], "confluences": []},
+            {"explanation": "   \t", "risks": [], "confluences": []},
+            {"explanation": "ok", "risks": ["x" * 501], "confluences": []},
+            {"explanation": "ok", "risks": ["same", "same"], "confluences": []},
+            {"explanation": "ok", "risks": [], "confluences": [], "action": "buy_setup"},
+        ],
+    )
+    def test_rejects_invalid_or_authoritative_fields(self, payload):
+        with pytest.raises(Exception):
+            SynthesisResponse.model_validate(payload)
+
+    def test_normalizes_surrounding_explanation_whitespace(self):
+        response = SynthesisResponse.model_validate(
+            {"explanation": "  deterministic context  ", "risks": [], "confluences": []}
+        )
+
+        assert response.explanation == "deterministic context"

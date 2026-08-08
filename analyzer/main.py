@@ -70,6 +70,35 @@ def _get_decision_field(
     return val
 
 
+def _get_field(obj: object, attr: str) -> object | None:
+    """Return a field value without coercing ``None`` to a string."""
+    if obj is None:
+        return None
+    if isinstance(obj, dict):
+        return obj.get(attr)
+    return getattr(obj, attr, None)
+
+
+def _deterministic_bias(result: dict[str, Any]) -> str:
+    """Resolve the displayed bias from deterministic fields.
+
+    The v2 synthesizer no longer produces ``market_context`` (presentation-only
+    output), so the bias line must come from the deterministic setup direction
+    (``trade_direction``: BULLISH/BEARISH/NEUTRAL) or the validation direction
+    (``direction``: LONG/SHORT/NONE) — never an always-neutral placeholder.
+    """
+    analysis_result = result.get("analysis_result")
+    final_output = result.get("final_output")
+    for source in (analysis_result, final_output):
+        if source is None:
+            continue
+        for attr in ("trade_direction", "direction"):
+            value = _get_field(source, attr)
+            if value:
+                return str(value)
+    return "N/A"
+
+
 def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     """Print a compact analysis summary for one symbol to stdout."""
     decision = result.get("decision")
@@ -89,13 +118,16 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
         for err in errors:
             print(f"       • {err}")
 
-    bias_str = _format_field(context, "bias") if context else "N/A"
-    confidence_val = _format_field_int(context, "confidence") if context else 0
+    # Bias/confidence come from deterministic fields. The v2 synthesizer is
+    # presentation-only, so a stale legacy ``market_context`` is never used.
+    bias_str = _deterministic_bias(result)
+    confidence_val = _format_field_int(context, "confidence") if context else None
     action_str = _format_field(decision, "action") if decision else "N/A"
+    confidence_str = f"{confidence_val}%" if confidence_val is not None else "N/A"
 
     print(f"\n  {symbol}")
     print(f"    Bias       : {bias_str}")
-    print(f"    Confidence : {confidence_val}%")
+    print(f"    Confidence : {confidence_str}")
     print(f"    Action     : {action_str}")
 
     # Show price fields from analysis_result (deterministic engine).
@@ -130,10 +162,13 @@ def _print_symbol_summary(symbol: str, result: dict[str, Any]) -> None:
     if rr and rr != "N/A":
         print(f"    R/R        : {rr}")
 
-    # Show reasoning snippets
+    # Show reasoning snippets: legacy market_context.reasoning first, then the
+    # v2 presentation explanation from the single Synthesizer.
     ctx_reasoning = _format_field(context, "reasoning") if context else None
-    if ctx_reasoning and ctx_reasoning != "N/A":
-        short = ctx_reasoning[:120] + "…" if len(ctx_reasoning) > 120 else ctx_reasoning
+    if (not ctx_reasoning or ctx_reasoning == "N/A") and analysis_result is not None:
+        ctx_reasoning = _get_field(analysis_result, "synthesis_explanation")
+    if ctx_reasoning:
+        short = str(ctx_reasoning)[:120] + "…" if len(str(ctx_reasoning)) > 120 else ctx_reasoning
         print(f"    Reasoning  : {short}")
 
 
@@ -317,19 +352,29 @@ def _send_telegram_notification(
 ) -> None:
     """Send a Telegram notification for an approved trade setup.
 
-    Only sends when the decision is ``buy_setup`` or ``sell_setup`` and the
-    deterministic validation status is ``VALID``.
+    Only sends for valid, actionable deterministic results. Presentation
+    synthesis may be degraded; the sender marks that explanation is unavailable.
 
     Args:
         symbol: Trading symbol.
         result: Analysis result dict.
         settings: Application settings (for Telegram credentials).
     """
-    decision = _model_or_dict(result.get("decision"))
-    context = _model_or_dict(result.get("market_context", result.get("context")))
-    if result.get("validation_status") == "VALID" and decision.get("action") in (
-        "buy_setup",
-        "sell_setup",
+    analysis_result = _model_or_dict(result.get("analysis_result"))
+    if not analysis_result:
+        return
+
+    decision = _model_or_dict(analysis_result.get("decision"))
+    context = _model_or_dict(analysis_result.get("market_context"))
+    if (
+        analysis_result.get("validation_status") == "VALID"
+        and analysis_result.get("setup_status") == "READY"
+        and analysis_result.get("operational") is True
+        and decision.get("action")
+        in (
+            "buy_setup",
+            "sell_setup",
+        )
     ):
         send_trade_notification(
             symbol=symbol,

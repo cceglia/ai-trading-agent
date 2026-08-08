@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from src.analysis.candle_cache import get_cache_date
-from src.decision.models import MarketContextSummary
+from src.decision.models import MarketContextSummary, SynthesisResponse
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,15 @@ def _cache_path(symbol: str, broker_now: datetime) -> Path:
     return base / year / month / day / symbol / filename
 
 
-def should_run_synthesis(symbol: str, broker_now: datetime) -> bool:
+def _digest_cache_path(symbol: str, broker_now: datetime, facts_digest: str) -> Path:
+    """Build a facts-addressed path without changing the legacy test seam."""
+    path = _cache_path(symbol, broker_now)
+    return path.with_name(f"{path.stem}-{facts_digest[:32]}{path.suffix}")
+
+
+def should_run_synthesis(
+    symbol: str, broker_now: datetime, facts_digest: str | None = None
+) -> bool:
     """Check if the synthesizer should run (cache miss, disabled, or no cached file).
 
     Returns ``True`` if:
@@ -80,7 +88,11 @@ def should_run_synthesis(symbol: str, broker_now: datetime) -> bool:
     if not settings.synthesizer_cache_enabled:
         return True
 
-    path = _cache_path(symbol, broker_now)
+    path = (
+        _digest_cache_path(symbol, broker_now, facts_digest)
+        if facts_digest
+        else _cache_path(symbol, broker_now)
+    )
     if path.exists():
         return False
 
@@ -104,7 +116,8 @@ def should_run_synthesis(symbol: str, broker_now: datetime) -> bool:
 def save_synthesis(
     symbol: str,
     broker_now: datetime,
-    summary: MarketContextSummary,
+    summary: MarketContextSummary | SynthesisResponse,
+    facts_digest: str | None = None,
 ) -> None:
     """Persist *summary* to a JSON cache file for *symbol* on *broker_day*.
 
@@ -118,7 +131,11 @@ def save_synthesis(
     if not settings.synthesizer_cache_enabled:
         return
 
-    path = _cache_path(symbol, broker_now)
+    path = (
+        _digest_cache_path(symbol, broker_now, facts_digest)
+        if facts_digest
+        else _cache_path(symbol, broker_now)
+    )
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
         data = summary.model_dump()
@@ -141,7 +158,8 @@ def save_synthesis(
 def load_cached_synthesis(
     symbol: str,
     broker_now: datetime,
-) -> MarketContextSummary | None:
+    facts_digest: str | None = None,
+) -> MarketContextSummary | SynthesisResponse | None:
     """Load a cached ``MarketContextSummary`` for *symbol* at the current H1 hour.
 
     Returns ``None`` (without raising) when:
@@ -150,14 +168,19 @@ def load_cached_synthesis(
     - The JSON content does not match the ``MarketContextSummary`` schema
     - An OS-level read error occurs
     """
-    path = _cache_path(symbol, broker_now)
+    path = (
+        _digest_cache_path(symbol, broker_now, facts_digest)
+        if facts_digest
+        else _cache_path(symbol, broker_now)
+    )
     if not path.exists():
         return None
 
     try:
         with open(str(path)) as f:
             data: dict[str, Any] = json.load(f)
-        return MarketContextSummary.model_validate(data)
+        model = SynthesisResponse if facts_digest else MarketContextSummary
+        return model.model_validate(data)
     except (json.JSONDecodeError, OSError):
         logger.warning("Corrupt synthesizer cache file at %s — treating as miss", path)
         return None

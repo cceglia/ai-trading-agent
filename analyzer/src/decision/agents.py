@@ -11,7 +11,7 @@ from typing import Any
 
 from src.decision.cost_tracker import CostTracker
 from src.decision.llm_client import LLMClientProtocol
-from src.decision.models import MarketContextSummary
+from src.decision.models import SynthesisResponse
 from src.decision.prompts import SYNTHESIZER_SYSTEM_PROMPT
 from src.decision.usage import LLMUsage
 
@@ -70,7 +70,7 @@ class SynthesizerAgent:
         deterministic_setup: Any = None,
         risk_policy: Any = None,
         execution_policy: Any = None,
-    ) -> MarketContextSummary:
+    ) -> SynthesisResponse:
         logger.info("Synthesizing context for %s", symbol)
 
         messages: list[dict[str, str]] = [
@@ -78,25 +78,24 @@ class SynthesizerAgent:
             {
                 "role": "user",
                 "content": (
-                    f"Analyze {symbol} with structure: {structure_analysis} "
-                    f"and events: {calendar_events}"
-                    f" Current price (canonical most-recent closed bar across D1/H4/H1): "
-                    f"{current_price} as of {current_price_time}. "
-                    "The following deterministic facts are authoritative and must only be "
-                    "explained, never changed: "
-                    f"setup={deterministic_setup}, risk_policy={risk_policy}, "
-                    f"execution_policy={execution_policy}."
+                    f"Explain these deterministic facts for {symbol}: "
+                    f"structure={structure_analysis}; calendar={calendar_events}; "
+                    f"current_price={current_price}; current_price_time={current_price_time}; "
+                    f"setup={deterministic_setup}; risk_policy={risk_policy}; "
+                    f"execution_policy={execution_policy}. These facts are authoritative; "
+                    "return presentation text only."
                 ),
             },
         ]
 
         response, usage = self._llm_client.generate_structured_sync(
             messages=messages,
-            response_model=MarketContextSummary,
+            response_model=SynthesisResponse,
+            max_retries=0,
         )
 
         model = self._llm_client.model_identity.raw_model_identifier
         _log_llm_call(self.__class__.__name__, model, usage, self.cost_tracker)
 
-        logger.info("Synthesis complete: bias=%s confidence=%s", response.bias, response.confidence)
+        logger.info("Synthesis complete for %s", symbol)
         return response

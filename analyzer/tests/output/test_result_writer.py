@@ -118,6 +118,31 @@ class TestResultWriter:
         assert written is None
         assert not (tmp_path / "2026" / "07" / "26" / "XAUUSD").exists()
 
+    def test_preserves_degraded_status_when_errors_empty(self, tmp_path: Path):
+        """A degraded analysis (synthesis failure, valid facts) must not be
+        rewritten as 'success' just because the errors list is empty."""
+        degraded = AnalysisResult(
+            symbol="XAUUSD",
+            run_id="XAUUSD-20260726083000",
+            started_at=datetime(2026, 7, 26, 8, 30),
+            completed_at=datetime(2026, 7, 26, 8, 31),
+            status="degraded",
+            validation_status="VALID",
+            setup_status="READY",
+            synthesis_status="FAILED",
+            synthesis_error="SYNTHESIS_UNAVAILABLE",
+            sl_tp_overlay=SLTPOverlay(),
+        )
+        written = ResultWriter(tmp_path).write(
+            "XAUUSD",
+            {"analysis_result": degraded, "errors": [], "fatal_error": None},
+            {},
+            datetime(2026, 7, 26, 8, 30),
+        )
+        data = json.loads(written.read_text())
+        assert data["status"] == "degraded"
+        assert data["synthesis_status"] == "FAILED"
+
     def test_status_partial_with_errors(self, tmp_path: Path):
         """When there are errors but no fatal_error, status should be 'partial'."""
         writer = ResultWriter(tmp_path)

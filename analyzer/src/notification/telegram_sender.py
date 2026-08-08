@@ -2,11 +2,27 @@
 
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import requests
 
 logger = logging.getLogger(__name__)
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    """Normalize a pydantic model or mapping for notification checks."""
+    if isinstance(value, dict):
+        return value
+    model_dump = getattr(value, "model_dump", None)
+    if callable(model_dump):
+        return cast(dict[str, Any], model_dump())
+    return {}
+
+
+def _canonical_analysis_result(result: dict[str, Any]) -> dict[str, Any] | None:
+    """Return the nested v2 result, never treating legacy fields as canonical."""
+    analysis_result = _as_dict(result.get("analysis_result"))
+    return analysis_result or None
 
 
 @dataclass(frozen=True)
@@ -53,8 +69,16 @@ def extract_trade_levels(result: dict[str, Any]) -> TelegramTradeLevels:
     if rr is None:
         rr = decision.get("risk_reward_ratio", "N/A")
 
-    confidence = decision.get("confidence", 0)
-    bias = context.get("bias", "neutral")
+    # Confidence has no deterministic source in the v2 pipeline; a legacy
+    # decision may still carry one. Do not fabricate 0%.
+    confidence = decision.get("confidence") or "N/A"
+
+    # Bias: prefer an explicit legacy market_context bias; otherwise fall back
+    # to the deterministic direction fields (trade_direction → direction) so a
+    # v2 result never renders an always-neutral default.
+    bias = (
+        context.get("bias") or result.get("trade_direction") or result.get("direction") or "neutral"
+    )
 
     return TelegramTradeLevels(
         entry_price=entry_price or "N/A",
@@ -94,10 +118,21 @@ def send_trade_notification(
         logger.warning("Telegram notification skipped: bot_token or chat_id is empty")
         return
 
-    action = decision.get("action", "no_trade")
-    if result is not None and result.get("validation_status") != "VALID":
-        return
+    if result is not None:
+        canonical_result = _canonical_analysis_result(result)
+        if canonical_result is None:
+            return
+        if (
+            canonical_result.get("validation_status") != "VALID"
+            or canonical_result.get("operational") is not True
+            or canonical_result.get("setup_status") != "READY"
+        ):
+            return
+        decision = _as_dict(canonical_result.get("decision"))
+        context = _as_dict(canonical_result.get("market_context"))
+        result = canonical_result
 
+    action = decision.get("action", "no_trade")
     if action == "buy_setup":
         emoji = "\U0001f7e2 BUY"
     elif action == "sell_setup":
@@ -119,12 +154,17 @@ def send_trade_notification(
         sl = decision.get("stop_loss", "N/A")
         tp = decision.get("take_profit", "N/A")
         rr = decision.get("risk_reward_ratio", "N/A")
-        confidence = decision.get("confidence", 0)
-        bias = context.get("bias", "neutral")
+        confidence = decision.get("confidence") or "N/A"
+        bias = context.get("bias") or "neutral"
 
     if isinstance(confidence, int | float):
         confidence = f"{confidence * 100:.0f}%"
 
+    degraded_marker = (
+        "Explanation: unavailable (synthesis degraded)\n"
+        if result is not None and result.get("synthesis_status") == "FAILED"
+        else ""
+    )
     message = (
         f"{emoji} {symbol}\n"
         f"Action: {action}\n"
@@ -132,6 +172,7 @@ def send_trade_notification(
         f"SL: {sl} | TP: {tp}\n"
         f"R/R: {rr}\n"
         f"Confidence: {confidence} | Bias: {bias}\n"
+        f"{degraded_marker}"
         f"{web_ui_base_url}/runs/{symbol}"
     )
 

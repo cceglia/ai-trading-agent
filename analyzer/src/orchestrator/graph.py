@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import logging
 from datetime import datetime
 from typing import Any, TypedDict
 
 from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
+from pydantic import ValidationError
 
 from config.settings import Settings
 from src.analysis.candle_cache import (
@@ -33,12 +36,13 @@ from src.analysis.market_structure_engine.models import (
     ExecutionPolicyState,
     FinalDecisionState,
     RiskPolicyState,
+    TradeDirection,
 )
 from src.analysis.market_structure_engine.risk_policy import build_risk_policy
 from src.data.snapshot_builder import SnapshotBuilder
 from src.decision.cost_tracker import CostLimitExceeded
 from src.decision.enforcement import DeterministicEnforcementGate
-from src.decision.models import DecisionOutput, MarketContextSummary
+from src.decision.models import DecisionOutput, SynthesisResponse
 from src.decision.output_assembler import FinalOutputAssembler
 from src.decision.synthesizer_cache import (
     load_cached_synthesis,
@@ -302,7 +306,9 @@ class AgentState(TypedDict):
     structure_analysis: dict[str, Any] | None
 
     # ── LLM presentation (interpretive) ───────────────────────────────
-    market_context: MarketContextSummary | None
+    synthesis: SynthesisResponse | None
+    synthesis_status: str
+    synthesis_error: str | None
     decision: DecisionOutput | None
     deterministic_validation: DeterministicValidation | None
 
@@ -680,16 +686,25 @@ class TradingGraph:
             if broker_now is None:
                 broker_now = self.data_provider.get_broker_time()
             symbol = state["symbol"]
+            facts_digest = hashlib.sha256(
+                json.dumps(
+                    {
+                        "structure": compact_structure,
+                        "calendar": state.get("calendar_events", []),
+                        "setup": str(state.get("deterministic_setup")),
+                        "risk": str(state.get("risk_policy")),
+                        "policy": str(state.get("execution_policy")),
+                    },
+                    sort_keys=True,
+                    default=str,
+                ).encode()
+            ).hexdigest()
 
-            if not should_run_synthesis(symbol, broker_now):
-                cached = load_cached_synthesis(symbol, broker_now)
-                if cached is not None:
+            if not should_run_synthesis(symbol, broker_now, facts_digest):
+                cached = load_cached_synthesis(symbol, broker_now, facts_digest)
+                if isinstance(cached, SynthesisResponse):
                     logger.info("Using cached synthesis for %s", symbol)
-                    # Stamp the canonical price on cached summaries too
-                    if cached.current_price is None and current_price is not None:
-                        cached.current_price = current_price
-                        cached.current_price_time = current_price_time
-                    return {"market_context": cached}
+                    return {"synthesis": cached, "synthesis_status": "SUCCESS"}
 
             # --- Cache miss (or disabled): call LLM ---
             context = self.synthesizer.synthesize(
@@ -703,34 +718,40 @@ class TradingGraph:
                 execution_policy=state.get("execution_policy"),
             )
 
-            # If the LLM-returned summary omits the canonical price, stamp
-            # it post-hoc so downstream nodes always have a price anchor.
-            if context.current_price is None and current_price is not None:
-                context.current_price = current_price
-                context.current_price_time = current_price_time
+            try:
+                synthesis = SynthesisResponse.model_validate(context)
+            except ValidationError as exc:
+                # Schema violation (bad shape, forbidden fields, overflow,
+                # duplicates) is a presentation failure distinct from a
+                # provider/transport failure: surface it with its own code so
+                # failure-mode diagnostics are not conflated (SYNTH-005).
+                logger.warning(
+                    "Synthesizer returned schema-invalid presentation for %s: %s",
+                    state["symbol"],
+                    exc,
+                )
+                return {
+                    "synthesis": None,
+                    "synthesis_status": "FAILED",
+                    "synthesis_error": "SYNTHESIS_SCHEMA_INVALID",
+                }
 
-            # Write cache (best-effort, non-fatal)
-            save_synthesis(symbol, broker_now, context)
-
-            return {"market_context": context}
+            save_synthesis(symbol, broker_now, synthesis, facts_digest)
+            return {"synthesis": synthesis, "synthesis_status": "SUCCESS"}
         except CostLimitExceeded:
             raise
         except Exception as e:
-            msg = f"Context synthesis failed: {e}"
-            logger.error(msg)
-            validation = state.get("deterministic_validation")
-            if validation is not None:
-                return {
-                    "deterministic_validation": validation.model_copy(
-                        update={
-                            "validation_status": "INVALID",
-                            "validation_errors": tuple((*validation.validation_errors, msg)),
-                            "reason_codes": tuple((*validation.reason_codes, "LLM_OUTPUT_INVALID")),
-                            "setup_status": "INVALID",
-                        }
-                    )
-                }
-            return {"fatal_error": msg}
+            logger.error(
+                "Context synthesis failed for %s: %s",
+                state["symbol"],
+                type(e).__name__,
+            )
+            logger.warning("Synthesizer degraded for %s: %s", state["symbol"], type(e).__name__)
+            return {
+                "synthesis": None,
+                "synthesis_status": "FAILED",
+                "synthesis_error": "SYNTHESIS_UNAVAILABLE",
+            }
 
     def _deterministic_decision(self, state: AgentState) -> dict[str, Any]:
         """Project the deterministic policy into the legacy decision model."""
@@ -827,19 +848,15 @@ class TradingGraph:
             # decision layer. Keep it outside the LLM output and inject it
             # into the deterministic H1 setup context only.
             canonical_price = None
-            market_context = state.get("market_context")
-            if market_context is not None and isinstance(market_context.current_price, int | float):
-                canonical_price = market_context.current_price
-            if canonical_price is None:
-                price = state.get("symbol_price") or {}
-                bid = price.get("bid")
-                ask = price.get("ask")
-                if isinstance(bid, int | float) and isinstance(ask, int | float):
-                    canonical_price = (bid + ask) / 2
-                elif isinstance(bid, int | float):
-                    canonical_price = bid
-                elif isinstance(ask, int | float):
-                    canonical_price = ask
+            price = state.get("symbol_price") or {}
+            bid = price.get("bid")
+            ask = price.get("ask")
+            if isinstance(bid, int | float) and isinstance(ask, int | float):
+                canonical_price = (bid + ask) / 2
+            elif isinstance(bid, int | float):
+                canonical_price = bid
+            elif isinstance(ask, int | float):
+                canonical_price = ask
             if canonical_price is not None:
                 h1_context = dict(h1_context)
                 h1_setup = dict(h1_context.get("setup_context") or h1_context)
@@ -990,31 +1007,42 @@ class TradingGraph:
         setup = state["deterministic_setup"]
         policy = state["execution_policy"]
         assert setup is not None and policy is not None
+        # FR-022: verify action/direction/policy consistency before the LLM
+        # call. The expected action is derived from the deterministic trade
+        # direction and checked against the execution policy, so a
+        # contradiction (e.g. a BULLISH setup whose policy only allows
+        # NO_TRADE) is a pre-LLM invariant violation → zero LLM calls, exactly
+        # the AC-010 guarantee.
+        expected_action = {
+            TradeDirection.BULLISH: DecisionAction.BUY_SETUP,
+            TradeDirection.BEARISH: DecisionAction.SELL_SETUP,
+        }.get(setup.trade_direction, DecisionAction.NO_TRADE)
         validation = self._deterministic_validator.validate(
             setup=setup,
             policy=policy,
             structure_analysis=state.get("structure_analysis"),
+            action=expected_action,
         )
         return {"deterministic_validation": validation}
 
     def _post_llm_validation(self, state: AgentState) -> dict[str, Any]:
-        """Reject missing or malformed interpretive output without retrying."""
-        validation = state.get("deterministic_validation")
-        if validation is None:
+        """Validate presentation schema only; deterministic facts remain authoritative.
+
+        ``_synthesize_context`` already surfaces schema-invalid output with
+        ``SYNTHESIS_SCHEMA_INVALID`` before storing state, so this node is a
+        defensive second pass: a non-model ``synthesis`` value can only reach
+        here through an out-of-band state mutation.
+        """
+        synthesis = state.get("synthesis")
+        if synthesis is None:
             return {}
-        context = state.get("market_context")
-        if context is None or context.symbol != state["symbol"] or not context.reasoning.strip():
+        try:
+            SynthesisResponse.model_validate(synthesis)
+        except Exception:
             return {
-                "deterministic_validation": validation.model_copy(
-                    update={
-                        "validation_status": "INVALID",
-                        "validation_errors": tuple(
-                            (*validation.validation_errors, "LLM explanation/schema is invalid")
-                        ),
-                        "reason_codes": tuple((*validation.reason_codes, "LLM_OUTPUT_INVALID")),
-                        "setup_status": "INVALID",
-                    }
-                )
+                "synthesis": None,
+                "synthesis_status": "FAILED",
+                "synthesis_error": "SYNTHESIS_SCHEMA_INVALID",
             }
         return {}
 
@@ -1145,6 +1173,25 @@ class TradingGraph:
             result.started_at = now
             result.completed_at = now
             result.status = "error" if state.get("fatal_error") else result.status
+            # SYNTH-009: only a synthesis failure on top of valid, actionable
+            # deterministic facts (operational) marks the run degraded.
+            # Enforcement-blocked, invalid, and non-actionable runs keep the
+            # assembler's partial/success status — a failed presentation call
+            # must never relabel a blocked/no-trade outcome as degraded.
+            if (
+                state.get("synthesis_status") == "FAILED"
+                and not state.get("fatal_error")
+                and result.operational
+            ):
+                result.status = "degraded"
+            result.synthesis_status = state.get("synthesis_status", "FAILED")
+            result.synthesis_error = state.get("synthesis_error")
+            if state.get("synthesis") is not None:
+                synthesis = state["synthesis"]
+                assert synthesis is not None
+                result.synthesis_explanation = synthesis.explanation
+                result.synthesis_risks = synthesis.risks
+                result.synthesis_confluences = synthesis.confluences
 
             # Carry forward errors
             errors = state.get("errors", [])
@@ -1188,7 +1235,9 @@ class TradingGraph:
             # Structure analysis
             structure_analysis=None,
             # LLM agents
-            market_context=None,
+            synthesis=None,
+            synthesis_status="SKIPPED",
+            synthesis_error=None,
             decision=None,
             deterministic_validation=None,
             # Deterministic pipeline

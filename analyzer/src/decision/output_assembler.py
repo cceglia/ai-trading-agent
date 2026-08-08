@@ -194,6 +194,13 @@ class FinalOutputAssembler:
             else list(setup.rejection_codes),
             setup_status=validation.setup_status if validation else "INVALID",
             direction=validation.direction if validation else "NONE",
+            operational=(
+                validation is not None
+                and validation.valid
+                and validation.setup_status == "READY"
+                and enforcement.final_action.value in {"buy_setup", "sell_setup"}
+                and not enforcement.enforcement_violations
+            ),
             entry_authorized=False,
         )
 

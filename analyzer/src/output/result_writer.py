@@ -61,12 +61,7 @@ class ResultWriter:
             )
             return None
 
-        # Determine status
         errors = result.get("errors", [])
-        if errors:
-            status = "partial"
-        else:
-            status = "success"
 
         # Build run_id from broker_now
         run_id = broker_now.strftime("%Y-%m-%dT%H:%M:%S")
@@ -105,8 +100,19 @@ class ResultWriter:
                     "AnalysisResult is required to write deterministic trade levels"
                 )
 
-        if assembled_result is not None and assembled_result.validation_status == "INVALID":
-            status = "partial"
+        # The orchestrator (graph.py) is authoritative for status: it sets
+        # "success", "partial", or "degraded" from validation and synthesis
+        # outcome. Preserve it rather than re-deriving from the errors list,
+        # which would overwrite a degraded analysis with "success".
+        if assembled_result is not None:
+            status = assembled_result.status
+            if assembled_result.validation_status == "INVALID":
+                # INV-011 / FR-023: an invalid analysis must persist as partial.
+                status = "partial"
+        else:
+            # No AnalysisResult available (partial fallback path): derive
+            # status from the errors list.
+            status = "partial" if errors else "success"
 
         if assembled_result is None:
             analysis_result = AnalysisResult(

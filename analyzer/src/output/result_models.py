@@ -53,9 +53,14 @@ class AnalysisResult(BaseModel):
     run_id: str
     started_at: datetime
     completed_at: datetime
-    status: str  # "success" | "partial" | "error"
+    status: str  # "success" | "partial" | "degraded" | "error"
     errors: list[str] = Field(default_factory=list)
     fatal_error: str | None = None
+    synthesis_status: str = "SKIPPED"
+    synthesis_explanation: str | None = None
+    synthesis_risks: list[str] = Field(default_factory=list)
+    synthesis_confluences: list[str] = Field(default_factory=list)
+    synthesis_error: str | None = None
     market_context: MarketContextSummary | None = None
     decision: DecisionOutput | None = None
     ohlc: OHLCData = Field(default_factory=OHLCData)
@@ -76,6 +81,7 @@ class AnalysisResult(BaseModel):
     reason_codes: list[str] = Field(default_factory=list)
     setup_status: str = "INVALID"
     direction: str = "NONE"
+    operational: bool = False
     entry_authorized: bool = False
 
     # ── Deterministic pipeline (authoritative) ─────────────────────────
