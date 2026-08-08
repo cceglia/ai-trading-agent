@@ -883,6 +883,11 @@ The production image is self-contained:
 - The FastAPI server serves both the REST API and the built UI on port 3000
 - Only the `data/` directory is persisted via bind mount
 
+> **Operations:** see [`docs/runbook.md`](./docs/runbook.md) for the shared
+> data-root verification, proxy trust/header stripping, legacy read behavior,
+> failed-symbol rerun, health/readiness semantics, and rollout/rollback steps
+> required by the coordinated v2 release gate (ticket 08).
+
 ### Images
 
 | Image | Base | Size | Purpose |

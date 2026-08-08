@@ -201,7 +201,8 @@ class ResultWriter:
 
         logger.info(
             "Wrote analysis result for %s (run_id=%s schema_version=%s validation_status=%s "
-            "setup_status=%s action=%s synthesis_status=%s) to %s",
+            "setup_status=%s action=%s synthesis_status=%s execution_status=%s error_codes=%s) "
+            "to %s",
             symbol,
             envelope.run_id,
             envelope.schema_version,
@@ -209,9 +210,32 @@ class ResultWriter:
             envelope.deterministic_facts.setup_status.value,
             envelope.decision.action.value,
             envelope.synthesis.status.value,
+            envelope.deterministic_facts.policy.execution_status,
+            ",".join(self._bounded_error_codes(envelope)) or "-",
             path,
         )
         return path
+
+    @staticmethod
+    def _bounded_error_codes(envelope: AnalysisEnvelope) -> list[str]:
+        """Collect stable, bounded error codes for the completion log.
+
+        Combines policy reason codes, the synthesis error code, and validation
+        errors (all machine-safe strings already present in the envelope),
+        deduplicated and capped so the diagnostic line stays bounded (NFR-003).
+        """
+        codes: list[str] = []
+        facts = envelope.deterministic_facts
+        for code in facts.policy.reason_codes:
+            if code and code not in codes:
+                codes.append(str(code))
+        synthesis_error = envelope.synthesis.error
+        if synthesis_error and synthesis_error not in codes:
+            codes.append(synthesis_error)
+        for err in facts.validation_errors:
+            if err and err not in codes:
+                codes.append(str(err)[:120])
+        return codes[:10]
 
     # ------------------------------------------------------------------
     # Envelope construction

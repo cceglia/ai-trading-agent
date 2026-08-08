@@ -567,3 +567,54 @@ class TestCompactFacts:
         assert facts["timeframes"] == {}
         assert facts["confidence_components"] == {}
         assert facts["event_history"] == {}
+
+
+class TestCompletionLog:
+    """The completion log carries required diagnostic fields without secrets."""
+
+    def test_completion_log_includes_required_diagnostics(self, tmp_path: Path, caplog):
+        import logging
+
+        result: dict = {
+            "analysis_result": _make_analysis_result(),
+            "errors": [],
+            "fatal_error": None,
+        }
+        with caplog.at_level(logging.INFO, logger="src.output.result_writer"):
+            ResultWriter(tmp_path).write("XAUUSD", result, {"D1": []}, datetime(2026, 7, 26, 8, 30))
+        matches = [
+            record
+            for record in caplog.records
+            if record.getMessage().startswith("Wrote analysis result for")
+        ]
+        assert matches
+        line = matches[0].getMessage()
+        # Required diagnostic fields (NFR §18): symbol, run_id, schema version,
+        # validation/setup status, action, synthesis/execution status, and a
+        # stable error-code slot.
+        assert "XAUUSD" in line
+        assert "schema_version=2" in line
+        assert "validation_status=" in line
+        assert "setup_status=" in line
+        assert "action=" in line
+        assert "synthesis_status=" in line
+        assert "execution_status=" in line
+        assert "error_codes=" in line
+        assert "run_id=" in line
+
+    def test_error_codes_slot_is_bounded_and_empty_for_success(self, tmp_path: Path, caplog):
+        import logging
+
+        result: dict = {
+            "analysis_result": _make_analysis_result(),
+            "errors": [],
+            "fatal_error": None,
+        }
+        with caplog.at_level(logging.INFO, logger="src.output.result_writer"):
+            ResultWriter(tmp_path).write("XAUUSD", result, {"D1": []}, datetime(2026, 7, 26, 8, 30))
+        line = [
+            record.getMessage()
+            for record in caplog.records
+            if record.getMessage().startswith("Wrote analysis result for")
+        ][0]
+        assert "error_codes=-" in line

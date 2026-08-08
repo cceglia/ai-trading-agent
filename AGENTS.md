@@ -29,7 +29,7 @@ After modifying code, run `graphify update .` to keep the graph current (AST-onl
 ## Critical invariants
 
 - **Advisory-only**: `entry_authorized` must always be `False`. Enforced at four layers: the deterministic engine hardcodes it; the structure analyzer adapter validates on read; the LLM prompts instruct the model; and the `DeterministicEnforcementGate` blocks post-hoc.
-- **Environment prefix**: Analyzer settings use `TRADING_` prefix via `pydantic-settings` (`config/settings.py`). Server `WebSettings` (`server/src/settings.py`) uses **unprefixed aliases** for most vars (`HOST`, `PORT`, `CORS_ORIGINS`, `PYTHON_CMD`) for backward compatibility; only `TRADING_ANALYSIS_CACHE_DIR`, `TRADING_API_KEY`, `TRADING_RATE_LIMIT_MAX`, `TRADING_RATE_LIMIT_WINDOW` keep the prefix.
+- **Environment prefix**: Analyzer settings use `TRADING_` prefix via `pydantic-settings` (`config/settings.py`). Server `WebSettings` (`server/src/settings.py`) uses **unprefixed aliases** for most vars (`HOST`, `PORT`, `CORS_ORIGINS`, `PYTHON_CMD`) for backward compatibility; only `TRADING_ANALYSIS_CACHE_DIR`, `TRADING_API_KEY`, `TRADING_RATE_LIMIT_MAX`, `TRADING_RATE_LIMIT_WINDOW`, `TRADING_TERMINAL_SERVER_URL` keep the prefix (all shared with the analyzer). The server reads `TRADING_TERMINAL_SERVER_URL` for its readiness MCP probe (ticket 08).
 - **Protocol DI**: Dependencies injected via protocols in `analyzer/src/decision/protocols.py` (`DataSource`, `CalendarProvider`, `StructureAnalyzer`). Orchestration code never imports concrete implementations.
 
 ## Development environment (Docker)

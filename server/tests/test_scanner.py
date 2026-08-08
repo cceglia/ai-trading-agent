@@ -827,3 +827,42 @@ class TestListRunsCache:
         s.invalidate_cache()
         runs3 = s.list_runs(symbol="XAUUSD")
         assert len(runs3) == 1
+
+
+class TestLegacyReadDiagnostics:
+    """Legacy reads increment a bounded counter and emit a warning (NFR §18)."""
+
+    def test_get_run_counts_legacy_reads(self, tmp_path: Path):
+        _write_result(tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json")
+        s = ResultScanner(tmp_path)
+        assert s.legacy_reads == 0
+        s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+        assert s.legacy_reads == 1
+        # Reading again increments the bounded counter.
+        s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+        assert s.legacy_reads == 2
+
+    def test_list_runs_counts_legacy_reads(self, tmp_path: Path):
+        _write_result(tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json")
+        s = ResultScanner(tmp_path)
+        assert s.list_runs(symbol="XAUUSD")
+        assert s.legacy_reads == 1
+
+    def test_v2_reads_do_not_count_as_legacy(self, tmp_path: Path):
+        _write_result(
+            tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json",
+            data=_v2_envelope(),
+        )
+        s = ResultScanner(tmp_path)
+        s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+        assert s.legacy_reads == 0
+
+    def test_legacy_read_logs_warning(self, tmp_path: Path, caplog):
+        _write_result(tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json")
+        s = ResultScanner(tmp_path)
+        with caplog.at_level("WARNING", logger="src.scanner"):
+            s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+        assert any(
+            record.levelname == "WARNING" and "Legacy read" in record.message
+            for record in caplog.records
+        )

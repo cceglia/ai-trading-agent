@@ -21,7 +21,9 @@ from src.decision.llm_config import ProviderKind, resolve_model_identity
 from src.logging_config import setup_logging
 from src.notification.telegram_sender import send_trade_notification
 from src.orchestrator.graph import TradingGraph
+from src.output.fs_preflight import verify_data_root_writable
 from src.output.result_writer import ResultWriter
+from src.output.run_metrics import RunMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -349,20 +351,19 @@ def _send_telegram_notification(
     symbol: str,
     result: dict[str, Any],
     settings: Settings,
-) -> None:
+) -> bool:
     """Send a Telegram notification for an approved trade setup.
 
     Only sends for valid, actionable deterministic results. Presentation
     synthesis may be degraded; the sender marks that explanation is unavailable.
 
-    Args:
-        symbol: Trading symbol.
-        result: Analysis result dict.
-        settings: Application settings (for Telegram credentials).
+    Returns ``True`` when a notification was sent, ``False`` when it was
+    suppressed (ineligible result), so the batch metrics can count
+    ``notifications_sent``/``notifications_suppressed`` (NFR §18).
     """
     analysis_result = _model_or_dict(result.get("analysis_result"))
     if not analysis_result:
-        return
+        return False
 
     decision = _model_or_dict(analysis_result.get("decision"))
     context = _model_or_dict(analysis_result.get("market_context"))
@@ -385,6 +386,8 @@ def _send_telegram_notification(
             chat_id=settings.telegram_chat_id,
             result=result,
         )
+        return True
+    return False
 
 
 def _run_single_symbol(
@@ -393,6 +396,7 @@ def _run_single_symbol(
     settings: Settings,
     writer: Any,
     telegram_enabled: bool,
+    metrics: RunMetrics | None = None,
 ) -> tuple[str, str, dict[str, Any]]:
     """Run the full analysis pipeline for a single symbol.
 
@@ -402,6 +406,7 @@ def _run_single_symbol(
         settings: Application settings.
         writer: Optional ResultWriter for persisting results.
         telegram_enabled: Whether ``--telegram`` was set on CLI.
+        metrics: Optional bounded run counters (NFR §18).
 
     Returns:
         Tuple of ``(symbol, status, data)`` where status is ``"success"``
@@ -413,8 +418,14 @@ def _run_single_symbol(
 
         _write_result(symbol, result, writer)
 
+        # METRICS-001: notification counters are only recorded when the
+        # Telegram channel is actually enabled. ``notifications_suppressed``
+        # must mean an ineligible result (FR-032), never "telegram disabled",
+        # so a disabled channel leaves both counters at zero.
         if telegram_enabled:
-            _send_telegram_notification(symbol, result, settings)
+            sent = _send_telegram_notification(symbol, result, settings)
+            if metrics is not None:
+                metrics.record_notification(sent)
 
         logger.info("Analysis complete for %s", symbol)
         return symbol, "success", result
@@ -463,13 +474,25 @@ def _run_pipeline(
     cost_tracker.set_limit(settings.cost_per_symbol_limit)
     graph, writer = _initialize_pipeline(settings, cost_tracker)
 
+    metrics = RunMetrics()
     results: list[tuple[str, str, dict[str, Any]]] = []
     for symbol in symbols:
         cost_tracker.reset()
         cost_tracker.set_symbol(symbol)
-        result = _run_single_symbol(graph, symbol, settings, writer, telegram_enabled)
+        result = _run_single_symbol(graph, symbol, settings, writer, telegram_enabled, metrics)
         results.append(result)
+        metrics.llm_calls += cost_tracker.call_count
+        metrics.record(symbol, result[1], result[2])
+        # NFR §18: one bounded LLM call-count/cost record per symbol.
+        logger.info(
+            "Symbol run: symbol=%s status=%s llm_calls=%d llm_cost=%.6f",
+            symbol,
+            result[1],
+            cost_tracker.call_count,
+            cost_tracker.total_cost,
+        )
 
+    metrics.log_summary()
     _print_summary(results)
 
 
@@ -484,6 +507,17 @@ def main() -> None:
     settings = _parse_and_configure_settings(args)
 
     logger.info("Starting Trading AI Agent for symbols: %s", ", ".join(args.symbols))
+
+    # Preflight: the shared data root must resolve, exist, and pass a
+    # write/read roundtrip before any run. A missing/unwritable root fails
+    # safely — no signal is claimed (AC-014 / NFR §18).
+    ok, message = verify_data_root_writable(settings.resolved_analysis_cache_dir)
+    if not ok:
+        logger.error(
+            "Preflight failed: data root %s is %s", settings.resolved_analysis_cache_dir, message
+        )
+        print(f"Error: data root is not writable: {settings.resolved_analysis_cache_dir}")
+        sys.exit(1)
 
     try:
         _run_pipeline(settings, args.symbols, args.telegram)

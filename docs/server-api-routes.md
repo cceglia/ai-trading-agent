@@ -44,6 +44,41 @@ empty, the server is explicitly permissive (development mode).
   FastAPI server deliberately never answers a preflight without a credential
   (uniform method protection, no preflight bypass).
 
+## Health and readiness (ticket 08)
+
+Two non-`/api` probe endpoints are provided so infrastructure can check the
+service without credentials (the auth boundary only guards `/api`).
+
+- `GET /health` — API **liveness**: `200 {"status":"ok","service":"api"}` while
+  the process serves requests.
+- `GET /readiness` — distinguishes API availability from analyzer/MCP
+  availability (NFR §18). Returns `200` with `ready:true` only when every check
+  is `ok`; otherwise `503` with `ready:false`. Response shape:
+
+  ```json
+  {
+    "ready": false,
+    "checks": {"api": "ok", "data_root": "ok", "analyzer": "ok", "mcp": "unavailable"},
+    "legacy_reads": 0,
+    "market_signal": null
+  }
+  ```
+
+  - `checks.api` is `ok` whenever the API process is alive — it is never
+    conflated with data-source availability.
+  - `checks.data_root` passes only when the shared analysis root resolves and
+    survives a write/read roundtrip preflight.
+  - `checks.analyzer` requires the analyzer `main.py` and `PYTHON_CMD` to be
+    present.
+  - `checks.mcp` is a lightweight TCP reachability probe of
+    `TRADING_TERMINAL_SERVER_URL` (no credentials sent, bounded timeout).
+  - `market_signal` is always `null`: a health surface never emits a market
+    signal. When `checks.mcp` is `unavailable`, `ready` is `false` and the
+    status is `503` — an unavailable MCP is never reported as a valid market
+    signal.
+  - `legacy_reads` is the bounded, process-local count of legacy files adapted
+    by the scanner; it feeds the readiness payload.
+
 ## Routes
 
 | Method | Path | Query/path params | Request body | Response |

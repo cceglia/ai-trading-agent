@@ -1023,6 +1023,15 @@ class TradingGraph:
             structure_analysis=state.get("structure_analysis"),
             action=expected_action,
         )
+        if not validation.valid:
+            # NFR §18: surface invalid validation (including stale/broken
+            # invalidation rejection) as a bounded warning so operators see it
+            # without a raw dump.
+            logger.warning(
+                "Deterministic validation failed for %s: %d error(s)",
+                state["symbol"],
+                len(validation.validation_errors),
+            )
         return {"deterministic_validation": validation}
 
     def _post_llm_validation(self, state: AgentState) -> dict[str, Any]:

@@ -140,6 +140,9 @@ class ResultScanner:
             tuple[str | None, str | None, str | None], tuple[float, list[RunSummary]]
         ] = {}
         self._legacy_adapter = LegacyAdapter()
+        # Bounded diagnostic counter: number of legacy files adapted since this
+        # scanner instance was created (NFR §18). Monotonic, process-local.
+        self.legacy_reads = 0
 
     # ------------------------------------------------------------------
     # Public API
@@ -208,7 +211,17 @@ class ResultScanner:
             return None
         if data.get("schema_version") == _SCHEMA_V2:
             return data
-        logger.info("Legacy read (schema_version=%s) from %s", _LEGACY_SCHEMA, fpath)
+        return self._adapt_legacy(data, fpath)
+
+    def _adapt_legacy(self, data: dict[str, Any], fpath: Path) -> dict[str, Any]:
+        """Normalize a legacy file, count it, and warn (NFR §18).
+
+        Legacy reads are expected during the migration window but are never
+        operational; the warning keeps the marker visible to operators and the
+        bounded ``legacy_reads`` counter feeds readiness diagnostics.
+        """
+        self.legacy_reads += 1
+        logger.warning("Legacy read (schema_version=legacy) from %s", fpath)
         return self._legacy_adapter.adapt(data)
 
     def invalidate_cache(self) -> None:
@@ -431,7 +444,7 @@ class ResultScanner:
             if data.get("schema_version") == _SCHEMA_V2:
                 envelope = data
             else:
-                envelope = self._legacy_adapter.adapt(data)
+                envelope = self._adapt_legacy(data, fpath)
 
             facts = envelope.get("deterministic_facts") or {}
             decision = envelope.get("decision") or {}

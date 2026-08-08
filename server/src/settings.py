@@ -44,6 +44,13 @@ class WebSettings(BaseSettings):
 
     host: str = Field(default="0.0.0.0", alias="HOST")
     port: int = Field(default=3000, alias="PORT")
+
+    # Terminal MCP server URL, shared with the analyzer (prefixed because it
+    # is a shared analyzer variable). Used by the readiness check to
+    # distinguish API availability from MCP data-source availability (NFR §18).
+    terminal_server_url: str = Field(
+        default="http://127.0.0.1:22346/mcp", alias="TRADING_TERMINAL_SERVER_URL"
+    )
     cors_origins: list[str] = Field(
         default=["http://localhost:5173"], alias="CORS_ORIGINS"
     )

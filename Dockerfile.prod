@@ -22,6 +22,11 @@ RUN USER_ID=${USER_ID} GROUP_ID=${GROUP_ID} /tmp/create-user.sh && \
 # Switch to non-root user for everything below
 USER app
 
+# Ensure the shared data root exists with the right ownership inside the
+# image. A bind mount at /app/data shadows this, but with no volume attached
+# the writer/scanner still have a writable root (NFR-004 / ticket 08).
+RUN mkdir -p /app/data && chown app:app /app/data
+
 # ---- Layer 1: Dependencies (cached until package files change) ----
 
 # Server dependencies (Python FastAPI)

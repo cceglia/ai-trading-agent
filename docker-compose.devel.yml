@@ -18,6 +18,7 @@ services:
       - ./data:/app/data
       - ./scripts:/app/scripts
       - ./.env:/app/.env:ro
+      - ./.env.template:/app/.env.template:ro
       # Preserve node_modules installed inside the container
       - trading_node_modules:/app/server/node_modules
     ports:
@@ -26,6 +27,16 @@ services:
       - .env
     environment:
       - PORT=3000
+
+    # API-liveness healthcheck (NFR §18 / ticket 08). Probes /health (liveness),
+    # not /readiness, so an unavailable terminal MCP data source never marks the
+    # dev container unhealthy while the API process itself is up.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/health', timeout=5)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
     # Container auto-starts FastAPI (reload) + Vite dev server (HMR) on boot
     restart: unless-stopped

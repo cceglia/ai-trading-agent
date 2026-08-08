@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.health import HealthService
 from src.middleware.auth import AuthMiddleware
 from src.middleware.ratelimit import SlidingWindowRateLimiter
 from src.models import BatchResponse, RunRequest, RunSummary
@@ -181,6 +183,43 @@ def create_app() -> FastAPI:
         analyzer_dir=str(Path(__file__).resolve().parent.parent.parent / "analyzer"),
         data_dir=str(settings.resolved_cache_dir),
     )
+    health_service = HealthService(
+        data_root=settings.resolved_cache_dir,
+        analyzer_dir=Path(__file__).resolve().parent.parent.parent / "analyzer",
+        python_cmd=settings.python_cmd,
+        mcp_url=settings.terminal_server_url,
+        scanner=scanner,
+    )
+
+    # --- Health & readiness (NFR §18 / ticket 08) ---
+    #
+    # These routes live OUTSIDE /api so orchestrators and load balancers can
+    # probe them without credentials (AuthMiddleware only guards the /api
+    # surface). Readiness distinguishes API availability from analyzer/MCP
+    # availability and never reports an unavailable MCP as a market signal.
+
+    @app.get("/health")
+    async def health() -> dict:
+        # API liveness: this process is up and serving requests.
+        return {"status": "ok", "service": "api"}
+
+    @app.get("/readiness")
+    async def readiness(response: Response) -> dict:
+        # HEALTH-001: check() performs a disk write/read roundtrip and a
+        # synchronous TCP connect (1.5s timeout), so it must never run on the
+        # event loop. Deferring to a worker thread keeps other requests
+        # (e.g. /health) responsive while a slow probe is in flight.
+        report = await asyncio.to_thread(health_service.check)
+        payload: dict = {
+            "ready": report.ready,
+            "checks": report.checks,
+            "legacy_reads": report.legacy_reads,
+            # Health endpoints never emit a market signal; an unavailable MCP
+            # is reflected in ``checks.mcp`` and ``ready`` instead.
+            "market_signal": None,
+        }
+        response.status_code = 200 if report.ready else 503
+        return payload
 
     # --- Routes ---
 

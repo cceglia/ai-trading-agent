@@ -145,6 +145,71 @@ def test_telegram_suppresses_nested_non_actionable_analysis_result():
     send.assert_not_called()
 
 
+def _run_single_symbol_with_metrics(
+    monkeypatch,
+    *,
+    telegram_enabled: bool,
+    send_result: bool = True,
+) -> tuple:
+    """Run ``_run_single_symbol`` with a mock graph and metrics.
+
+    ``send_result`` controls what ``_send_telegram_notification`` returns when
+    telegram is enabled (True = sent, False = suppressed/ineligible).
+    """
+    import main
+    from src.output.run_metrics import RunMetrics
+
+    graph = MagicMock()
+    graph.run.return_value = {
+        "analysis_result": {
+            "validation_status": "VALID",
+            "setup_status": "READY",
+            "operational": True,
+            "decision": {"action": "buy_setup"},
+        },
+        "errors": [],
+        "fatal_error": None,
+    }
+    settings = MagicMock()
+    metrics = RunMetrics()
+    monkeypatch.setattr(main, "_send_telegram_notification", lambda *_: send_result)
+    _symbol, status, _data = main._run_single_symbol(
+        graph, "XAUUSD", settings, None, telegram_enabled, metrics
+    )
+    return status, metrics
+
+
+def test_run_single_symbol_telegram_disabled_records_no_notifications(monkeypatch):
+    """METRICS-001: without ``--telegram`` no notification counters are
+    recorded. ``notifications_suppressed`` must mean an ineligible result
+    (FR-032), not 'telegram disabled'."""
+    status, metrics = _run_single_symbol_with_metrics(
+        monkeypatch, telegram_enabled=False, send_result=False
+    )
+    assert status == "success"
+    assert metrics.notifications_sent == 0
+    assert metrics.notifications_suppressed == 0
+
+
+def test_run_single_symbol_telegram_enabled_records_sent(monkeypatch):
+    status, metrics = _run_single_symbol_with_metrics(
+        monkeypatch, telegram_enabled=True, send_result=True
+    )
+    assert status == "success"
+    assert metrics.notifications_sent == 1
+    assert metrics.notifications_suppressed == 0
+
+
+def test_run_single_symbol_telegram_enabled_records_suppressed_ineligible(monkeypatch):
+    """With telegram enabled, an ineligible result is a genuine suppression."""
+    status, metrics = _run_single_symbol_with_metrics(
+        monkeypatch, telegram_enabled=True, send_result=False
+    )
+    assert status == "success"
+    assert metrics.notifications_sent == 0
+    assert metrics.notifications_suppressed == 1
+
+
 def test_print_symbol_summary_uses_deterministic_bias_not_stale_market_context(capsys):
     """SYNTH-010: the CLI summary must show the deterministic direction and
     the LLM synthesis explanation instead of N/A/0 from the absent legacy
