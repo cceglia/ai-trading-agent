@@ -510,8 +510,8 @@
     "semantic_hash": ""
   },
   "server/src/scanner.py": {
-    "mtime": 1786197685.5213857,
-    "ast_hash": "f9fd841e5c3f51647884ae0563acee37",
+    "mtime": 1786205484.8050797,
+    "ast_hash": "e91e7504f612a5e2bb04fb8a7828cd81",
     "semantic_hash": ""
   },
   "server/src/runner.py": {
@@ -550,8 +550,8 @@
     "semantic_hash": ""
   },
   "server/tests/test_scanner.py": {
-    "mtime": 1786197804.133154,
-    "ast_hash": "eaf5fa2b30a3167ea581220c558b9c09",
+    "mtime": 1786205496.2188725,
+    "ast_hash": "b8fcc8a45453b567b8068ee21cad9da3",
     "semantic_hash": ""
   },
   "analyzer/src/notification/__init__.py": {

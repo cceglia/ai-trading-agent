@@ -23,6 +23,22 @@ logger = logging.getLogger(__name__)
 _SCHEMA_V2 = "2"
 _LEGACY_SCHEMA = "legacy"
 
+_LEGACY_ACTION_PASSTHROUGH = frozenset({"buy_setup", "sell_setup"})
+
+
+def _normalize_legacy_action(action: Any) -> str:
+    """Map a legacy stored action to the canonical v2 set (DEC-002).
+
+    ``wait_for_setup`` was removed from the canonical domain and collapses to
+    ``no_trade``; any other unrecognized legacy string (including None/empty)
+    also collapses to ``no_trade`` rather than raising — the adapter is a
+    read-only boundary and must never fail on unknown legacy values.
+    ``buy_setup``/``sell_setup`` pass through unchanged.
+    """
+    if isinstance(action, str) and action in _LEGACY_ACTION_PASSTHROUGH:
+        return action
+    return "no_trade"
+
 
 class LegacyAdapter:
     """Server-owned, read-only, idempotent adapter for legacy result files.
@@ -64,7 +80,7 @@ class LegacyAdapter:
         confidence = facts.get("confidence")
         if confidence is None:
             confidence = market_context.get("confidence")
-        action = decision.get("action")
+        action = _normalize_legacy_action(decision.get("action"))
 
         ohlc = data.get("ohlc")
         return {
@@ -110,7 +126,7 @@ class LegacyAdapter:
                 "bias": bias,
                 "confidence": confidence,
             },
-            "decision": {"action": action or "no_trade"},
+            "decision": {"action": action},
             "synthesis": {
                 "status": "SKIPPED",
                 "explanation": None,

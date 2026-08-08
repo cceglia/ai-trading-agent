@@ -6,6 +6,8 @@ import json
 import os
 from pathlib import Path
 
+import pytest
+
 from src.scanner import LegacyAdapter, ResultScanner
 
 _LEGACY_FIXTURE = {
@@ -415,6 +417,39 @@ class TestLegacyAdapter:
         assert result["decision"]["action"] == "no_trade"
         assert facts["bias"] is None
         assert facts["confidence"] is None
+
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            None,
+            "",
+            "wait_for_setup",
+            "wait_for_entry",
+            "whatever",
+            "NO_TRADE",
+            42,
+            ["buy_setup"],
+        ],
+    )
+    def test_adapt_collapses_non_canonical_actions_to_no_trade(self, raw):
+        """Any non-canonical legacy action collapses to ``no_trade`` (DEC-002)."""
+        adapter = LegacyAdapter()
+        result = adapter.adapt({"symbol": "XAUUSD", "decision": {"action": raw}})
+        assert result["decision"]["action"] == "no_trade"
+
+    @pytest.mark.parametrize("action", ["buy_setup", "sell_setup"])
+    def test_adapt_passes_through_setup_actions(self, action):
+        adapter = LegacyAdapter()
+        result = adapter.adapt({"symbol": "XAUUSD", "decision": {"action": action}})
+        assert result["decision"]["action"] == action
+
+    def test_adapt_wait_for_setup_is_idempotent(self):
+        """Collapsing ``wait_for_setup`` still yields a stable second pass."""
+        adapter = LegacyAdapter()
+        data = {"symbol": "XAUUSD", "decision": {"action": "wait_for_setup"}}
+        once = adapter.adapt(data)
+        assert once["decision"]["action"] == "no_trade"
+        assert adapter.adapt(once) == once
 
 
 class TestListRunsPruning:
