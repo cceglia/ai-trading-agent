@@ -1,5 +1,10 @@
 import axios, { type AxiosInstance } from "axios";
-import type { RunSummary, FullResult, RunRequest } from "../types";
+import type {
+  RunSummary,
+  AnalysisEnvelope,
+  RunRequest,
+  BatchResponse,
+} from "../types";
 
 /**
  * Resolve the API base URL from the `VITE_API_URL` environment variable.
@@ -53,12 +58,12 @@ export async function fetchRunResult(
   month: string,
   day: string,
   file: string
-): Promise<FullResult> {
+): Promise<AnalysisEnvelope> {
   const { data } = await api.get(`/api/runs/${symbol}/${year}/${month}/${day}/${file}`);
   return data;
 }
 
-export async function startRun(request: RunRequest): Promise<FullResult[]> {
+export async function startRun(request: RunRequest): Promise<BatchResponse> {
   const { data } = await api.post("/api/run", request);
   return data;
 }

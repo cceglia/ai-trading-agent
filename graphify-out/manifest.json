@@ -370,8 +370,8 @@
     "semantic_hash": ""
   },
   "ui/package.json": {
-    "mtime": 1785390525.4506993,
-    "ast_hash": "c542ff71b99b4ab30ee5112071334f03",
+    "mtime": 1786190468.263605,
+    "ast_hash": "5a6cbd02dfaf96be714f6f0e70fdc38a",
     "semantic_hash": ""
   },
   "ui/postcss.config.js": {
@@ -390,8 +390,8 @@
     "semantic_hash": ""
   },
   "ui/src/components/RunCard.vue": {
-    "mtime": 1786113493.7126591,
-    "ast_hash": "4749b195700d0f786b8a923d527b3109",
+    "mtime": 1786191081.223968,
+    "ast_hash": "a29672aed92d99d0873661ad4e2a2f90",
     "semantic_hash": ""
   },
   "ui/src/components/SymbolSidebar.vue": {
@@ -405,8 +405,8 @@
     "semantic_hash": ""
   },
   "ui/src/composables/useRun.ts": {
-    "mtime": 1785390585.4278152,
-    "ast_hash": "5f010bdf6d4709c987b6c68cbde5a660",
+    "mtime": 1786190445.2387352,
+    "ast_hash": "0f33cfdbf38babe4ef32245254824f72",
     "semantic_hash": ""
   },
   "ui/src/composables/useRuns.ts": {
@@ -425,8 +425,8 @@
     "semantic_hash": ""
   },
   "ui/src/types.ts": {
-    "mtime": 1786113735.1299438,
-    "ast_hash": "bf243d4c62efe8f23e140f9907381d4c",
+    "mtime": 1786191046.7754958,
+    "ast_hash": "2ac0c5610429ba00cbc8428c379b0627",
     "semantic_hash": ""
   },
   "ui/src/views/Dashboard.vue": {
@@ -435,8 +435,8 @@
     "semantic_hash": ""
   },
   "ui/src/views/Detail.vue": {
-    "mtime": 1786113493.7376587,
-    "ast_hash": "a052618f7ac1d2551fa1ae11dcebe96c",
+    "mtime": 1786191084.2279222,
+    "ast_hash": "5fe33a5c68efc74c284743f5b87f5dbf",
     "semantic_hash": ""
   },
   "ui/tailwind.config.js": {
@@ -785,13 +785,13 @@
     "semantic_hash": ""
   },
   "ui/src/__tests__/deterministicSetup.test.ts": {
-    "mtime": 1785578960.5660584,
-    "ast_hash": "e60aa68e661ada135f28f095a74f0d1a",
+    "mtime": 1786191104.5216112,
+    "ast_hash": "5e01d419a1584d4983a7196a855d0564",
     "semantic_hash": ""
   },
   "ui/src/deterministicSetup.ts": {
-    "mtime": 1785578960.5550587,
-    "ast_hash": "98c1329053367dd47b87c199a78ea063",
+    "mtime": 1786191058.119322,
+    "ast_hash": "fce917bdb704abff0b5cabf925df78c5",
     "semantic_hash": ""
   },
   "analyzer/tests/decision/test_llm_timeout.py": {
@@ -820,8 +820,8 @@
     "semantic_hash": ""
   },
   "ui/src/lib/api.ts": {
-    "mtime": 1785390554.2682745,
-    "ast_hash": "358e9cc84870e47adc63195a2012d737",
+    "mtime": 1786190322.9616253,
+    "ast_hash": "c9ea2e5ee8fde6d44c12ea14c118b974",
     "semantic_hash": ""
   },
   "ui/src/lib/dates.ts": {
@@ -877,6 +877,31 @@
   "docs/server-api-routes.md": {
     "mtime": 1786188566.8248415,
     "ast_hash": "4b7aa1cf0f784da1a172b33ccc84d861",
+    "semantic_hash": ""
+  },
+  "ui/src/__tests__/Detail.test.ts": {
+    "mtime": 1786190451.077645,
+    "ast_hash": "ec38ef26620e746a170405e5b6385259",
+    "semantic_hash": ""
+  },
+  "ui/src/__tests__/RunCard.test.ts": {
+    "mtime": 1786191111.1825092,
+    "ast_hash": "b01da6b124dd14f69eee8ee48fb05543",
+    "semantic_hash": ""
+  },
+  "ui/src/__tests__/fixtures.ts": {
+    "mtime": 1786191074.961064,
+    "ast_hash": "f32b3bcfa7274554ba4e966891626941",
+    "semantic_hash": ""
+  },
+  "ui/src/__tests__/secretScan.test.ts": {
+    "mtime": 1786191039.4906073,
+    "ast_hash": "099a0681ba4a2e91e301a40d9684075a",
+    "semantic_hash": ""
+  },
+  "ui/src/lib/__tests__/v2ApiContract.test.ts": {
+    "mtime": 1786190463.0034606,
+    "ast_hash": "b1be5462219cc355cff1e862e6a81952",
     "semantic_hash": ""
   }
 }

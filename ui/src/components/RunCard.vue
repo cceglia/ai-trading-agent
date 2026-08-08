@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { RunSummary } from "../types";
+import { actionLabel, formatConfidencePct, isLegacySummary } from "../deterministicSetup";
 
 const props = defineProps<{ run: RunSummary }>();
 const emit = defineEmits<{ select: [run: RunSummary] }>();
@@ -24,9 +26,15 @@ const biasArrow: Record<string, string> = {
   strong_bearish: "▼▼",
 };
 
-function formatConfidence(confidence: number): string {
-  return `${Math.round(confidence)}%`;
-}
+const biasKey = computed(() => props.run.bias.toLowerCase());
+const isOperational = computed(
+  () => props.run.operational === true && props.run.validation_status === "VALID"
+);
+const validationClass = computed(() =>
+  props.run.validation_status === "VALID"
+    ? "text-terminal-gain"
+    : "text-terminal-loss"
+);
 </script>
 
 <template>
@@ -39,17 +47,30 @@ function formatConfidence(confidence: number): string {
       <span class="text-xs font-mono text-terminal-text-tertiary">{{ run.date }} {{ run.time }}</span>
     </div>
     <div class="flex items-center gap-2">
-      <span :class="['text-sm font-mono font-medium', biasColor[run.bias] || 'text-terminal-text-tertiary']">
-        {{ biasArrow[run.bias] || "–" }} {{ run.bias.replace("_", " ") }}
+      <span :class="['text-sm font-mono font-medium', biasColor[biasKey] || 'text-terminal-text-tertiary']">
+        {{ biasArrow[biasKey] || "–" }} {{ run.bias }}
       </span>
       <span class="text-xs font-mono text-terminal-text-secondary">
-        {{ formatConfidence(run.confidence) }}
+        {{ formatConfidencePct(run.confidence, isLegacySummary(run)) }}
       </span>
     </div>
     <div class="flex items-center justify-between mt-1">
-      <span class="text-xs font-mono text-terminal-text-tertiary uppercase">{{ run.action.replace("_", " ") }}</span>
-      <span :class="['text-xs', run.validation_status === 'VALID' ? 'text-terminal-gain' : 'text-terminal-loss']">
+      <span class="text-xs font-mono text-terminal-text-tertiary uppercase">{{ actionLabel(run.action) }}</span>
+      <span :class="['text-xs font-mono', validationClass]">
         {{ run.validation_status }}
+      </span>
+    </div>
+    <div class="flex items-center justify-between mt-1">
+      <span class="text-xs font-mono text-terminal-text-tertiary uppercase">
+        {{ run.setup_status }} / {{ run.direction }}
+      </span>
+      <span
+        :class="[
+          'text-xs font-mono',
+          isOperational ? 'text-terminal-gain' : 'text-terminal-text-tertiary',
+        ]"
+      >
+        {{ isOperational ? "OPERATIONAL" : "NON-OPERATIONAL" }}
       </span>
     </div>
   </button>

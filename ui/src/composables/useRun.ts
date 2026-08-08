@@ -1,7 +1,7 @@
 import { ref, watch } from "vue";
 import { fetchRunResult } from "../lib/api";
 import { formatApiError } from "../lib/errors";
-import type { FullResult } from "../types";
+import type { AnalysisEnvelope } from "../types";
 
 export function useRun(
   symbol: () => string,
@@ -10,7 +10,7 @@ export function useRun(
   day: () => string,
   file: () => string
 ) {
-  const result = ref<FullResult | null>(null);
+  const result = ref<AnalysisEnvelope | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
