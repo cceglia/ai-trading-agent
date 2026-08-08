@@ -403,6 +403,53 @@ class TestPostRun:
         assert resp.status_code == 400
         mock_runner.run_analysis.assert_not_called()
 
+    @pytest.mark.parametrize(
+        "bad_provider",
+        [
+            "x" * 33,  # over length bound
+            "bad provider",  # space
+            "http://evil.example",  # URL-ish
+            "!@#$%",
+            "",
+            "   ",
+        ],
+    )
+    def test_invalid_provider_id_rejected_before_runner(self, client, bad_provider):
+        """API-003: provider_id is bounded in length/format; violations are
+        rejected with 422 before the runner is spawned."""
+        test_client, _, mock_runner = client
+
+        resp = test_client.post(
+            "/api/run", json={"symbols": ["XAUUSD"], "provider_id": bad_provider}
+        )
+
+        assert resp.status_code == 422
+        mock_runner.run_analysis.assert_not_called()
+
+    def test_invalid_symbol_error_does_not_echo_input(self, client):
+        """API-003: the 400 symbol message is a generic stable string that
+        never echoes the raw client-supplied symbol."""
+        test_client, _, mock_runner = client
+
+        resp = test_client.post("/api/run", json={"symbols": ["../../etc/passwd"]})
+
+        assert resp.status_code == 400
+        assert resp.json()["error"] == "Invalid symbol format"
+        mock_runner.run_analysis.assert_not_called()
+
+    def test_unknown_provider_error_does_not_echo_input(self, client):
+        """API-003: the 400 unknown-provider message is generic and never
+        echoes the submitted provider id."""
+        test_client, _, mock_runner = client
+
+        resp = test_client.post(
+            "/api/run", json={"symbols": ["XAUUSD"], "provider_id": "secret-token-xyz"}
+        )
+
+        assert resp.status_code == 400
+        assert resp.json()["error"] == "Unknown provider_id"
+        mock_runner.run_analysis.assert_not_called()
+
     def test_configured_provider_id_accepted(self, client_with_provider):
         """AC-020: a configured provider id resolves to the server-side URL."""
         test_client, _, mock_runner = client_with_provider
@@ -506,6 +553,38 @@ class TestPostRun:
         mock_runner.run_analysis.return_value = BatchResult()
 
         resp = test_client.post("/api/run", json={"symbols": ["XAUUSD", "EURUSD123"]})
+
+        assert resp.status_code == 200
+
+
+class TestUnknownApiRoutes:
+    """API-002: unknown /api/* paths return 404 JSON, not SPA text/html."""
+
+    def test_unknown_get_returns_404_json(self, client):
+        test_client, mock_scanner, _ = client
+
+        resp = test_client.get("/api/does-not-exist")
+
+        assert resp.status_code == 404
+        assert resp.headers["content-type"].startswith("application/json")
+        assert resp.json() == {"error": "Not found"}
+        mock_scanner.list_runs.assert_not_called()
+
+    def test_unknown_post_returns_404_json(self, client):
+        test_client, _, mock_runner = client
+
+        resp = test_client.post("/api/does-not-exist", json={"symbols": ["XAUUSD"]})
+
+        assert resp.status_code == 404
+        assert resp.headers["content-type"].startswith("application/json")
+        assert resp.json() == {"error": "Not found"}
+        mock_runner.run_analysis.assert_not_called()
+
+    def test_known_api_paths_unaffected(self, client):
+        test_client, mock_scanner, _ = client
+        mock_scanner.list_runs.return_value = []
+
+        resp = test_client.get("/api/runs")
 
         assert resp.status_code == 200
 

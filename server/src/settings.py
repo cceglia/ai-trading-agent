@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import ipaddress
 from pathlib import Path
 from typing import Any
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, EnvSettingsSource
 
 
@@ -17,7 +18,7 @@ class _CommaDelimitedEnvSource(EnvSettingsSource):
     that operators can set ``CORS_ORIGINS=http://a.com,http://b.com``.
     """
 
-    _COMMA_FIELDS = frozenset({"cors_origins"})
+    _COMMA_FIELDS = frozenset({"cors_origins", "trusted_proxy_cidrs"})
 
     def prepare_field_value(
         self,
@@ -51,6 +52,37 @@ class WebSettings(BaseSettings):
 
     # Auth
     api_key: str = Field(default="", alias="TRADING_API_KEY")
+
+    # Trusted reverse-proxy source networks (FR-036 / DEC-008).
+    #
+    # Comma-separated CIDRs. When non-empty, FastAPI accepts the proxy
+    # ``X-Authenticated-User`` marker ONLY from a peer address inside one of
+    # these networks. The default is empty: proxy-marker authentication is
+    # disabled and never trusts all networks. The reverse proxy must strip and
+    # rewrite the client-supplied header before FastAPI.
+    trusted_proxy_cidrs: list[str] = Field(
+        default_factory=list, alias="TRADING_TRUSTED_PROXY_CIDRS"
+    )
+
+    @field_validator("trusted_proxy_cidrs")
+    @classmethod
+    def _validate_trusted_proxy_cidrs(cls, value: list[str]) -> list[str]:
+        """Reject malformed CIDRs at settings load (CONFIG-001).
+
+        ``AuthMiddleware`` builds ip_network objects from these; an invalid
+        value must fail here with a clear configuration error instead of an
+        opaque ``ValueError`` inside ``create_app``. An empty list is valid
+        (proxy-marker trust disabled).
+        """
+        for cidr in value:
+            try:
+                ipaddress.ip_network(cidr.strip())
+            except ValueError as exc:
+                raise ValueError(
+                    f"Invalid CIDR in TRADING_TRUSTED_PROXY_CIDRS: {cidr!r} "
+                    "(expected an IP network like 10.0.0.0/8)"
+                ) from exc
+        return value
 
     # Rate limiting
     rate_limit_max: int = Field(default=20, alias="TRADING_RATE_LIMIT_MAX")

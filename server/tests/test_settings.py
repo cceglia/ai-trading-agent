@@ -8,6 +8,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+from pydantic import ValidationError
+
 from src.settings import WebSettings
 
 
@@ -65,6 +68,65 @@ class TestProviderConfig:
     def test_provider_config_default_empty(self):
         settings = WebSettings()
         assert settings.provider_config == {}
+
+
+class TestTrustedProxyCidrs:
+    """``TRADING_TRUSTED_PROXY_CIDRS`` configures the trusted proxy sources.
+
+    FR-036 / DEC-008: comma-separated CIDRs; an empty value disables
+    proxy-marker authentication rather than trusting all networks.
+    """
+
+    def test_default_is_empty(self):
+        settings = WebSettings()
+        assert settings.trusted_proxy_cidrs == []
+
+    def test_cidrs_from_env_comma_separated(self, monkeypatch):
+        monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "10.0.0.0/8,192.168.1.0/24")
+        settings = WebSettings()
+        assert settings.trusted_proxy_cidrs == ["10.0.0.0/8", "192.168.1.0/24"]
+
+    def test_cidrs_strip_whitespace(self, monkeypatch):
+        monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "10.0.0.0/8 , 192.168.1.0/24")
+        settings = WebSettings()
+        assert settings.trusted_proxy_cidrs == ["10.0.0.0/8", "192.168.1.0/24"]
+
+    def test_single_cidr(self, monkeypatch):
+        monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "172.16.0.0/12")
+        settings = WebSettings()
+        assert settings.trusted_proxy_cidrs == ["172.16.0.0/12"]
+
+    def test_empty_env_yields_empty_list(self, monkeypatch):
+        monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "")
+        settings = WebSettings()
+        assert settings.trusted_proxy_cidrs == []
+
+
+class TestTrustedProxyCidrValidation:
+    """CONFIG-001: invalid CIDRs fail at settings load with a clear error.
+
+    Previously an invalid ``TRADING_TRUSTED_PROXY_CIDRS`` value survived
+    settings parsing and crashed later inside ``AuthMiddleware``/``create_app``
+    with an opaque ``ValueError``. Validation is moved to settings load and
+    still fails closed.
+    """
+
+    def test_invalid_cidr_from_constructor_raises_clear_error(self):
+        with pytest.raises(ValidationError, match="Invalid CIDR"):
+            WebSettings(trusted_proxy_cidrs=["not-a-cidr"])
+
+    def test_invalid_cidr_from_env_raises_clear_error(self, monkeypatch):
+        monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "10.0.0.0/8,not-a-cidr")
+        with pytest.raises(ValidationError, match="Invalid CIDR"):
+            WebSettings()
+
+    def test_error_identifies_the_bad_value(self):
+        with pytest.raises(ValidationError, match="not-a-cidr"):
+            WebSettings(trusted_proxy_cidrs=["10.0.0.0/8", "not-a-cidr"])
+
+    def test_valid_cidrs_still_accepted(self):
+        settings = WebSettings(trusted_proxy_cidrs=["10.0.0.0/8", "::1/128"])
+        assert settings.trusted_proxy_cidrs == ["10.0.0.0/8", "::1/128"]
 
 
 class TestResolvedCacheDir:

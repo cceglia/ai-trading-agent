@@ -55,6 +55,30 @@ class TestRunRequest:
         req = RunRequest(symbols=["XAUUSD"], model=None)
         assert req.model is None
 
+    @pytest.mark.parametrize(
+        "bad_provider_id",
+        [
+            "x" * 33,  # over length bound
+            "with space",
+            "http://evil.example",
+            "!@#$%",
+            "",
+            "   ",
+        ],
+    )
+    def test_rejects_unbounded_or_invalid_provider_id(self, bad_provider_id):
+        """API-003: provider_id is bounded in length and character format."""
+        with pytest.raises(ValidationError):
+            RunRequest(symbols=["XAUUSD"], provider_id=bad_provider_id)
+
+    def test_accepts_valid_provider_id(self):
+        req = RunRequest(symbols=["XAUUSD"], provider_id="local-1_x")
+        assert req.provider_id == "local-1_x"
+
+    def test_accepts_none_provider_id(self):
+        req = RunRequest(symbols=["XAUUSD"], provider_id=None)
+        assert req.provider_id is None
+
 
 class TestSymbolError:
     """Per-symbol error envelope (§12.3)."""

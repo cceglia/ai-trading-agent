@@ -183,3 +183,20 @@ def client_with_auth(mock_scanner, mock_runner, monkeypatch):
     ):
         app = _create_app()
     return TestClient(app), mock_scanner, mock_runner
+
+
+@pytest.fixture
+def proxy_app(mock_scanner, mock_runner, monkeypatch):
+    """App configured with a trusted proxy CIDR and no API key.
+
+    Returns ``(app, mock_scanner, mock_runner)`` so tests can build
+    ``TestClient`` instances with arbitrary peer IPs to simulate trusted or
+    untrusted proxy sources (FR-036 / AC-017).
+    """
+    monkeypatch.setenv("TRADING_TRUSTED_PROXY_CIDRS", "10.0.0.0/8")
+    with (
+        patch("src.main.ResultScanner", return_value=mock_scanner),
+        patch("src.main.RunService", return_value=mock_runner),
+    ):
+        app = create_app()
+    return app, mock_scanner, mock_runner

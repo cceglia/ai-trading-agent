@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from unittest.mock import patch
 
+import pytest
 from fastapi.testclient import TestClient
 
 from src.middleware.ratelimit import SlidingWindowRateLimiter
@@ -12,7 +13,13 @@ from src.runner import BatchResult
 
 
 class TestAuthMiddleware:
-    """Tests for AuthMiddleware behaviour via client_with_auth."""
+    """Tests for AuthMiddleware behaviour via client_with_auth.
+
+    Auth is enforced whenever an API key or trusted proxy CIDR is configured.
+    Every ``/api`` route must reject missing/invalid credentials with 401
+    (FR-035 / AC-017); non-API paths (static assets / SPA) stay reachable
+    through the trusted proxy.
+    """
 
     def test_post_without_key_returns_401(self, client_with_auth):
         test_client, _, _ = client_with_auth
@@ -48,23 +55,242 @@ class TestAuthMiddleware:
 
         assert resp.status_code == 200
 
-    def test_get_endpoints_unprotected(self, client_with_auth):
-        """GET endpoints must not require auth even when API key is set."""
+    def test_get_endpoints_require_auth(self, client_with_auth):
+        """AC-017: GET /api routes reject missing credentials when enforced."""
         test_client, mock_scanner, _ = client_with_auth
         mock_scanner.list_runs.return_value = []
 
         resp = test_client.get("/api/runs")
 
+        assert resp.status_code == 401
+        assert resp.json() == {"error": "Missing or invalid API key"}
+        mock_scanner.list_runs.assert_not_called()
+
+    def test_get_with_valid_key_returns_200(self, client_with_auth):
+        test_client, mock_scanner, _ = client_with_auth
+        mock_scanner.list_runs.return_value = []
+
+        resp = test_client.get("/api/runs", headers={"X-API-Key": "test-secret-key"})
+
         assert resp.status_code == 200
 
+    def test_get_detail_without_key_returns_401(self, client_with_auth):
+        test_client, mock_scanner, _ = client_with_auth
+        mock_scanner.get_run.return_value = {"symbol": "XAUUSD"}
+
+        resp = test_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
+
+        assert resp.status_code == 401
+        mock_scanner.get_run.assert_not_called()
+
+    def test_get_detail_with_valid_key_returns_200(self, client_with_auth):
+        test_client, mock_scanner, _ = client_with_auth
+        mock_scanner.get_run.return_value = {"symbol": "XAUUSD"}
+
+        resp = test_client.get(
+            "/api/runs/XAUUSD/2026/07/26/result-08",
+            headers={"X-API-Key": "test-secret-key"},
+        )
+
+        assert resp.status_code == 200
+
+    def test_unknown_api_path_returns_404_json_when_authenticated(
+        self, client_with_auth
+    ):
+        """API-002: an authenticated request to an unknown /api/* path gets
+        404 JSON, never the SPA fallback (200 text/html)."""
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.get(
+            "/api/does-not-exist", headers={"X-API-Key": "test-secret-key"}
+        )
+
+        assert resp.status_code == 404
+        assert resp.headers["content-type"].startswith("application/json")
+        assert resp.json() == {"error": "Not found"}
+
+    def test_unknown_api_path_still_requires_auth(self, client_with_auth):
+        """Auth runs before the 404 catch-all: a missing credential is 401."""
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.get("/api/does-not-exist")
+
+        assert resp.status_code == 401
+        assert resp.json() == {"error": "Missing or invalid API key"}
+
+    def test_auth_failure_does_not_launch_analyzer(self, client_with_auth):
+        """§15: a 401 on POST /api/run must never reach the runner."""
+        test_client, _, mock_runner = client_with_auth
+
+        resp = test_client.post("/api/run", json={"symbols": ["XAUUSD"]})
+
+        assert resp.status_code == 401
+        mock_runner.run_analysis.assert_not_called()
+
+    def test_non_api_paths_not_auth_blocked(self, client_with_auth):
+        """Static assets / SPA fallback are served through the proxy, not /api."""
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.get("/some/spa/path")
+
+        assert resp.status_code != 401
+
+    @pytest.mark.parametrize(
+        ("method", "path"),
+        [
+            ("get", "/API/runs"),
+            ("get", "/Api/runs"),
+            ("post", "/API/run"),
+            ("get", "/API/runs/XAUUSD/2026/07/26/result-08"),
+        ],
+    )
+    def test_case_variant_api_paths_require_auth(self, client_with_auth, method, path):
+        """API-001: the /api auth boundary is case-insensitive; no /API variant
+        bypasses authentication and reaches a route or the SPA fallback."""
+        test_client, _, _ = client_with_auth
+        kwargs = {"json": {"symbols": ["XAUUSD"]}} if method == "post" else {}
+        resp = getattr(test_client, method)(path, **kwargs)
+
+        assert resp.status_code == 401
+        assert resp.json() == {"error": "Missing or invalid API key"}
+
+    def test_case_variant_api_path_with_valid_key_not_blocked(self, client_with_auth):
+        """A valid credential passes the case-insensitive boundary; the path is
+        then routed normally (no case-variant route exists, so a 404)."""
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.get("/API/runs", headers={"X-API-Key": "test-secret-key"})
+
+        assert resp.status_code != 401
+
+    def test_options_preflight_requires_auth(self, client_with_auth):
+        """CORS-001: in enforced mode, OPTIONS /api/* preflight is protected.
+
+        ``AuthMiddleware`` sits outside ``CORSMiddleware`` and rejects the
+        preflight with 401 (no ``Access-Control-Allow-*`` headers) when no
+        credential is presented. The trusted proxy must authenticate the
+        preflight (or handle CORS itself) for browser clients; the server
+        never answers preflights without a credential.
+        """
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.options(
+            "/api/run",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type,x-api-key",
+            },
+        )
+
+        assert resp.status_code == 401
+        assert resp.json() == {"error": "Missing or invalid API key"}
+        assert resp.headers.get("access-control-allow-origin") is None
+        assert resp.headers.get("access-control-allow-methods") is None
+
+    def test_options_preflight_with_valid_key_succeeds(self, client_with_auth):
+        """An authenticated preflight reaches CORSMiddleware and gets CORS
+        headers, confirming the CORS origins/credentials contract (FR-035)."""
+        test_client, _, _ = client_with_auth
+
+        resp = test_client.options(
+            "/api/run",
+            headers={
+                "Origin": "http://localhost:5173",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type,x-api-key",
+                "X-API-Key": "test-secret-key",
+            },
+        )
+
+        assert resp.status_code == 200
+        assert resp.headers.get("access-control-allow-origin") == (
+            "http://localhost:5173"
+        )
+        assert "POST" in resp.headers.get("access-control-allow-methods", "")
+
     def test_no_key_dev_mode_bypasses_auth(self, client):
-        """When TRADING_API_KEY is empty (default), auth is skipped."""
+        """When TRADING_API_KEY and TRADING_TRUSTED_PROXY_CIDRS are empty
+        (default), auth is explicitly permissive (dev mode)."""
         test_client, _, mock_runner = client
         mock_runner.run_analysis.return_value = BatchResult(
             results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
         )
 
         resp = test_client.post("/api/run", json={"symbols": ["XAUUSD"]})
+
+        assert resp.status_code == 200
+
+
+class TestProxyMarkerAuthentication:
+    """``X-Authenticated-User`` is trusted only from ``TRADING_TRUSTED_PROXY_CIDRS``.
+
+    FR-036: FastAPI must reject a client-supplied marker from an untrusted
+    source (including the direct client case where the proxy did not rewrite
+    the header). Empty CIDR configuration never authorizes the marker.
+    """
+
+    @staticmethod
+    def _client(app, host: str = "10.1.2.3") -> TestClient:
+        return TestClient(app, client=(host, 54321))
+
+    def test_trusted_marker_authorizes_get(self, proxy_app):
+        app, mock_scanner, _ = proxy_app
+        mock_scanner.list_runs.return_value = []
+
+        resp = self._client(app).get(
+            "/api/runs", headers={"X-Authenticated-User": "alice"}
+        )
+
+        assert resp.status_code == 200
+
+    def test_trusted_marker_authorizes_post(self, proxy_app):
+        app, _, mock_runner = proxy_app
+        mock_runner.run_analysis.return_value = BatchResult(
+            results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
+        )
+
+        resp = self._client(app).post(
+            "/api/run",
+            json={"symbols": ["XAUUSD"]},
+            headers={"X-Authenticated-User": "alice"},
+        )
+
+        assert resp.status_code == 200
+
+    def test_marker_from_untrusted_source_rejected(self, proxy_app):
+        app, mock_scanner, _ = proxy_app
+        mock_scanner.list_runs.return_value = []
+
+        resp = self._client(app, host="8.8.8.8").get(
+            "/api/runs", headers={"X-Authenticated-User": "mallory"}
+        )
+
+        assert resp.status_code == 401
+        mock_scanner.list_runs.assert_not_called()
+
+    def test_marker_without_cidrs_configured_rejected(self, client_with_auth):
+        """Empty TRADING_TRUSTED_PROXY_CIDRS never trusts a client marker."""
+        test_client, mock_scanner, _ = client_with_auth
+        mock_scanner.list_runs.return_value = []
+
+        resp = test_client.get("/api/runs", headers={"X-Authenticated-User": "mallory"})
+
+        assert resp.status_code == 401
+        mock_scanner.list_runs.assert_not_called()
+
+    def test_valid_api_key_beats_untrusted_marker(self, client_with_auth):
+        """A valid machine key authorizes even when a forged marker is present."""
+        test_client, mock_scanner, _ = client_with_auth
+        mock_scanner.list_runs.return_value = []
+
+        resp = test_client.get(
+            "/api/runs",
+            headers={
+                "X-API-Key": "test-secret-key",
+                "X-Authenticated-User": "mallory",
+            },
+        )
 
         assert resp.status_code == 200
 
@@ -115,7 +341,7 @@ class TestRateLimitIntegration:
     """Integration tests: rate limiter wired into POST /api/run."""
 
     def test_rate_limit_exceeded_returns_429(self, client):
-        """After max_requests POSTs, the next one returns 429."""
+        """After max_requests POSTs, the next one returns 429 with Retry-After."""
         test_client, _, mock_runner = client
         mock_runner.run_analysis.return_value = BatchResult(
             results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
@@ -130,6 +356,8 @@ class TestRateLimitIntegration:
         resp = test_client.post("/api/run", json={"symbols": ["XAUUSD"]})
         assert resp.status_code == 429
         assert resp.json() == {"error": "Rate limit exceeded"}
+        assert "Retry-After" in resp.headers
+        assert int(resp.headers["Retry-After"]) >= 1
 
     def test_get_endpoints_not_rate_limited(self, client):
         """GET requests must not be affected by POST rate limit."""

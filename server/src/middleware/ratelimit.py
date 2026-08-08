@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import time
 
 
@@ -40,6 +41,21 @@ class SlidingWindowRateLimiter:
 
         timestamps.append(now)
         return True
+
+    def retry_after_seconds(self, client_key: str) -> int:
+        """Seconds until the client's window frees a slot (for ``Retry-After``).
+
+        When the client is blocked, the oldest request must leave the window
+        before another is allowed. Returns at least 1 for a blocked client and
+        0 when no bucket exists (callers only use this on rejection).
+        """
+        timestamps = self._buckets.get(client_key)
+        if not timestamps:
+            return 0
+        now = time.monotonic()
+        oldest = min(timestamps)
+        remaining = self._window_seconds - (now - oldest)
+        return max(1, math.ceil(remaining))
 
     def cleanup(self) -> None:
         """Remove all expired buckets to free memory."""

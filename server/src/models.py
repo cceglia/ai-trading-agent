@@ -65,6 +65,27 @@ class RunRequest(BaseModel):
             raise ValueError("model contains unsupported characters")
         return value
 
+    @field_validator("provider_id")
+    @classmethod
+    def _validate_provider_id(cls, value: str | None) -> str | None:
+        """Bound provider_id length/format (FR-039 input hygiene).
+
+        Provider ids are server-side keys into ``PROVIDER_CONFIG``; bounding
+        length and character format keeps the id out of logs/errors and
+        prevents oversized or structurally hostile values from reaching the
+        config lookup.
+        """
+        if value is None:
+            return value
+        value = value.strip()
+        if not value:
+            raise ValueError("provider_id must not be empty")
+        if len(value) > 32:
+            raise ValueError("provider_id must be 32 characters or fewer")
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", value):
+            raise ValueError("provider_id contains unsupported characters")
+        return value
+
 
 class SymbolError(BaseModel):
     """Safe per-symbol terminal error envelope (§12.3).
