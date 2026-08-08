@@ -21,8 +21,10 @@ def sample_summary():
         bias="bullish",
         confidence=0.85,
         action="buy_setup",
-        review_approved=True,
-        current_price=2400.0,
+        validation_status="VALID",
+        setup_status="READY",
+        direction="LONG",
+        operational=True,
         file_path="2026/07/26/XAUUSD/result-08.json",
     )
 

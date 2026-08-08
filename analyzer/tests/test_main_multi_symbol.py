@@ -15,6 +15,7 @@ def test_initialize_pipeline_passes_only_synthesizer_to_graph(monkeypatch):
     settings.terminal_server_url = ""
     settings.terminal_api_key = ""
     settings.analysis_cache_dir = "data"
+    settings.resolved_analysis_cache_dir = "data"
     synthesizer = MagicMock()
     graph = MagicMock()
 
@@ -29,6 +30,41 @@ def test_initialize_pipeline_passes_only_synthesizer_to_graph(monkeypatch):
     assert graph.call_args.kwargs["synthesizer"] is synthesizer
     assert "decider" not in graph.call_args.kwargs
     assert "review" not in graph.call_args.kwargs
+
+
+def test_initialize_pipeline_writer_uses_resolved_absolute_cache_dir(monkeypatch, tmp_path):
+    """ROOT-001 / AC-014: with a RELATIVE TRADING_ANALYSIS_CACHE_DIR the
+    writer constructed by ``_initialize_pipeline`` must target the same
+    project-root-resolved absolute directory the server scanner reads.
+
+    The raw possibly-relative ``analysis_cache_dir`` (default ``"data"``)
+    must never reach ``ResultWriter`` directly: the seam resolves it against
+    the project root so analyzer and server share one root.
+    """
+    from pathlib import Path
+
+    import main
+    from config.settings import Settings
+
+    project_root = Path(main.__file__).resolve().parent.parent
+    _relative = "custom/cache/probe"
+    monkeypatch.setenv("TRADING_ANALYSIS_CACHE_DIR", _relative)
+    settings = Settings()
+
+    synthesizer = MagicMock()
+    graph = MagicMock()
+    monkeypatch.setattr(main, "TerminalDataProvider", MagicMock())
+    monkeypatch.setattr(main, "MarketStructureEngine", MagicMock())
+    monkeypatch.setattr(main, "ForexFactoryCalendar", MagicMock())
+    monkeypatch.setattr(main, "_create_agents", lambda *_: synthesizer)
+    monkeypatch.setattr(main, "TradingGraph", graph)
+
+    _graph, writer = main._initialize_pipeline(settings, MagicMock())
+
+    expected = Path(settings.resolved_analysis_cache_dir)
+    assert writer.base_dir == expected
+    assert writer.base_dir.is_absolute()
+    assert writer.base_dir == project_root / "custom" / "cache" / "probe"
 
 
 def test_telegram_allows_actionable_degraded_analysis_from_nested_result():

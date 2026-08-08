@@ -1,6 +1,10 @@
 """Tests for output result models."""
 
+import json
 from datetime import datetime
+
+import pytest
+from pydantic import ValidationError
 
 from src.decision.models import (
     BiasLevel,
@@ -8,7 +12,16 @@ from src.decision.models import (
     DecisionOutput,
     MarketContextSummary,
 )
-from src.output.result_models import AnalysisResult, OHLCBar, OHLCData, SLTPOverlay
+from src.output.result_models import (
+    AnalysisEnvelope,
+    AnalysisResult,
+    DecisionBlock,
+    DeterministicFacts,
+    OHLCBar,
+    OHLCData,
+    SLTPOverlay,
+    SynthesisBlock,
+)
 
 
 class TestOHLCBar:
@@ -239,3 +252,156 @@ class TestRejectionCodes:
         payload = result.model_dump(mode="json")
         restored = AnalysisResult.model_validate(payload)
         assert restored.rejection_codes == ["INVALID_TRADE_DIRECTION", "INSUFFICIENT_DATA"]
+
+
+class TestV2Envelope:
+    """Nested schema-v2 envelope contract (TEST-013 / AC-013, INV-015)."""
+
+    def _minimal_env(self, **overrides) -> AnalysisEnvelope:
+        data = dict(
+            symbol="XAUUSD",
+            run_id="2026-08-07T13:00:00",
+            started_at=datetime(2026, 8, 7, 13, 0),
+            completed_at=datetime(2026, 8, 7, 13, 1),
+            status="degraded",
+            deterministic_facts=DeterministicFacts(symbol="XAUUSD"),
+            decision=DecisionBlock(action="buy_setup"),
+            synthesis=SynthesisBlock(
+                status="FAILED",
+                explanation=None,
+                error="SYNTHESIS_UNAVAILABLE",
+            ),
+        )
+        data.update(overrides)
+        return AnalysisEnvelope(**data)
+
+    def test_serializes_nested_v2_shape(self):
+        raw = self._minimal_env().model_dump(mode="json")
+        assert raw["schema_version"] == "2"
+        assert set(raw) == {
+            "schema_version",
+            "symbol",
+            "run_id",
+            "started_at",
+            "completed_at",
+            "status",
+            "errors",
+            "fatal_error",
+            "deterministic_facts",
+            "decision",
+            "synthesis",
+            "ohlc",
+        }
+        assert raw["deterministic_facts"]["entry_authorized"] is False
+        assert raw["decision"]["action"] == "buy_setup"
+        assert raw["synthesis"]["status"] == "FAILED"
+        assert raw["ohlc"] == {"D1": [], "H4": [], "H1": []}
+
+    def test_serialized_output_has_no_review_fields(self):
+        raw = self._minimal_env().model_dump(mode="json")
+        dumped = json.dumps(raw)
+        assert "review" not in dumped
+        assert "reviewer" not in dumped
+        assert "decider" not in dumped
+        assert "BLOCKED_BY_REVIEW" not in dumped
+
+    def test_envelope_rejects_review_extra_field(self):
+        with pytest.raises(ValidationError):
+            AnalysisEnvelope.model_validate(
+                {
+                    **self._minimal_env().model_dump(mode="python"),
+                    "review": {"status": "APPROVED"},
+                }
+            )
+
+    def test_envelope_rejects_non_v2_schema_version(self):
+        with pytest.raises(ValidationError):
+            AnalysisEnvelope.model_validate(
+                {
+                    **self._minimal_env().model_dump(mode="python"),
+                    "schema_version": "1.0",
+                }
+            )
+
+    def test_envelope_rejects_unknown_decision_action(self):
+        with pytest.raises(ValidationError):
+            DecisionBlock(action="wait_for_setup")
+
+    def test_envelope_rejects_unknown_status(self):
+        with pytest.raises(ValidationError):
+            self._minimal_env(status="completed")
+
+    def test_envelope_roundtrip(self):
+        env = self._minimal_env(
+            status="success",
+            deterministic_facts=DeterministicFacts(
+                symbol="XAUUSD",
+                setup_status="READY",
+                direction="LONG",
+                trade_direction="BULLISH",
+                validation_status="VALID",
+                operational=True,
+                entry_authorized=False,
+            ),
+            decision=DecisionBlock(action="sell_setup"),
+            synthesis=SynthesisBlock(
+                status="SUCCESS",
+                explanation="presentation only",
+                risks=["Calendar risk"],
+                confluences=["Confirmed structure"],
+            ),
+        )
+        raw = env.model_dump(mode="json")
+        restored = AnalysisEnvelope.model_validate(raw)
+        assert restored.schema_version == "2"
+        assert restored.deterministic_facts.setup_status == "READY"
+        assert restored.deterministic_facts.operational is True
+        assert restored.deterministic_facts.entry_authorized is False
+        assert restored.decision.action == "sell_setup"
+        assert restored.synthesis.status == "SUCCESS"
+
+    def test_invalid_run_persists_as_no_trade_non_operational_partial(self):
+        """INV-011 / FR-023: INVALID maps to no_trade + non-operational partial."""
+        env = self._minimal_env(
+            status="partial",
+            deterministic_facts=DeterministicFacts(
+                symbol="XAUUSD",
+                setup_status="INVALID",
+                direction="NONE",
+                trade_direction="NEUTRAL",
+                validation_status="INVALID",
+                validation_errors=["INVARIANT_VIOLATION"],
+                operational=False,
+                entry_authorized=False,
+            ),
+            decision=DecisionBlock(action="no_trade"),
+        )
+        raw = env.model_dump(mode="json")
+        assert raw["status"] == "partial"
+        assert raw["deterministic_facts"]["validation_status"] == "INVALID"
+        assert raw["deterministic_facts"]["setup_status"] == "INVALID"
+        assert raw["deterministic_facts"]["operational"] is False
+        assert raw["decision"]["action"] == "no_trade"
+
+    def test_deterministic_facts_policy_and_rr(self):
+        facts = DeterministicFacts(
+            symbol="XAUUSD",
+            validation_status="VALID",
+            rr={"calculated_rr": 2.34, "minimum_required_rr": 2.0, "rr_pass": True},
+            policy={
+                "execution_status": "ACTIONABLE",
+                "actionable": True,
+                "blockers": [],
+                "reason_codes": ["VALID_SETUP"],
+            },
+        )
+        raw = facts.model_dump(mode="json")
+        assert raw["rr"]["calculated_rr"] == 2.34
+        assert raw["rr"]["minimum_required_rr"] == 2.0
+        assert raw["rr"]["rr_pass"] is True
+        assert raw["policy"]["actionable"] is True
+
+    def test_entry_authorized_always_false_in_facts(self):
+        """INV-003: entry_authorized cannot be set true through the envelope."""
+        with pytest.raises(ValidationError):
+            DeterministicFacts(symbol="XAUUSD", entry_authorized=True)

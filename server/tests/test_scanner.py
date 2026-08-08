@@ -1,4 +1,4 @@
-"""Unit tests for ResultScanner."""
+"""Unit tests for ResultScanner (v2 envelopes + legacy adapter)."""
 
 from __future__ import annotations
 
@@ -6,19 +6,78 @@ import json
 import os
 from pathlib import Path
 
-from src.scanner import ResultScanner
+from src.scanner import LegacyAdapter, ResultScanner
+
+_LEGACY_FIXTURE = {
+    "version": "1.0",
+    "symbol": "XAUUSD",
+    "market_context": {"current_price": 2400.0, "bias": "bullish", "confidence": 0.85},
+    "decision": {"action": "buy_setup", "confidence": 0.85},
+    "review": {"status": "APPROVED", "approved": True},
+}
 
 
 def _write_result(fpath: Path, data: dict | None = None) -> None:
     """Helper to write a result JSON file."""
     if data is None:
-        data = {
-            "market_context": {"current_price": 2400.0, "bias": "bullish"},
-            "decision": {"action": "buy_setup", "confidence": 0.85},
-            "review": {"status": "APPROVED"},
-        }
+        data = _LEGACY_FIXTURE
     fpath.parent.mkdir(parents=True, exist_ok=True)
     fpath.write_text(json.dumps(data))
+
+
+def _v2_envelope(**overrides) -> dict:
+    """Minimal schema-v2 envelope mirroring the analyzer writer output."""
+    data = {
+        "schema_version": "2",
+        "symbol": "XAUUSD",
+        "run_id": "2026-07-26T08:30:00",
+        "started_at": "2026-07-26T08:30:00",
+        "completed_at": "2026-07-26T08:31:00",
+        "status": "success",
+        "errors": [],
+        "fatal_error": None,
+        "deterministic_facts": {
+            "symbol": "XAUUSD",
+            "timeframes": {},
+            "setup_status": "READY",
+            "direction": "LONG",
+            "trade_direction": "BULLISH",
+            "setup_grade": "AAA",
+            "setup_classification_status": "CLASSIFIED",
+            "setup_lifecycle_status": "TRIGGERED",
+            "entry_plan": {},
+            "rr": {"calculated_rr": 2.0, "minimum_required_rr": 2.0, "rr_pass": True},
+            "confidence_components": {},
+            "policy": {
+                "execution_status": "ACTIONABLE",
+                "actionable": True,
+                "blockers": [],
+                "reason_codes": [],
+            },
+            "selected_levels": {},
+            "latest_structural_events": {},
+            "latest_liquidity_states": {},
+            "event_history": {},
+            "liquidity_history": {},
+            "validation_status": "VALID",
+            "validation_errors": [],
+            "operational": True,
+            "entry_authorized": False,
+            "bias": "BULLISH",
+            "confidence": 72.0,
+        },
+        "decision": {"action": "buy_setup"},
+        "synthesis": {
+            "status": "SUCCESS",
+            "explanation": "deterministic context is bullish",
+            "risks": [],
+            "confluences": [],
+            "error": None,
+        },
+        "ohlc": {"D1": [], "H4": [], "H1": []},
+    }
+    data.update(overrides)
+    return data
 
 
 class TestListRuns:
@@ -32,7 +91,7 @@ class TestListRuns:
         s = ResultScanner(tmp_path / "nonexistent")
         assert s.list_runs() == []
 
-    def test_finds_result_files(self, tmp_path: Path):
+    def test_finds_legacy_result_files(self, tmp_path: Path):
         fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
         _write_result(fpath)
 
@@ -45,7 +104,27 @@ class TestListRuns:
         assert runs[0].time == "08"
         assert runs[0].bias == "bullish"
         assert runs[0].action == "buy_setup"
-        assert runs[0].review_approved is True
+        assert runs[0].validation_status == "UNKNOWN"
+        assert runs[0].setup_status == "UNKNOWN"
+        assert runs[0].direction == "NONE"
+        assert runs[0].operational is False
+
+    def test_v2_summary_contract(self, tmp_path: Path):
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(fpath, _v2_envelope())
+
+        s = ResultScanner(tmp_path)
+        runs = s.list_runs()
+
+        assert len(runs) == 1
+        summary = runs[0]
+        assert summary.validation_status == "VALID"
+        assert summary.setup_status == "READY"
+        assert summary.direction == "LONG"
+        assert summary.operational is True
+        assert summary.action == "buy_setup"
+        assert summary.bias == "BULLISH"
+        assert summary.confidence == 72.0
 
     def test_filter_by_symbol(self, tmp_path: Path):
         for sym in ["XAUUSD", "EURUSD"]:
@@ -162,9 +241,7 @@ class TestListRuns:
         """Files not in YYYY/MM/DD/SYMBOL/ pattern are skipped."""
         fpath = tmp_path / "2026" / "07" / "result-08.json"
         fpath.parent.mkdir(parents=True)
-        fpath.write_text(
-            json.dumps({"market_context": {}, "decision": {}, "review": {}})
-        )
+        fpath.write_text(json.dumps({"market_context": {}, "decision": {}}))
 
         s = ResultScanner(tmp_path)
         runs = s.list_runs()
@@ -180,7 +257,6 @@ class TestListRuns:
                 "symbol": "GOLD",
                 "market_context": {"current_price": 2400.0, "bias": "bullish"},
                 "decision": {"action": "buy_setup", "confidence": 0.85},
-                "review": {"status": "APPROVED"},
             },
         )
 
@@ -193,16 +269,43 @@ class TestListRuns:
 class TestGetRun:
     """Tests for ResultScanner.get_run()."""
 
-    def test_returns_full_result(self, tmp_path: Path, sample_full_result: dict):
+    def test_v2_result_returned_as_is(self, tmp_path: Path):
         fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(fpath, sample_full_result)
+        _write_result(fpath, _v2_envelope())
 
         s = ResultScanner(tmp_path)
         result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
 
         assert result is not None
+        assert result["schema_version"] == "2"
         assert result["decision"]["action"] == "buy_setup"
-        assert result["market_context"]["bias"] == "bullish"
+        assert result["deterministic_facts"]["validation_status"] == "VALID"
+        assert "review" not in result
+
+    def test_legacy_result_is_adapted(self, tmp_path: Path):
+        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
+        _write_result(
+            fpath,
+            data={
+                "symbol": "XAUUSD",
+                "market_context": {"bias": "bullish", "confidence": 0.85},
+                "decision": {"action": "buy_setup"},
+                "review": {"status": "APPROVED", "approved": True},
+            },
+        )
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is not None
+        assert result["schema_version"] == "legacy"
+        facts = result["deterministic_facts"]
+        assert facts["validation_status"] == "UNKNOWN"
+        assert facts["operational"] is False
+        assert facts["entry_authorized"] is False
+        assert result["decision"]["action"] == "buy_setup"
+        assert "review" not in result
+        assert "review_approved" not in json.dumps(result)
 
     def test_returns_none_for_missing(self, tmp_path: Path):
         s = ResultScanner(tmp_path)
@@ -230,117 +333,88 @@ class TestGetRun:
 
         assert result is None
 
-
-class TestLegacyNormalization:
-    """Tests for legacy result normalization in get_run()."""
-
-    def test_legacy_approved_derives_status(self, tmp_path: Path):
-        """Legacy review.approved is converted to review.status."""
+    def test_returns_none_for_non_object_json(self, tmp_path: Path):
         fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(
-            fpath,
-            data={
-                "market_context": {"bias": "bullish"},
+        fpath.parent.mkdir(parents=True)
+        fpath.write_text(json.dumps([1, 2, 3]))
+
+        s = ResultScanner(tmp_path)
+        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
+
+        assert result is None
+
+
+class TestLegacyAdapter:
+    """The legacy adapter is read-only, idempotent, and review-free (AC-015)."""
+
+    def test_adapt_is_idempotent(self):
+        adapter = LegacyAdapter()
+        data = {
+            "symbol": "XAUUSD",
+            "market_context": {"bias": "bearish", "confidence": 0.4},
+            "decision": {"action": "no_trade"},
+            "review": {"approved": False, "reasoning": "legacy"},
+        }
+        once = adapter.adapt(data)
+        twice = adapter.adapt(once)
+        assert twice == once
+
+    def test_adapt_never_mutates_source(self):
+        adapter = LegacyAdapter()
+        data = {
+            "symbol": "XAUUSD",
+            "market_context": {"bias": "bearish"},
+            "decision": {"action": "no_trade"},
+            "review": {"approved": True},
+        }
+        snapshot = json.dumps(data, sort_keys=True)
+        adapter.adapt(data)
+        assert json.dumps(data, sort_keys=True) == snapshot
+
+    def test_adapt_drops_all_review_fields(self):
+        adapter = LegacyAdapter()
+        data = {
+            "symbol": "XAUUSD",
+            "market_context": {"bias": "bullish"},
+            "decision": {"action": "buy_setup"},
+            "review": {"status": "APPROVED", "approved": True},
+            "review_advisory_levels": {"entry_price": 1.0},
+            "reviewer": "legacy-reviewer",
+        }
+        result = adapter.adapt(data)
+        dumped = json.dumps(result)
+        assert "review" not in dumped
+        assert "reviewer" not in dumped
+
+    def test_adapt_marks_unknown_and_non_operational(self):
+        adapter = LegacyAdapter()
+        result = adapter.adapt(
+            {
+                "symbol": "XAUUSD",
+                "market_context": {"bias": "bullish", "confidence": 0.9},
                 "decision": {"action": "buy_setup"},
-                "review": {"approved": True, "reasoning": "good"},
-            },
+            }
         )
+        facts = result["deterministic_facts"]
+        assert result["schema_version"] == "legacy"
+        assert facts["validation_status"] == "UNKNOWN"
+        assert facts["setup_status"] == "UNKNOWN"
+        assert facts["direction"] == "NONE"
+        assert facts["operational"] is False
+        assert facts["entry_authorized"] is False
+        assert facts["bias"] == "bullish"
+        assert facts["confidence"] == 0.9
+        assert result["decision"]["action"] == "buy_setup"
 
-        s = ResultScanner(tmp_path)
-        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
-
-        assert result is not None
-        assert result["review"]["status"] == "APPROVED"
-        # approved key is preserved for backward compat
-        assert result["review"]["approved"] is True
-
-    def test_legacy_rejected_derives_status(self, tmp_path: Path):
-        """Legacy review.approved=False becomes REJECTED."""
-        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(
-            fpath,
-            data={
-                "market_context": {"bias": "bearish"},
-                "decision": {"action": "no_trade"},
-                "review": {"approved": False, "reasoning": "bad"},
-            },
-        )
-
-        s = ResultScanner(tmp_path)
-        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
-
-        assert result is not None
-        assert result["review"]["status"] == "REJECTED"
-
-    def test_existing_status_not_overwritten(self, tmp_path: Path):
-        """When review.status already exists, it is not overwritten."""
-        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(
-            fpath,
-            data={
-                "market_context": {"bias": "bullish"},
-                "decision": {"action": "buy_setup"},
-                "review": {"status": "REVISION_REQUIRED", "approved": True},
-            },
-        )
-
-        s = ResultScanner(tmp_path)
-        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
-
-        assert result is not None
-        assert result["review"]["status"] == "REVISION_REQUIRED"
-
-    def test_legacy_decision_prices_create_overlay(self, tmp_path: Path):
-        """Legacy decision price fields create sl_tp_overlay."""
-        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(
-            fpath,
-            data={
-                "market_context": {"bias": "bullish"},
-                "decision": {
-                    "action": "buy_setup",
-                    "entry_price": 2400.0,
-                    "stop_loss": 2380.0,
-                    "take_profit": 2440.0,
-                },
-                "review": {"status": "APPROVED"},
-            },
-        )
-
-        s = ResultScanner(tmp_path)
-        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
-
-        assert result is not None
-        assert result["sl_tp_overlay"]["entry_price"] == 2400.0
-        assert result["sl_tp_overlay"]["stop_loss"] == 2380.0
-        assert result["sl_tp_overlay"]["take_profit"] == 2440.0
-
-    def test_existing_overlay_not_overwritten(self, tmp_path: Path):
-        """When sl_tp_overlay already exists, it is not overwritten."""
-        fpath = tmp_path / "2026" / "07" / "26" / "XAUUSD" / "result-08.json"
-        _write_result(
-            fpath,
-            data={
-                "market_context": {"bias": "bullish"},
-                "decision": {
-                    "action": "buy_setup",
-                    "entry_price": 2400.0,
-                },
-                "sl_tp_overlay": {
-                    "entry_price": 2500.0,
-                    "stop_loss": 2480.0,
-                    "take_profit": 2540.0,
-                },
-                "review": {"status": "APPROVED"},
-            },
-        )
-
-        s = ResultScanner(tmp_path)
-        result = s.get_run("XAUUSD", "2026", "07", "26", "result-08")
-
-        assert result is not None
-        # Overlay values preserved, not overwritten from decision
-        assert result["sl_tp_overlay"]["entry_price"] == 2500.0
+    def test_adapt_handles_missing_context(self):
+        adapter = LegacyAdapter()
+        result = adapter.adapt({"symbol": "XAUUSD"})
+        facts = result["deterministic_facts"]
+        assert facts["validation_status"] == "UNKNOWN"
+        assert facts["operational"] is False
+        assert result["decision"]["action"] == "no_trade"
+        assert facts["bias"] is None
+        assert facts["confidence"] is None
 
 
 class TestListRunsPruning:
@@ -409,6 +483,202 @@ class TestListRunsPruning:
         runs = s.list_runs(symbol="EURUSD")
 
         assert len(runs) == 0
+
+
+class TestSharedRootRoundTrip:
+    """TEST-014 / AC-014: a v2 file written by the analyzer at the shared
+    project-root data directory is immediately discoverable by the server
+    scanner."""
+
+    @staticmethod
+    def _project_root() -> Path:
+        return Path(__file__).resolve().parent.parent.parent
+
+    def test_analyzer_written_v2_file_is_discoverable(self, tmp_path: Path):
+        import os
+        import subprocess
+        import sys
+        import textwrap
+
+        root = tmp_path
+        analyzer_dir = str(self._project_root() / "analyzer")
+        snippet = textwrap.dedent(
+            """
+            import os
+            import sys
+
+            sys.path.insert(0, os.environ["ANALYZER_DIR"])
+            from datetime import datetime
+
+            from src.output.result_models import AnalysisResult, SLTPOverlay
+            from src.output.result_writer import ResultWriter
+
+            res = AnalysisResult(
+                symbol="XAUUSD",
+                run_id="shared-root-run",
+                started_at=datetime(2026, 8, 7, 12, 0),
+                completed_at=datetime(2026, 8, 7, 12, 1),
+                status="success",
+                validation_status="INVALID",
+                setup_status="INVALID",
+                direction="NONE",
+                final_action="no_trade",
+                sl_tp_overlay=SLTPOverlay(),
+            )
+            writer = ResultWriter(os.environ["SHARED_ROOT"])
+            path = writer.write(
+                "XAUUSD",
+                {"analysis_result": res, "errors": [], "fatal_error": None},
+                {},
+                datetime(2026, 8, 7, 12, 0),
+            )
+            assert path is not None
+            print(path)
+            """
+        )
+        env = {
+            **os.environ,
+            "ANALYZER_DIR": analyzer_dir,
+            "SHARED_ROOT": str(root),
+        }
+        subprocess.run(
+            [sys.executable, "-c", snippet],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=str(self._project_root() / "analyzer"),
+            env=env,
+        )
+
+        s = ResultScanner(root)
+        runs = s.list_runs()
+        assert len(runs) == 1
+        summary = runs[0]
+        assert summary.symbol == "XAUUSD"
+        assert summary.date == "2026-08-07"
+        assert summary.validation_status == "INVALID"
+        assert summary.setup_status == "INVALID"
+        assert summary.operational is False
+        assert summary.action == "no_trade"
+
+        full = s.get_run("XAUUSD", "2026", "08", "07", "result-12")
+        assert full is not None
+        assert full["schema_version"] == "2"
+        assert full["deterministic_facts"]["validation_status"] == "INVALID"
+        assert full["decision"]["action"] == "no_trade"
+        assert "review" not in full
+
+    def test_relative_shared_root_writer_and_scanner_same_absolute_root(
+        self, tmp_path: Path
+    ):
+        """ROOT-001 / AC-014: with a RELATIVE TRADING_ANALYSIS_CACHE_DIR the
+        analyzer writer (built through the real ``main._initialize_pipeline``
+        seam) and the server scanner resolve to the SAME absolute project-root
+        root; a freshly written v2 file is immediately discoverable.
+
+        The raw possibly-relative value (default ``"data"``) must never reach
+        ``ResultWriter`` directly — the seam hands it the resolved absolute
+        path so analyzer and server share one root regardless of CWD.
+        """
+        import os
+        import subprocess
+        import sys
+        import textwrap
+
+        root = tmp_path
+        project_root = self._project_root()
+        analyzer_dir = str(project_root / "analyzer")
+        # A relative value that resolves (against project root) to tmp_path.
+        relative = os.path.relpath(str(root), str(project_root))
+
+        snippet = textwrap.dedent(
+            """
+            import os
+            import sys
+            from datetime import datetime
+            from pathlib import Path
+            from unittest.mock import MagicMock
+
+            sys.path.insert(0, os.environ["ANALYZER_DIR"])
+
+            import main
+            from config.settings import Settings
+            from src.output.result_models import AnalysisResult, SLTPOverlay
+
+            # Build the writer through the same seam main.run() uses.
+            main.TerminalDataProvider = MagicMock()
+            main.MarketStructureEngine = MagicMock()
+            main.ForexFactoryCalendar = MagicMock()
+            main._create_agents = MagicMock(return_value=MagicMock())
+            main.TradingGraph = MagicMock()
+
+            settings = Settings()
+            _graph, writer = main._initialize_pipeline(settings, MagicMock())
+
+            # ROOT-001: the writer must target the resolved absolute root,
+            # never the raw possibly-relative value (CWD-relative).
+            expected = Path(settings.resolved_analysis_cache_dir)
+            assert writer.base_dir == expected, (writer.base_dir, expected)
+            assert writer.base_dir.is_absolute(), writer.base_dir
+            assert expected.is_absolute(), expected
+
+            res = AnalysisResult(
+                symbol="XAUUSD",
+                run_id="relative-shared-root-run",
+                started_at=datetime(2026, 8, 7, 12, 0),
+                completed_at=datetime(2026, 8, 7, 12, 1),
+                status="success",
+                validation_status="INVALID",
+                setup_status="INVALID",
+                direction="NONE",
+                final_action="no_trade",
+                sl_tp_overlay=SLTPOverlay(),
+            )
+            path = writer.write(
+                "XAUUSD",
+                {"analysis_result": res, "errors": [], "fatal_error": None},
+                {},
+                datetime(2026, 8, 7, 12, 0),
+            )
+            assert path is not None
+            print(path)
+            """
+        )
+        env = {
+            **os.environ,
+            "ANALYZER_DIR": analyzer_dir,
+            "TRADING_ANALYSIS_CACHE_DIR": relative,
+        }
+        subprocess.run(
+            [sys.executable, "-c", snippet],
+            check=True,
+            capture_output=True,
+            text=True,
+            cwd=str(project_root / "analyzer"),
+            env=env,
+        )
+
+        # Server side: the same relative value must resolve to the same root.
+        from src.settings import WebSettings
+
+        server_root = WebSettings(analysis_cache_dir=relative).resolved_cache_dir
+        assert server_root.resolve() == root.resolve()
+
+        s = ResultScanner(server_root)
+        runs = s.list_runs()
+        assert len(runs) == 1
+        summary = runs[0]
+        assert summary.symbol == "XAUUSD"
+        assert summary.date == "2026-08-07"
+        assert summary.validation_status == "INVALID"
+        assert summary.setup_status == "INVALID"
+        assert summary.operational is False
+        assert summary.action == "no_trade"
+
+        full = s.get_run("XAUUSD", "2026", "08", "07", "result-12")
+        assert full is not None
+        assert full["schema_version"] == "2"
+        assert "review" not in full
 
 
 class TestListRunsCache:

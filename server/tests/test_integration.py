@@ -61,23 +61,21 @@ class TestListRunsIntegration:
 class TestGetRunIntegration:
     """Integration tests for GET /api/runs/{symbol}/{year}/{month}/{day}/{file}."""
 
-    def test_returns_full_result(self, integration_client):
+    def test_returns_legacy_result_via_adapter(self, integration_client):
+        """The legacy review-based fixture is returned normalized and
+        review-free via the read-only legacy adapter (AC-015)."""
         resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 200
         data = resp.json()
+        assert data["schema_version"] == "legacy"
         assert data["symbol"] == "XAUUSD"
-        assert data["market_context"]["bias"] == "bullish"
+        facts = data["deterministic_facts"]
+        assert facts["validation_status"] == "UNKNOWN"
+        assert facts["operational"] is False
         assert data["decision"]["action"] == "buy_setup"
-        assert data["sl_tp_overlay"] == {
-            "entry_price": 2400.0,
-            "stop_loss": 2380.0,
-            "take_profit": 2440.0,
-        }
-        assert data["order_type"] == "STOP"
-        assert data["deterministic_setup_complete"] is True
-        assert data["estimated_reward_risk"] == 2.0
-        assert data["advisory_levels"]["entry_price"] == 2401.0
+        assert "review" not in data
+        assert "review_approved" not in data
 
     def test_legacy_result_without_trade_plan_fields_is_usable(
         self, integration_client, integration_data
@@ -105,9 +103,84 @@ class TestGetRunIntegration:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["review"]["status"] == "REJECTED"
-        assert "order_type" not in data or data["order_type"] is None
-        assert "advisory_levels" not in data or data["advisory_levels"] is None
+        assert data["schema_version"] == "legacy"
+        assert data["deterministic_facts"]["validation_status"] == "UNKNOWN"
+        assert data["deterministic_facts"]["operational"] is False
+        assert data["decision"]["action"] == "no_trade"
+        assert "review" not in data
+        assert "order_type" not in data
+
+    def test_v2_result_returned_as_is(self, integration_client, integration_data):
+        """A schema-v2 file written by the analyzer is returned verbatim."""
+        v2_path = integration_data / "2026" / "07" / "26" / "XAUUSD" / "result-10.json"
+        v2_path.parent.mkdir(parents=True, exist_ok=True)
+        v2_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "2",
+                    "symbol": "XAUUSD",
+                    "run_id": "2026-07-26T10:00:00",
+                    "started_at": "2026-07-26T10:00:00",
+                    "completed_at": "2026-07-26T10:00:01",
+                    "status": "success",
+                    "errors": [],
+                    "fatal_error": None,
+                    "deterministic_facts": {
+                        "symbol": "XAUUSD",
+                        "timeframes": {},
+                        "setup_status": "READY",
+                        "direction": "LONG",
+                        "trade_direction": "BULLISH",
+                        "setup_grade": "AAA",
+                        "setup_classification_status": "CLASSIFIED",
+                        "setup_lifecycle_status": "TRIGGERED",
+                        "entry_plan": {},
+                        "rr": {
+                            "calculated_rr": 2.0,
+                            "minimum_required_rr": 2.0,
+                            "rr_pass": True,
+                        },
+                        "confidence_components": {},
+                        "policy": {
+                            "execution_status": "ACTIONABLE",
+                            "actionable": True,
+                            "blockers": [],
+                            "reason_codes": [],
+                        },
+                        "selected_levels": {},
+                        "latest_structural_events": {},
+                        "latest_liquidity_states": {},
+                        "event_history": {},
+                        "liquidity_history": {},
+                        "validation_status": "VALID",
+                        "validation_errors": [],
+                        "operational": True,
+                        "entry_authorized": False,
+                        "bias": "BULLISH",
+                        "confidence": 72.0,
+                    },
+                    "decision": {"action": "buy_setup"},
+                    "synthesis": {
+                        "status": "SUCCESS",
+                        "explanation": "deterministic context is bullish",
+                        "risks": [],
+                        "confluences": [],
+                        "error": None,
+                    },
+                    "ohlc": {"D1": [], "H4": [], "H1": []},
+                }
+            )
+        )
+
+        response = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-10")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["schema_version"] == "2"
+        assert data["deterministic_facts"]["validation_status"] == "VALID"
+        assert data["deterministic_facts"]["operational"] is True
+        assert data["decision"]["action"] == "buy_setup"
+        assert "review" not in data
 
     def test_returns_404_for_missing(self, integration_client):
         resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-99-99")

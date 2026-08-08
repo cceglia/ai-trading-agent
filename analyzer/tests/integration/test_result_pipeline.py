@@ -20,8 +20,9 @@ def test_result_pipeline_writes_canonical_json(tmp_path: Path):
         status="success",
         sl_tp_overlay=SLTPOverlay(entry_price=1.101, stop_loss=1.098, take_profit=1.11),
         validation_status="VALID",
-        setup_status="VALID",
-        direction="BULLISH",
+        setup_status="READY",
+        direction="LONG",
+        trade_direction="BULLISH",
         entry_authorized=False,
     )
     result = {
@@ -39,7 +40,10 @@ def test_result_pipeline_writes_canonical_json(tmp_path: Path):
         "XAUUSD", result, {"D1": [OHLCBar(time="t", open=1, high=2, low=0, close=1)]}, now
     )
     data = json.loads(written.read_text())
-    assert data["validation_status"] == "VALID"
-    assert data["entry_authorized"] is False
+    assert data["schema_version"] == "2"
+    facts = data["deterministic_facts"]
+    assert facts["validation_status"] == "VALID"
+    assert facts["entry_authorized"] is False
     assert "review" not in data
+    assert data["decision"]["action"] == "no_trade"
     assert data["ohlc"]["D1"][0]["close"] == 1.0

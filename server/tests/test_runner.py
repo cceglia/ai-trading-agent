@@ -47,8 +47,10 @@ def _make_run_summary(
     summary.bias = "bullish"
     summary.confidence = 0.8
     summary.action = "buy"
-    summary.review_approved = False
-    summary.current_price = 2000.0
+    summary.validation_status = "VALID"
+    summary.setup_status = "READY"
+    summary.direction = "LONG"
+    summary.operational = True
     summary.file_path = f"{date.replace('-', '/')}/{symbol}/result-{time}.json"
     return summary
 
@@ -66,10 +68,12 @@ class TestRunAnalysis:
             captured["args"] = args
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(runner, "_wait_for_results"):
-                with patch.object(runner, "_read_results", return_value=[]):
-                    await runner.run_analysis(["XAUUSD", "EURUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value=[]),
+        ):
+            await runner.run_analysis(["XAUUSD", "EURUSD"])
 
         assert captured["cmd"] == "python3"
         assert "main.py" in captured["args"]
@@ -87,10 +91,12 @@ class TestRunAnalysis:
             captured["args"] = args
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(runner, "_wait_for_results"):
-                with patch.object(runner, "_read_results", return_value=[]):
-                    await runner.run_analysis(["XAUUSD"], model="gpt-4")
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value=[]),
+        ):
+            await runner.run_analysis(["XAUUSD"], model="gpt-4")
 
         assert "--model" in captured["args"]
         idx = captured["args"].index("--model")
@@ -105,10 +111,12 @@ class TestRunAnalysis:
             captured["args"] = args
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(runner, "_wait_for_results"):
-                with patch.object(runner, "_read_results", return_value=[]):
-                    await runner.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value=[]),
+        ):
+            await runner.run_analysis(["XAUUSD"])
 
         assert "--model" not in captured["args"]
 
@@ -121,9 +129,11 @@ class TestRunAnalysis:
         async def mock_create(cmd, *args, **kwargs):
             return process
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with pytest.raises(RuntimeError, match="exited with code 1"):
-                await runner.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            pytest.raises(RuntimeError, match="exited with code 1"),
+        ):
+            await runner.run_analysis(["XAUUSD"])
 
     @pytest.mark.asyncio
     async def test_timeout_kills_process(self):
@@ -156,9 +166,11 @@ class TestRunAnalysis:
         short_runner = RunService(
             "python3", "/app/analyzer", "/app/data", timeout_ms=100
         )
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with pytest.raises(TimeoutError, match="timed out"):
-                await short_runner.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            pytest.raises(TimeoutError, match="timed out"),
+        ):
+            await short_runner.run_analysis(["XAUUSD"])
 
         assert len(killed) > 0
 
@@ -177,12 +189,14 @@ class TestRunAnalysis:
             return _mock_process(returncode=0)
 
         mock_results = [{"symbol": "XAUUSD"}]
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(runner, "_wait_for_results"):
-                with patch.object(
-                    runner, "_read_results", return_value=mock_results
-                ) as mock_read:
-                    result = await runner.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(
+                runner, "_read_results", return_value=mock_results
+            ) as mock_read,
+        ):
+            result = await runner.run_analysis(["XAUUSD"])
 
         mock_read.assert_called_once_with(["XAUUSD"])
         assert result == mock_results
@@ -209,10 +223,12 @@ class TestRunAnalysis:
             self.get_run = MagicMock(return_value=None)
             self.invalidate_cache = MagicMock()
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(ResultScanner, "__init__", counting_init):
-                await runner.run_analysis(["XAUUSD"])
-                await runner.run_analysis(["EURUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(ResultScanner, "__init__", counting_init),
+        ):
+            await runner.run_analysis(["XAUUSD"])
+            await runner.run_analysis(["EURUSD"])
 
         assert init_count == 1, (
             f"ResultScanner.__init__ called {init_count} times, expected 1"
@@ -236,9 +252,11 @@ class TestRunAnalysis:
             self.get_run = MagicMock(return_value=None)
             self.invalidate_cache = invalidate_mock
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(ResultScanner, "__init__", mock_init):
-                await runner.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(ResultScanner, "__init__", mock_init),
+        ):
+            await runner.run_analysis(["XAUUSD"])
 
         # invalidate_cache is called once by _wait_for_results (attempt 0,
         # no retry needed) and once by run_analysis after _read_results.
@@ -287,10 +305,12 @@ class TestWaitForResults:
         async def mock_create(cmd, *args, **kwargs):
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(ResultScanner, "__init__", mock_init):
-                # Should not raise — succeeds on 3rd attempt
-                await runner_fast.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(ResultScanner, "__init__", mock_init),
+        ):
+            # Should not raise — succeeds on 3rd attempt
+            await runner_fast.run_analysis(["XAUUSD"])
 
         assert call_count >= 3, f"list_runs called {call_count} times, expected >= 3"
 
@@ -319,12 +339,14 @@ class TestWaitForResults:
         async def mock_create(cmd, *args, **kwargs):
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(ResultScanner, "__init__", mock_init):
-                with pytest.raises(
-                    TimeoutError, match="Results not available after retries: XAUUSD"
-                ):
-                    await runner_fast.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(ResultScanner, "__init__", mock_init),
+            pytest.raises(
+                TimeoutError, match="Results not available after retries: XAUUSD"
+            ),
+        ):
+            await runner_fast.run_analysis(["XAUUSD"])
 
         assert call_count == 5, f"list_runs called {call_count} times, expected 5"
 
@@ -351,9 +373,11 @@ class TestWaitForResults:
         async def mock_create(cmd, *args, **kwargs):
             return _mock_process(returncode=0)
 
-        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
-            with patch.object(ResultScanner, "__init__", mock_init):
-                await runner_fast.run_analysis(["XAUUSD"])
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(ResultScanner, "__init__", mock_init),
+        ):
+            await runner_fast.run_analysis(["XAUUSD"])
 
         # One call from _wait_for_results (attempt 0 succeeds),
         # one from _read_results.

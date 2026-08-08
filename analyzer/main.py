@@ -296,7 +296,7 @@ def _initialize_pipeline(
         synthesizer=synthesizer,
     )
 
-    writer = ResultWriter(settings.analysis_cache_dir)
+    writer = ResultWriter(settings.resolved_analysis_cache_dir)
     return graph, writer
 
 

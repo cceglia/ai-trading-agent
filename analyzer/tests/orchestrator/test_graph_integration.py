@@ -228,7 +228,8 @@ def test_invalid_facts_zero_llm_calls_and_persist_partial(monkeypatch, tmp_path)
 
     data = json.loads(written.read_text())
     assert data["status"] == "partial"
-    assert data["validation_status"] == "INVALID"
+    assert data["deterministic_facts"]["validation_status"] == "INVALID"
+    assert data["decision"]["action"] == "no_trade"
 
 
 # ===================================================================

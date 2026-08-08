@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import json
 from pathlib import Path
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -19,7 +18,7 @@ from src.scanner import ResultScanner
 
 @pytest.fixture
 def sample_run_summary() -> RunSummary:
-    """Sample RunSummary matching the Python model shape."""
+    """Sample RunSummary matching the v2 summary contract."""
     return RunSummary(
         symbol="XAUUSD",
         date="2026-07-26",
@@ -27,18 +26,20 @@ def sample_run_summary() -> RunSummary:
         bias="bullish",
         confidence=0.85,
         action="buy_setup",
-        review_approved=True,
-        current_price=2400.0,
+        validation_status="VALID",
+        setup_status="READY",
+        direction="LONG",
+        operational=True,
         file_path="2026/07/26/XAUUSD/result-08.json",
     )
 
 
 @pytest.fixture
 def sample_full_result() -> dict[str, Any]:
-    """Sample FullResult matching AnalysisResult.model_dump(mode='json') shape."""
+    """Sample legacy (v1 review-based) full result for adapter reads."""
     return {
-        "symbol": "XAUUSD",
         "version": "1.0",
+        "symbol": "XAUUSD",
         "run_id": "2026-07-26T08:30:00",
         "started_at": "2026-07-26T08:30:00Z",
         "completed_at": "2026-07-26T08:31:15Z",
