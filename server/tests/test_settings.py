@@ -50,6 +50,23 @@ class TestCorsOrigins:
         assert settings.cors_origins == []
 
 
+class TestProviderConfig:
+    """``PROVIDER_CONFIG`` maps a server-side provider id to an endpoint URL.
+
+    Endpoint URLs and credentials stay entirely server-side (FR-039 / DEC-014);
+    the API accepts a ``provider_id``, never a free-form ``base_url``.
+    """
+
+    def test_provider_config_from_env_json(self, monkeypatch):
+        monkeypatch.setenv("PROVIDER_CONFIG", '{"local": "http://127.0.0.1:11434/v1"}')
+        settings = WebSettings()
+        assert settings.provider_config == {"local": "http://127.0.0.1:11434/v1"}
+
+    def test_provider_config_default_empty(self):
+        settings = WebSettings()
+        assert settings.provider_config == {}
+
+
 class TestResolvedCacheDir:
     """``resolved_cache_dir`` must resolve relative paths from the project root.
 

@@ -56,6 +56,15 @@ class WebSettings(BaseSettings):
     rate_limit_max: int = Field(default=20, alias="TRADING_RATE_LIMIT_MAX")
     rate_limit_window: int = Field(default=60, alias="TRADING_RATE_LIMIT_WINDOW")
 
+    # Provider configuration: provider_id -> OpenAI-compatible base URL.
+    # Endpoint URLs and credentials stay entirely server-side (FR-039/DEC-014);
+    # the API accepts a provider_id, never a free-form base_url.
+    # JSON-encoded env var, e.g.
+    #   PROVIDER_CONFIG={"local":"http://127.0.0.1:11434/v1"}
+    provider_config: dict[str, str] = Field(
+        default_factory=dict, alias="PROVIDER_CONFIG"
+    )
+
     @property
     def resolved_cache_dir(self) -> Path:
         """Resolve ``analysis_cache_dir`` to an absolute path.

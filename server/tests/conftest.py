@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient
 
 from src.main import create_app
 from src.models import RunSummary
-from src.runner import RunService
+from src.runner import BatchResult, RunService
 from src.scanner import ResultScanner
 
 
@@ -151,9 +151,9 @@ def mock_scanner():
 
 @pytest.fixture
 def mock_runner():
-    """Mock RunService."""
+    """Mock RunService returning an empty successful BatchResult."""
     mock = MagicMock()
-    mock.run_analysis = AsyncMock(return_value=[])
+    mock.run_analysis = AsyncMock(return_value=BatchResult())
     return mock
 
 

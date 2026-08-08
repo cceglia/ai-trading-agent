@@ -8,6 +8,7 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 from src.middleware.ratelimit import SlidingWindowRateLimiter
+from src.runner import BatchResult
 
 
 class TestAuthMiddleware:
@@ -35,7 +36,9 @@ class TestAuthMiddleware:
 
     def test_post_with_valid_key_returns_200(self, client_with_auth):
         test_client, _, mock_runner = client_with_auth
-        mock_runner.run_analysis.return_value = [{"symbol": "XAUUSD"}]
+        mock_runner.run_analysis.return_value = BatchResult(
+            results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
+        )
 
         resp = test_client.post(
             "/api/run",
@@ -57,7 +60,9 @@ class TestAuthMiddleware:
     def test_no_key_dev_mode_bypasses_auth(self, client):
         """When TRADING_API_KEY is empty (default), auth is skipped."""
         test_client, _, mock_runner = client
-        mock_runner.run_analysis.return_value = [{"symbol": "XAUUSD"}]
+        mock_runner.run_analysis.return_value = BatchResult(
+            results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
+        )
 
         resp = test_client.post("/api/run", json={"symbols": ["XAUUSD"]})
 
@@ -112,7 +117,9 @@ class TestRateLimitIntegration:
     def test_rate_limit_exceeded_returns_429(self, client):
         """After max_requests POSTs, the next one returns 429."""
         test_client, _, mock_runner = client
-        mock_runner.run_analysis.return_value = [{"symbol": "XAUUSD"}]
+        mock_runner.run_analysis.return_value = BatchResult(
+            results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
+        )
 
         # Default is 20 req / 60s — hit the limit
         for _ in range(20):
@@ -146,7 +153,9 @@ class TestRateLimitIntegration:
 
             l_mock_scanner = __import__("unittest").mock.MagicMock()
             l_mock_runner = __import__("unittest").mock.AsyncMock()
-            l_mock_runner.run_analysis.return_value = [{"symbol": "XAUUSD"}]
+            l_mock_runner.run_analysis.return_value = BatchResult(
+                results={"XAUUSD": {"symbol": "XAUUSD"}}, errors={}
+            )
             with (
                 patch("src.main.ResultScanner", return_value=l_mock_scanner),
                 patch("src.main.RunService", return_value=l_mock_runner),
@@ -220,7 +229,7 @@ class TestErrorLogging:
         tc = TestClient(app)
 
         with caplog.at_level(logging.ERROR, logger="src.main"):
-            resp = tc.get("/api/runs/XAUUSD/2026/07/26/result-08-30")
+            resp = tc.get("/api/runs/XAUUSD/2026/07/26/result-08")
 
         assert resp.status_code == 500
         assert resp.json() == {"error": "Failed to get run"}
@@ -252,8 +261,9 @@ class TestErrorLogging:
             for rec in caplog.records
         )
 
-    def test_post_run_logs_timeout_error(self, caplog):
-        """run_analysis must log TimeoutError before re-raising."""
+    def test_post_run_logs_timeout_as_generic_failure(self, caplog):
+        """run_analysis must not have a dedicated 502 path: a TimeoutError that
+        escapes RunService (unreachable in production) is a generic failure."""
         mock_scanner = __import__("unittest").mock.MagicMock()
         mock_runner = __import__("unittest").mock.MagicMock()
         mock_runner.run_analysis = __import__("unittest").mock.AsyncMock(
@@ -273,6 +283,7 @@ class TestErrorLogging:
             resp = tc.post("/api/run", json={"symbols": ["XAUUSD"]})
 
         assert resp.status_code == 500
+        assert resp.json() == {"error": "Analysis failed"}
         assert any(
             "Analysis failed for symbols: ['XAUUSD']" in rec.message
             for rec in caplog.records

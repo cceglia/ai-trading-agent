@@ -179,8 +179,6 @@
   "177": ".test_record_call_does_not_raise_when_below_limit",
   "178": ".test_multiple_calls_accumulate",
   "179": ".test_negative_limit_disables_enforcement",
-  "180": ".test_empty_pricing_table",
-  "181": ".test_record_call_does_not_raise_when_below_limit",
   "183": "Domain Glossary",
   "184": "Architecture",
   "189": "0001-reviewer-configuration-names.md",

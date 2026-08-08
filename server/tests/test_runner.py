@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.runner import RunService
+from src.models import SymbolError
+from src.runner import BatchResult, RunService
 
 
 @pytest.fixture
@@ -121,23 +123,69 @@ class TestRunAnalysis:
         assert "--model" not in captured["args"]
 
     @pytest.mark.asyncio
-    async def test_nonzero_exit_raises_runtime_error(self, runner: RunService):
-        """Non-zero exit code should raise RuntimeError with stderr."""
-        stderr_msg = b"analysis failed"
-        process = _mock_process(returncode=1, stderr=stderr_msg)
+    async def test_base_url_argument(self, runner: RunService):
+        """A resolved provider base_url is passed as --base-url to the analyzer."""
+        captured = {}
+
+        async def mock_create(cmd, *args, **kwargs):
+            captured["args"] = args
+            return _mock_process(returncode=0)
+
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value={}),
+        ):
+            await runner.run_analysis(["XAUUSD"], base_url="http://127.0.0.1:11434/v1")
+
+        assert "--base-url" in captured["args"]
+        idx = captured["args"].index("--base-url")
+        assert captured["args"][idx + 1] == "http://127.0.0.1:11434/v1"
+
+    @pytest.mark.asyncio
+    async def test_no_base_url_argument_when_none(self, runner: RunService):
+        """Verify --base-url is absent when base_url is None."""
+        captured = {}
+
+        async def mock_create(cmd, *args, **kwargs):
+            captured["args"] = args
+            return _mock_process(returncode=0)
+
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value={}),
+        ):
+            await runner.run_analysis(["XAUUSD"])
+
+        assert "--base-url" not in captured["args"]
+
+    @pytest.mark.asyncio
+    async def test_process_failure_maps_to_symbol_errors(self, runner: RunService):
+        """Non-zero exit yields a per-symbol error; stderr secrets never surface."""
+        stderr = b"Traceback ... API key SECRET123 leaked"
+        process = _mock_process(returncode=1, stderr=stderr)
 
         async def mock_create(cmd, *args, **kwargs):
             return process
 
         with (
             patch("asyncio.create_subprocess_exec", side_effect=mock_create),
-            pytest.raises(RuntimeError, match="exited with code 1"),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value={}),
         ):
-            await runner.run_analysis(["XAUUSD"])
+            outcome = await runner.run_analysis(["XAUUSD"])
+
+        assert outcome.status == "error"
+        assert outcome.results == {}
+        err = outcome.errors["XAUUSD"]
+        assert err.code == "SYMBOL_PROCESS_FAILED"
+        assert "SECRET123" not in err.message
+        assert "SECRET123" not in str(outcome)
 
     @pytest.mark.asyncio
     async def test_timeout_kills_process(self):
-        """Process should be killed on timeout."""
+        """Process should be killed on timeout and mapped to per-symbol errors."""
         killed = []
         wait_call_count = 0
 
@@ -168,18 +216,63 @@ class TestRunAnalysis:
         )
         with (
             patch("asyncio.create_subprocess_exec", side_effect=mock_create),
-            pytest.raises(TimeoutError, match="timed out"),
+            patch.object(short_runner, "_wait_for_results"),
+            patch.object(short_runner, "_read_results", return_value={}),
         ):
-            await short_runner.run_analysis(["XAUUSD"])
+            outcome = await short_runner.run_analysis(["XAUUSD"])
 
         assert len(killed) > 0
+        assert outcome.status == "error"
+        assert outcome.errors["XAUUSD"].code == "SYMBOL_TIMEOUT"
 
     @pytest.mark.asyncio
-    async def test_bad_python_cmd_raises(self):
-        """Non-existent Python command should raise RuntimeError."""
+    async def test_timeout_preserves_partial_results(self, runner: RunService):
+        """A timeout after some symbols completed keeps the completed results."""
+        results = {"XAUUSD": {"symbol": "XAUUSD", "status": "success"}}
+        wait_call_count = 0
+
+        async def mock_create(cmd, *args, **kwargs):
+            process = AsyncMock()
+            process.returncode = -1
+            process.stderr = MagicMock()
+            process.stderr.read = AsyncMock(return_value=b"")
+
+            async def _wait():
+                nonlocal wait_call_count
+                wait_call_count += 1
+                if wait_call_count == 1:
+                    await asyncio.sleep(100)
+
+            process.wait = _wait
+            process.kill = MagicMock()
+            return process
+
+        short_runner = RunService(
+            "python3", "/app/analyzer", "/app/data", timeout_ms=100
+        )
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(short_runner, "_wait_for_results"),
+            patch.object(short_runner, "_read_results", return_value=results),
+        ):
+            outcome = await short_runner.run_analysis(["XAUUSD", "EURUSD"])
+
+        assert outcome.status == "partial"
+        assert outcome.results == {"XAUUSD": {"symbol": "XAUUSD", "status": "success"}}
+        assert outcome.errors["EURUSD"].code == "SYMBOL_TIMEOUT"
+
+    @pytest.mark.asyncio
+    async def test_bad_python_cmd_yields_symbol_errors(self):
+        """A missing Python command is a per-symbol error, not a raise."""
         bad_runner = RunService("nonexistent_python_xyz", "/app/analyzer", "/app/data")
-        with pytest.raises(RuntimeError, match="not found"):
-            await bad_runner.run_analysis(["XAUUSD"])
+        with (
+            patch.object(bad_runner, "_wait_for_results"),
+            patch.object(bad_runner, "_read_results", return_value={}),
+        ):
+            outcome = await bad_runner.run_analysis(["XAUUSD"])
+
+        assert outcome.status == "error"
+        assert "not found" in outcome.errors["XAUUSD"].message
 
     @pytest.mark.asyncio
     async def test_read_results_called_with_symbols(self, runner: RunService):
@@ -188,7 +281,7 @@ class TestRunAnalysis:
         async def mock_create(cmd, *args, **kwargs):
             return _mock_process(returncode=0)
 
-        mock_results = [{"symbol": "XAUUSD"}]
+        mock_results = {"XAUUSD": {"symbol": "XAUUSD"}}
         with (
             patch("asyncio.create_subprocess_exec", side_effect=mock_create),
             patch.object(runner, "_wait_for_results"),
@@ -198,8 +291,8 @@ class TestRunAnalysis:
         ):
             result = await runner.run_analysis(["XAUUSD"])
 
-        mock_read.assert_called_once_with(["XAUUSD"])
-        assert result == mock_results
+        assert mock_read.call_args.args[0] == ["XAUUSD"]
+        assert result.results == mock_results
 
     @pytest.mark.asyncio
     async def test_scanner_created_once(self, runner: RunService):
@@ -318,7 +411,7 @@ class TestWaitForResults:
     async def test_read_results_gives_up_after_max_retries(
         self, runner_fast: RunService
     ):
-        """Scanner always returns empty → TimeoutError after max retries."""
+        """Scanner always returns empty → missing symbols get a safe error."""
         from src.scanner import ResultScanner
 
         call_count = 0
@@ -342,13 +435,13 @@ class TestWaitForResults:
         with (
             patch("asyncio.create_subprocess_exec", side_effect=mock_create),
             patch.object(ResultScanner, "__init__", mock_init),
-            pytest.raises(
-                TimeoutError, match="Results not available after retries: XAUUSD"
-            ),
         ):
-            await runner_fast.run_analysis(["XAUUSD"])
+            outcome = await runner_fast.run_analysis(["XAUUSD"])
 
-        assert call_count == 5, f"list_runs called {call_count} times, expected 5"
+        # 1 baseline snapshot + 5 polling attempts + 1 read attempt.
+        assert call_count == 7, f"list_runs called {call_count} times, expected 7"
+        assert outcome.status == "error"
+        assert outcome.errors["XAUUSD"].code == "SYMBOL_NO_RESULT"
 
     @pytest.mark.asyncio
     async def test_read_results_succeeds_on_first_try(self, runner_fast: RunService):
@@ -379,9 +472,8 @@ class TestWaitForResults:
         ):
             await runner_fast.run_analysis(["XAUUSD"])
 
-        # One call from _wait_for_results (attempt 0 succeeds),
-        # one from _read_results.
-        assert call_count == 2, f"list_runs called {call_count} times, expected 2"
+        # 1 baseline snapshot + 1 poll (attempt 0 succeeds) + 1 read.
+        assert call_count == 3, f"list_runs called {call_count} times, expected 3"
 
     @pytest.mark.asyncio
     async def test_retry_configurable(self):
@@ -408,3 +500,216 @@ class TestWaitForResults:
         )
         assert runner_default.retry_max_attempts == 5
         assert runner_default.retry_delay_ms == 100
+
+
+class TestBatchIsolation:
+    """FR-033 / INV-014 / AC-016 — per-symbol terminal outcomes."""
+
+    @pytest.mark.asyncio
+    async def test_success_keeps_all_results(self, runner: RunService):
+        results = {
+            "XAUUSD": {"symbol": "XAUUSD", "status": "success"},
+            "EURUSD": {"symbol": "EURUSD", "status": "success"},
+        }
+
+        async def mock_create(cmd, *args, **kwargs):
+            return _mock_process(returncode=0)
+
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value=results),
+        ):
+            outcome = await runner.run_analysis(["XAUUSD", "EURUSD"])
+
+        assert outcome.status == "success"
+        assert set(outcome.results) == {"XAUUSD", "EURUSD"}
+        assert outcome.errors == {}
+
+    @pytest.mark.asyncio
+    async def test_partial_keeps_other_symbols(self, runner: RunService):
+        """One symbol missing → the other symbol's result is retained (AC-016)."""
+        results = {"XAUUSD": {"symbol": "XAUUSD", "status": "success"}}
+
+        async def mock_create(cmd, *args, **kwargs):
+            return _mock_process(returncode=0)
+
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value=results),
+        ):
+            outcome = await runner.run_analysis(["XAUUSD", "EURUSD"])
+
+        assert outcome.status == "partial"
+        assert outcome.results == {"XAUUSD": {"symbol": "XAUUSD", "status": "success"}}
+        assert outcome.errors["EURUSD"].code == "SYMBOL_NO_RESULT"
+
+    @pytest.mark.asyncio
+    async def test_missing_result_is_safe_error_not_success(self, runner: RunService):
+        """Missing/malformed result is a safe error, never operational success."""
+
+        async def mock_create(cmd, *args, **kwargs):
+            return _mock_process(returncode=0)
+
+        with (
+            patch("asyncio.create_subprocess_exec", side_effect=mock_create),
+            patch.object(runner, "_wait_for_results"),
+            patch.object(runner, "_read_results", return_value={}),
+        ):
+            outcome = await runner.run_analysis(["XAUUSD"])
+
+        assert outcome.status == "error"
+        assert outcome.results == {}
+        assert outcome.errors["XAUUSD"].code == "SYMBOL_NO_RESULT"
+
+    def test_batch_status_semantics(self):
+        """FR-033 status rules: success / partial / error."""
+        assert BatchResult(results={"X": {}}, errors={}).status == "success"
+        assert (
+            BatchResult(
+                results={"X": {}}, errors={"Y": SymbolError(code="E", message="e")}
+            ).status
+            == "partial"
+        )
+        assert (
+            BatchResult(
+                results={}, errors={"Y": SymbolError(code="E", message="e")}
+            ).status
+            == "error"
+        )
+
+    @pytest.mark.asyncio
+    async def test_polls_only_persisted_non_fatal_results(self, tmp_path):
+        """A fatal ``error`` result file is not a result — its symbol gets a
+        per-symbol error while the healthy symbol is retained (FR-033, §15)."""
+        v2 = {
+            "schema_version": "2",
+            "symbol": "XAUUSD",
+            "status": "success",
+            "deterministic_facts": {"symbol": "XAUUSD", "operational": True},
+            "decision": {"action": "buy_setup"},
+        }
+        fatal = {"symbol": "EURUSD", "status": "error", "fatal_error": "fetch failed"}
+
+        real_runner = RunService(
+            "python3", "/app/analyzer", str(tmp_path), retry_delay_ms=1
+        )
+
+        async def mock_create(cmd, *args, **kwargs):
+            # Simulate the analyzer persisting its outputs during the run.
+            for sym, content in (("XAUUSD", v2), ("EURUSD", fatal)):
+                path = tmp_path / "2026" / "08" / "08" / sym / "result-10.json"
+                path.parent.mkdir(parents=True)
+                path.write_text(json.dumps(content))
+            return _mock_process(returncode=0)
+
+        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
+            outcome = await real_runner.run_analysis(["XAUUSD", "EURUSD"])
+
+        assert outcome.status == "partial"
+        assert "XAUUSD" in outcome.results
+        assert "EURUSD" not in outcome.results
+        assert outcome.errors["EURUSD"].code == "SYMBOL_NO_RESULT"
+
+    @pytest.mark.asyncio
+    async def test_stale_prior_file_with_fatal_failure_is_error(self, tmp_path):
+        """BATCH-001: a symbol with only a stale prior file and a current fatal
+        failure is a per-symbol error, not operational success (§15/FR-033)."""
+        stale = {
+            "schema_version": "2",
+            "symbol": "XAUUSD",
+            "status": "success",
+            "deterministic_facts": {"symbol": "XAUUSD", "operational": True},
+            "decision": {"action": "buy_setup"},
+        }
+        stale_path = tmp_path / "2026" / "08" / "08" / "XAUUSD" / "result-09.json"
+        stale_path.parent.mkdir(parents=True)
+        stale_path.write_text(json.dumps(stale))
+
+        real_runner = RunService(
+            "python3", "/app/analyzer", str(tmp_path), retry_delay_ms=1
+        )
+
+        async def mock_create(cmd, *args, **kwargs):
+            # Current run fails before persisting anything for XAUUSD.
+            return _mock_process(returncode=1)
+
+        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
+            outcome = await real_runner.run_analysis(["XAUUSD"])
+
+        assert outcome.status == "error"
+        assert outcome.results == {}
+        assert outcome.errors["XAUUSD"].code == "SYMBOL_PROCESS_FAILED"
+
+    @pytest.mark.asyncio
+    async def test_stale_prior_file_yields_partial_batch(self, tmp_path):
+        """BATCH-001: one stale-only symbol fails while a fresh symbol succeeds
+        → batch status is ``partial`` with a per-symbol error for the stale one."""
+        stale = {
+            "schema_version": "2",
+            "symbol": "EURUSD",
+            "status": "success",
+            "deterministic_facts": {"symbol": "EURUSD", "operational": True},
+            "decision": {"action": "buy_setup"},
+        }
+        stale_path = tmp_path / "2026" / "08" / "08" / "EURUSD" / "result-09.json"
+        stale_path.parent.mkdir(parents=True)
+        stale_path.write_text(json.dumps(stale))
+
+        fresh = {
+            "schema_version": "2",
+            "symbol": "XAUUSD",
+            "status": "success",
+            "deterministic_facts": {"symbol": "XAUUSD", "operational": True},
+            "decision": {"action": "buy_setup"},
+        }
+
+        real_runner = RunService(
+            "python3", "/app/analyzer", str(tmp_path), retry_delay_ms=1
+        )
+
+        async def mock_create(cmd, *args, **kwargs):
+            # The run persists a fresh result only for XAUUSD; EURUSD keeps
+            # its stale prior file untouched.
+            path = tmp_path / "2026" / "08" / "08" / "XAUUSD" / "result-10.json"
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(fresh))
+            return _mock_process(returncode=1)
+
+        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
+            outcome = await real_runner.run_analysis(["XAUUSD", "EURUSD"])
+
+        assert outcome.status == "partial"
+        assert "XAUUSD" in outcome.results
+        assert "EURUSD" not in outcome.results
+        assert outcome.errors["EURUSD"].code == "SYMBOL_PROCESS_FAILED"
+
+    @pytest.mark.asyncio
+    async def test_fresh_file_produced_during_run_is_success(self, tmp_path):
+        """BATCH-001: a file produced during the current run is operational
+        success (contrast with a stale pre-existing file)."""
+        fresh = {
+            "schema_version": "2",
+            "symbol": "XAUUSD",
+            "status": "success",
+            "deterministic_facts": {"symbol": "XAUUSD", "operational": True},
+            "decision": {"action": "buy_setup"},
+        }
+
+        real_runner = RunService(
+            "python3", "/app/analyzer", str(tmp_path), retry_delay_ms=1
+        )
+
+        async def mock_create(cmd, *args, **kwargs):
+            path = tmp_path / "2026" / "08" / "08" / "XAUUSD" / "result-10.json"
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps(fresh))
+            return _mock_process(returncode=0)
+
+        with patch("asyncio.create_subprocess_exec", side_effect=mock_create):
+            outcome = await real_runner.run_analysis(["XAUUSD"])
+
+        assert outcome.status == "success"
+        assert "XAUUSD" in outcome.results
+        assert outcome.errors == {}

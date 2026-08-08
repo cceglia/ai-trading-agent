@@ -183,11 +183,49 @@ class TestGetRunIntegration:
         assert "review" not in data
 
     def test_returns_404_for_missing(self, integration_client):
-        resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-99-99")
+        resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-99")
 
         assert resp.status_code == 404
+
+    def test_returns_400_for_malformed_file(self, integration_client):
+        resp = integration_client.get("/api/runs/XAUUSD/2026/07/26/result-99-99")
+
+        assert resp.status_code == 400
+
+    def test_returns_400_for_traversal(self, integration_client):
+        """Path-traversal attempts never reach the scanner (route boundary)."""
+        resp = integration_client.get("/api/runs/XAUUSD/2026/%2e%2e/26/result-08")
+
+        assert resp.status_code == 400
 
     def test_returns_404_for_wrong_symbol(self, integration_client):
         resp = integration_client.get("/api/runs/EURUSD/2026/07/26/result-08")
 
         assert resp.status_code == 404
+
+
+class TestListRunsSummaryContract:
+    """FR-034 — list/detail responses use v2 or safe legacy without review fields."""
+
+    def test_list_summary_has_exact_v2_fields(self, integration_client):
+        resp = integration_client.get("/api/runs")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) >= 1
+        summary = data[0]
+        assert set(summary.keys()) == {
+            "symbol",
+            "date",
+            "time",
+            "bias",
+            "confidence",
+            "action",
+            "validation_status",
+            "setup_status",
+            "direction",
+            "operational",
+            "file_path",
+        }
+        assert "review" not in summary
+        assert "review_approved" not in summary
